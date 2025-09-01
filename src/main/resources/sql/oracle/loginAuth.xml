@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.loginAuth">
+	<insert id="merge" parameterType="hashmap" >
+		MERGE INTO LOGINAUTH
+		USING DUAL ON (LA_USERID = #{r_lauserid})
+		WHEN MATCHED THEN 
+			UPDATE SET 
+				LA_TOKEN = #{m_latoken, jdbcType=VARCHAR}
+				,  LA_INDATE = SYSDATE
+		WHEN NOT MATCHED THEN
+			INSERT (
+				LA_USERID
+				, LA_TOKEN
+				, LA_INDATE
+			)VALUES(
+				#{r_lauserid, jdbcType=VARCHAR}
+				, #{m_latoken, jdbcType=NUMERIC}
+				, SYSDATE
+			)
+	</insert>
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM LOGINAUTH
+		<where>
+			<if test="r_lauserid != null and r_lauserid != ''">AND LA_USERID = #{r_lauserid} </if>
+			<if test="r_latoken != null and r_latoken != ''">AND LA_TOKEN = #{r_latoken} </if>
+		</where>
+	</select>
+	
+</mapper>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.appPush">
+	<insert id="in" parameterType="hashmap">
+		<!-- 2024-10-15 HSG 시퀀스 대신 MAX값으로 대체  -->
+		<selectKey keyProperty="apSeq" resultType="long" order="BEFORE">
+    		SELECT MAX(P.AP_SEQ)+1 FROM APPPUSH P;
+    	</selectKey>
+	
+		INSERT INTO APPPUSH (
+			AP_SEQ,
+			AP_USERID,
+			AP_APPPUSHKEY,
+			AP_TITLE,
+			AP_CONTENT,
+			<if test='m_apsendyn != null and "Y".equals(m_apsendyn)'>AP_SENDDATE,</if>
+			AP_SENDYN,
+			AP_SENDTYPE,
+			AP_MOVEURL,
+			AP_TYPE,
+			AP_INDATE
+		) 
+		VALUES (
+			#{apSeq},
+			#{m_apuserid},
+			#{m_apapppushkey},
+			#{m_aptitle},
+			#{m_apcontent},
+			<if test='m_apsendyn != null and "Y".equals(m_apsendyn)'>GETDATE(),</if>
+			#{m_apsendyn},
+			#{m_apsendtype},
+			#{m_apmoveurl},
+			#{m_aptype},
+			GETDATE()
+		)
+		<!-- <selectKey resultType="long" keyProperty="nowSeq" order="AFTER">
+			SELECT USQ_APPPUSH.CURRVAL FROM DUAL
+		</selectKey>  -->
+	</insert>
+	
+	<insert id="inByUser" parameterType="hashmap">
+		INSERT INTO APPPUSH (
+			AP_SEQ,
+			AP_USERID,
+			AP_APPPUSHKEY,
+			AP_TITLE,
+			AP_CONTENT,
+			<if test='m_apsendyn != null and "Y".equals(m_apsendyn)'>AP_SENDDATE,</if>
+			AP_SENDYN,
+			AP_SENDTYPE,
+			AP_MOVEURL,
+			AP_TYPE,
+			AP_INDATE
+		) 
+		SELECT 
+			NEXT VALUE FOR USQ_APPPUSH,
+			USERID, 
+			USER_APPPUSHKEY,
+			#{m_aptitle},
+			#{m_apcontent},
+			<if test='m_apsendyn != null and "Y".equals(m_apsendyn)'>GETDATE(),</if>
+			#{m_apsendyn},
+			#{m_apsendtype},
+			#{m_apmoveurl},
+			#{m_aptype},
+			GETDATE()
+		FROM O_USER
+		<where>
+			<if test="ri_userid != null and ri_userid != ''">AND USERID IN <foreach collection="ri_userid" item="userid" separator="," open="(" close=")">#{userid}</foreach></if>
+		</where>
+	</insert>
+</mapper>

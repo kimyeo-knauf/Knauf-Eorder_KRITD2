@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<m1 name="MAIN" value="" icon="menu-icon fa fa-puzzle-piece">
+		<page value="/index/index.lime" />
+	</m1>
+	<m1 name="자사정보관리" value="" icon="menu-icon fa fa-puzzle-piece">
+		<m2 name="회사정보" value="">
+			<page value="/member/supplyCompany.lime" />
+		</m2>
+	</m1>
+	<m1 name="품목관리" value="" icon="menu-icon glyphicon glyphicon-barcode">
+		<m2 name="품목현황" value="">
+			<page value="/product/1" />
+		</m2>
+		<m2 name="품목등록" value="">
+			<page value="/product/2" />
+		</m2>
+		<m2 name="쿼테이션관리" value="">
+			<page value="/product/3" />
+		</m2>
+		<m2 name="쿼테이션목록" value="">
+			<page value="/product/4" />
+		</m2>
+	</m1>
+	<m1 name="견적입찰관리" value="" icon="menu-icon glyphicon glyphicon-bullhorn">
+		<m2 name="견적요청현황" value="">
+			<page value="/bidding/" />
+		</m2>
+		<m2 name="견적진행현황" value="">
+			<page value="/bidding/" />
+		</m2>
+		<m2 name="입찰요청현황" value="">
+			<page value="/bidding/biddingList.lime" />
+		</m2>
+		<m2 name="입찰진행현황" value="">
+			<page value="/bidding/biddingList2.lime" />
+		</m2>
+	</m1>
+	<m1 name="전자계약" value="" icon="menu-icon glyphicon glyphicon-edit">
+		<m2 name="전자계약요청현황" value="">
+			<page value="/contract/contractList.lime" />
+			<page value="/contract/contractDetail.lime" />
+		</m2>
+	</m1>
+	<m1 name="수주관리" value="" icon="menu-icon glyphicon glyphicon-transfer">
+		<m2 name="발주현항" value="">
+			<m3 name="계약발주" value="">
+				<page value="/order/orderList.lime">
+					<param name="r_ostype" value="1" />
+					<param name="r_osstatus" value="100" />
+				</page>
+			</m3>
+			<m3 name="구매발주" value="">
+				<page value="/order/orderList.lime">
+					<param name="r_ostype" value="2" />
+					<param name="r_osstatus" value="200" />
+				</page>
+			</m3>
+		</m2>
+		<m2 name="입고/검수" value="">
+			<m3 name="검수요청현황" value="">
+				<page value="" />
+			</m3>
+			<m3 name="입고요청현황" value="">
+				<page value="" />
+			</m3>
+		</m2>
+		<m2 name="마감관리" value="">
+			<m3 name="검수마감" value="">
+				<page value="" />
+			</m3>
+			<m3 name="입고마감" value="">
+				<page value="" />
+			</m3>
+		</m2>
+	</m1>
+	<m1 name="커뮤니티" value="" icon="menu-icon glyphicon glyphicon-comment">
+		<m2 name="공지사항" value="">
+			<page value="/board/" />
+		</m2>
+		<m2 name="FAQ" value="">
+			<page value="/board/" />
+		</m2>
+		<m2 name="자료실" value="">
+			<page value="/board/" />
+		</m2>
+		<m2 name="구매약관관리" value="">
+			<page value="/board/" />
+		</m2>
+	</m1>
+</root>

@@ -1,0 +1,2948 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.o_qmsorder">
+
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.one */
+		SELECT 
+			SO.ORDERNO, SO.ORDERTY, SO.LINE_NO, SO.ORDER_DT, SO.REQUEST_DT, SO.ACTUAL_SHIP_DT, SO.CUST_CD, SO.CUST_NM, SO.SHIPTO_CD, SO.SHIPTO_NM
+        	, SO.ADD1, SO.ADD2, SO.ADD4, SO.ZIP_CD, SO.COMPANY, SO.PLANT_CD, SO.PLANT_DESC, SO.ITEM_CD, SO.ITEM_DESC, SO.ORDER_QTY, SO.UNIT, SO.PRIMARY_QTY
+        	, SO.UNIT1, SO.SECOND_QTY, SO.UNIT2, SO.WEIGHT, SO.WEIGHT_UNIT, SO.AMOUNT, SO.STATUS1, SO.STATUS2, SO.STATUS_DESC, SO.DRIVER_PHONE
+        	, SO.SHIPMENT_CD_3PL, SO.CUST_PO, SO.ORDER_TAKER, SO.HOLD_CODE, SO.TRUCK_NO, SO.SALESREP_CD, SO.SALESREP_NM, SO.TEAM_CD, SO.TEAM_NM, SO.BUILDING_TYPE, SO.INSERT_DT
+        	, SO.PRICE, SO.ADD3, SO.REQUEST_TIME, SO.DUMMY
+			<!-- ,(SELECT B.REQUEST_TIME FROM O_ORDER_CONFIRM_H B WHERE B.CUST_PO=TRIM(SO.CUST_PO))AS DUMMY -->
+			<!-- ,DECODE(SO.REQUEST_TIME,'',' ',SUBSTR(SO.REQUEST_TIME,0,2)||':'||SUBSTR(SO.REQUEST_TIME,3,2)) AS REQUEST_TIME -->
+		FROM O_SALESORDER SO
+		<where>
+			<if test="wherebody_status != null and wherebody_status != '' ">
+				${wherebody_status}
+			</if>
+			<if test="r_ordersdt != null and r_ordersdt != '' ">AND SO.ORDER_DT <![CDATA[>=]]> #{r_ordersdt}</if>
+			<if test="r_orderedt != null and r_orderedt != '' ">AND SO.ORDER_DT <![CDATA[<=]]> #{r_orderedt}</if>
+			<if test="r_actualshipsdt != null and r_actualshipsdt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[>=]]> #{r_actualshipsdt}</if>
+			<if test="r_actualshipedt != null and r_actualshipedt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[<=]]> #{r_actualshipedt}</if>
+			<if test="rl_orderno != null and rl_orderno != '' ">AND SO.ORDERNO LIKE '%' || #{rl_orderno} || '%'</if> <!-- 오더번호 -->
+			<if test="rl_custpo != null and rl_custpo != '' ">AND SO.CUST_PO LIKE '%' || #{rl_custpo} || '%'</if> <!-- 고객주문번호 -->
+			<if test="rl_itemdesc != null and rl_itemdesc != '' ">AND SO.ITEM_DESC LIKE '%' || #{rl_itemdesc} || '%'</if> 
+			<if test="rl_receiver != null and rl_receiver != '' ">AND SO.RECEIVER LIKE '%' || #{rl_receiver} || '%'</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND SO.CUST_CD = #{r_custcd}</if>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND SO.SHIPTO_CD = #{r_shiptocd}</if>
+			<if test="rl_add1 != null and rl_add1 != '' ">AND (SO.ADD1 || SO.ADD2) LIKE '%' || #{rl_add1} || '%'</if>
+			<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND SO.SHIPTO_CD LIKE '%' || #{rl_shiptocd} || '%'</if>
+			<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND SO.SHIPTO_NM LIKE '%' || #{rl_shiptonm} || '%'</if>
+			<if test="rl_salesrepnm != null and rl_salesrepnm != '' ">AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%'</if>
+			<if test="r_orderno != null and r_orderno != '' ">AND SO.ORDERNO = #{r_orderno}</if>
+			<if test="r_orderty != null and r_orderty != '' ">AND SO.ORDERTY = #{r_orderty}</if>
+			<if test="r_lineno != null and r_lineno != '' ">AND SO.LINE_NO = #{r_lineno}</if>
+		</where>
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+	/* eorder.o_qmsorder.cnt */
+		SELECT COUNT(*)
+		FROM qms_salesorder SO
+		<!-- LEFT JOIN O_ITEM_QMS_NOUSE IQN ON IQN.ITEM_CD = SO.ITEM_CD -->
+		LEFT JOIN O_ITEM_NEW ITN ON SO.ITEM_CD = ITN.ITEM_CD
+		<where>
+			<if test="wherebody_status != null and wherebody_status != '' ">
+				${wherebody_status}
+			</if>
+			<!-- AND CASE WHEN SF_GETPREORDERYN(SO.CUST_PO) = 'Y' THEN SF_GETPREQTYYN(SO.CUST_PO) ELSE 'Y' END = 'Y' -->
+			<if test="r_ordersdt != null and r_ordersdt != '' ">AND SO.ORDER_DT <![CDATA[>=]]> #{r_ordersdt}</if>
+			<if test="r_orderedt != null and r_orderedt != '' ">AND SO.ORDER_DT <![CDATA[<=]]> #{r_orderedt}</if>
+			<if test="r_actualshipsdt != null and r_actualshipsdt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[>=]]> #{r_actualshipsdt}</if>
+			<if test="r_actualshipedt != null and r_actualshipedt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[<=]]> #{r_actualshipedt}</if>
+			<if test="rl_salesrepnm != null and rl_salesrepnm != '' ">
+				AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%'
+			</if>
+			<if test="rl_orderno != null and rl_orderno != '' ">AND SO.ORDERNO LIKE '%' || #{rl_orderno} || '%' </if>
+			<if test="r_custcd != null and r_custcd != '' ">AND SO.CUST_CD  = #{r_custcd}</if>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND SO.SHIPTO_CD = #{r_shiptocd}</if>
+			<!-- 관리자 권한에 따른 조건절 -->
+ 			
+ 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+ 				<if test='"AD".equals(r_adminauthority)'>
+ 				</if>
+ 				<if test='"CS".equals(r_adminauthority)'>
+ 					AND SO.SALESREP_CD IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+ 				</if>
+ 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+ 					<if test='"SH".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SM".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SR".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD = #{r_adminuserid}
+ 					</if>
+ 				</if>
+ 				<if test='"MK".equals(r_adminauthority)'>
+ 					
+ 				</if>
+ 			</if>
+ 			<!-- End. -->
+ 			<!-- AND IQN.LINE_TY = 'Y' -->
+ 			AND ITN.SALES_CD3 IN ('DAP11400', 'DAP11500', 'DAP11600', 'DAP11700', 'DAP12400', 'DAP12500', 'DAP12800', 'DAP12900', 'DAP13000')
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.list */
+		SELECT /*+ HASH(table) */ * 
+		  FROM (
+		  SELECT ROWNUM RR, XX.* 
+	  	   ,CASE
+                WHEN PRE1 = 'Y' AND PRE2 = 'Y' /* 사전입력 완료 */
+                THEN '사전'
+                WHEN PRE1 = 'Y' AND PRE2 = 'N' /* 사전입력중 */
+                THEN '사전'
+                ELSE '사후' /* 사후입력 대상 */
+              END AS QMS_STEP
+		    FROM (SELECT 
+						Sf_getpreorderyn(SO.cust_po) AS PRE1
+						,Sf_getpreqtyyn(SO.cust_po) AS PRE2
+						,ORDERNO,LINE_NO
+						,SF_GETQMSID(ORDERNO,LINE_NO)AS QMS_ARR 
+						,SF_GETQMSID(ORDERNO,LINE_NO)AS QMS_ARR_TXT 
+						,CASE WHEN (TO_NUMBER(SF_GETPREQTY(SO.cust_po)) >= TO_NUMBER(SO.ORDER_QTY) AND Sf_getpreorderyn(SO.cust_po) ='Y' AND Sf_getpreqtyyn(SO.cust_po) = 'Y') 
+						    THEN TO_NUMBER(SO.ORDER_QTY)
+						    WHEN Sf_getpreorderyn(SO.cust_po) ='Y'
+						    THEN TO_NUMBER(SF_GETPREQTY(SO.cust_po)) 
+						    ELSE TO_NUMBER(Sf_getqmsqty(orderno, line_no))
+						 END AS QMS_ARR_QTY
+						,CASE WHEN ORDER_QTY = SF_GETQMSQTY(ORDERNO,LINE_NO) THEN '완료' ELSE '미완료' END AS QMS_STATUS
+						,SF_GETQMSSHIPTO(ORDERNO,LINE_NO)AS QMS_ARR_SHIPTO
+						,SF_GETMAILYN(ORDERNO,LINE_NO) AS MAIL_YN
+						,SF_GETFILEYN(ORDERNO,LINE_NO) AS FILE_YN
+						,SO.ITEM_CD
+						,ORDERTY 
+						,CUST_PO 
+						,CUST_CD 
+						,CUST_NM
+						,SF_GETQMSQUARTER(ACTUAL_SHIP_DT) AS ACTUAL_SHIP_QUARTER
+						,SF_GETQMSACTIVEYN(SF_GETQMSQUARTER(ACTUAL_SHIP_DT)) AS ACTIVEYN
+						,CONCAT(CONCAT(CONCAT(CONCAT(SUBSTR(ORDER_DT, 0,4), '-'), SUBSTR(ORDER_DT, 5, 2)), '-'), SUBSTR(ORDER_DT, 7, 2)) AS ORDER_DT 
+						,CONCAT(CONCAT(CONCAT(CONCAT(SUBSTR(ACTUAL_SHIP_DT, 0,4), '-'), SUBSTR(ACTUAL_SHIP_DT, 5, 2)), '-'), SUBSTR(ACTUAL_SHIP_DT, 7, 2)) AS ACTUAL_SHIP_DT
+						,SHIPTO_CD,SHIPTO_NM, RTRIM(CONCAT(ADD1, ADD2)) AS ADDR, ITEM_DESC, LOTN, ORDER_QTY, UNIT, SALESREP_NM
+					FROM qms_salesorder SO
+					LEFT JOIN O_ITEM_NEW OIN ON OIN.ITEM_CD = SO.ITEM_CD
+					<!-- LEFT JOIN O_ITEM_QMS_NOUSE IQN ON IQN.ITEM_CD = SO.ITEM_CD -->
+		<where>
+			<!-- AND IQN.LINE_TY = 'Y' -->
+			<if test="wherebody_status != null and wherebody_status != '' ">
+				${wherebody_status}
+			</if>
+			<!-- AND CASE WHEN SF_GETPREORDERYN(SO.CUST_PO) = 'Y' THEN SF_GETPREQTYYN(SO.CUST_PO) ELSE 'Y' END = 'Y' -->
+			<if test="r_ordersdt != null and r_ordersdt != '' ">AND SO.ORDER_DT <![CDATA[>=]]> #{r_ordersdt}</if>
+			<if test="r_orderedt != null and r_orderedt != '' ">AND SO.ORDER_DT <![CDATA[<=]]> #{r_orderedt}</if>
+			<if test="r_actualshipsdt != null and r_actualshipsdt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[>=]]> #{r_actualshipsdt}</if>
+			<if test="r_actualshipedt != null and r_actualshipedt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[<=]]> #{r_actualshipedt}</if>
+			<if test="rl_salesrepnm != null and rl_salesrepnm != '' ">
+				AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%'
+			</if>
+			<if test="rl_orderno != null and rl_orderno != '' ">AND SO.ORDERNO LIKE '%' || #{rl_orderno} || '%' </if>
+			<if test="r_custcd != null and r_custcd != '' ">AND SO.CUST_CD  = #{r_custcd}</if>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND SO.SHIPTO_CD = #{r_shiptocd}</if>
+			<!-- 관리자 권한에 따른 조건절 -->
+ 			
+ 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+ 				<if test='"AD".equals(r_adminauthority)'>
+ 				</if>
+ 				<if test='"CS".equals(r_adminauthority)'>
+ 					AND SO.SALESREP_CD IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+ 				</if>
+ 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+ 					<if test='"SH".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SM".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SR".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD = #{r_adminuserid}
+ 					</if>
+ 				</if>
+ 				<if test='"MK".equals(r_adminauthority)'>
+ 					
+ 				</if>
+ 			</if>
+ 			<!-- End. -->
+ 			<!-- AND IQN.LINE_TY = 'Y' -->
+ 			AND OIN.SALES_CD3 IN ('DAP11400', 'DAP11500', 'DAP11600', 'DAP11700', 'DAP12400', 'DAP12500', 'DAP12800', 'DAP12900', 'DAP13000')
+		</where>
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+	</select>
+	
+	
+	<select id="getQmsOrderId" parameterType="hashmap" resultType="String">
+	/* eorder.o_qmsorder.getQmsOrderId */
+		SELECT SF_GETQMSID_SEQ(#{currQuarter}) AS NEW_QMS_ID FROM DUAL
+	</select>
+	
+	<select id="getQmsOrderSeq" parameterType="hashmap" resultType="int">
+	/* eorder.o_qmsorder.getQmsOrderSeq */
+		SELECT NVL(MAX(QMS_SEQ)+1,1) FROM QMS_ORD_MAST WHERE QMS_ID = #{qmsId}
+	</select>
+	
+	<insert id="setQmsOrderMast" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderMast */
+		INSERT INTO QMS_ORD_MAST(QMS_ID
+								,QMS_SEQ
+								,CUST_CD
+								<if test="shiptoCd != null and shiptoCd != ''">
+								,SHIPTO_CD
+								</if>
+								<if test="shiptoNm != null and shiptoNm != ''">
+								,SHIPTO_NM
+								</if>
+								<if test="shiptoAddr != null and shiptoAddr != ''">
+								,SHIPTO_ADDR
+								</if>
+								<if test="shiptoTel != null and shiptoTel != ''">
+								,SHIPTO_TEL
+								</if>
+								<if test="shiptoEmail != null and shiptoEmail != ''">
+								,SHIPTO_EMAIL
+								</if>
+								<if test="cnstrCd != null and cnstrCd != ''">
+								,CNSTR_CD
+								</if>
+								<if test="cnstrNm != null and cnstrNm != ''">
+								,CNSTR_NM
+								</if>
+								<if test="cnstrAddr != null and cnstrAddr != ''">
+								,CNSTR_ADDR
+								</if>
+								<if test="cnstrBizNo != null and cnstrBizNo != ''">
+								,CNSTR_BIZ_NO
+								</if>
+								<if test="cnstrTel != null and cnstrTel != ''">
+								,CNSTR_TEL
+								</if>
+								<if test="cnstrEmail != null and cnstrEmail != ''">
+								,CNSTR_EMAIL
+								</if>
+								<if test="supvsCd != null and supvsCd != ''">
+								,SUPVS_CD
+								</if>
+								<if test="supvsNm != null and supvsNm != ''">
+								,SUPVS_NM
+								</if>
+								<if test="supvsAddr != null and supvsAddr != ''">
+								,SUPVS_ADDR
+								</if>
+								<if test="supvsBizNo != null and supvsBizNo != ''">
+								,SUPVS_BIZ_NO
+								</if>
+								<if test="supvsTel != null and supvsTel != ''">
+								,SUPVS_TEL
+								</if>
+								<if test="supvsEmail != null and supvsEmail != ''">
+								,SUPVS_EMAIL
+								</if>
+								<if test="supvsQlfNo != null and supvsQlfNo != ''">
+								,SUPVS_QLF_NO
+								</if>
+								<if test="supvsDecNo != null and supvsDecNo != ''">
+								,SUBVS_DEC_NO
+								</if>
+								,CREATEUSER
+								,CREATETIME
+								,UPDATEUSER
+								,UPDATETIME
+								,DELETEYN)
+		VALUES (#{qmsId}
+				,#{qmsSeq}
+				,#{custCd}
+				<if test="shiptoCd != null and shiptoCd != ''">
+				,#{shiptoCd}
+				</if>
+				<if test="shiptoNm != null and shiptoNm != ''">
+				,#{shiptoNm}
+				</if>
+				<if test="shiptoAddr != null and shiptoAddr != ''">
+				,#{shiptoAddr}
+				</if>
+				<if test="shiptoTel != null and shiptoTel != ''">
+				,#{shiptoTel}
+				</if>
+				<if test="shiptoEmail != null and shiptoEmail != ''">
+				,#{shiptoEmail}
+				</if>
+				<if test="cnstrCd != null and cnstrCd != ''">
+				,#{cnstrCd}
+				</if>
+				<if test="cnstrNm != null and cnstrNm != ''">
+				,#{cnstrNm}
+				</if>
+				<if test="cnstrAddr != null and cnstrAddr != ''">
+				,#{cnstrAddr}
+				</if>
+				<if test="cnstrBizNo != null and cnstrBizNo != ''">
+				,#{cnstrBizNo}
+				</if>
+				<if test="cnstrTel != null and cnstrTel != ''">
+				,#{cnstrTel}
+				</if>
+				<if test="cnstrEmail != null and cnstrEmail != ''">
+				,#{cnstrEmail}
+				</if>
+				<if test="supvsCd != null and supvsCd != ''">
+				,#{supvsCd}
+				</if>
+				<if test="supvsNm != null and supvsNm != ''">
+				,#{supvsNm}
+				</if>
+				<if test="supvsAddr != null and supvsAddr != ''">
+				,#{supvsAddr}
+				</if>
+				<if test="supvsBizNo != null and supvsBizNo != ''">
+				,#{supvsBizNo}
+				</if>
+				<if test="supvsTel != null and supvsTel != ''">
+				,#{supvsTel}
+				</if>
+				<if test="supvsEmail != null and supvsEmail != ''">
+				,#{supvsEmail}
+				</if>
+				<if test="supvsQlfNo != null and supvsQlfNo != ''">
+				, #{supvsQlfNo}
+				</if>
+				<if test="supvsDecNo != null and supvsDecNo != ''">
+				, #{supvsDecNo}
+				</if>
+				,#{userId}
+				,SYSDATE
+				,#{userId}
+				,SYSDATE
+				,#{deleteYN})
+	</insert>
+	
+	<insert id="setQmsOrderDetl" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderDetl */
+		INSERT INTO QMS_ORD_DETL(QMS_ID,QMS_SEQ,ORDERNO,CUST_PO,ORDERTY,LINE_NO,ITEM_CD,LOTNO,ORDER_QTY,QMS_ORD_QTY,DELETEYN)
+		VALUES (#{qmsId},#{qmsSeq},#{orderNo},#{custPo},#{orderty},#{lineNo},#{itemCd},#{lotNo},#{orderQty},#{qmsOrdQty},#{deleteYN})
+	</insert>
+	
+	<delete id="setQmsOrderMastTempReset" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderMastTempReset */
+		DELETE FROM QMS_ORD_MAST
+		 WHERE QMS_ID = #{qmsId}
+		   AND DELETEYN = 'T'
+	</delete>
+	
+	<delete id="setQmsOrderDetlTempReset" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderDetlTempReset */
+		DELETE FROM QMS_ORD_DETL
+		 WHERE (QMS_ID,QMS_SEQ) IN (SELECT QMS_ID,QMS_SEQ FROM QMS_ORD_MAST
+									 WHERE QMS_ID = #{qmsId}
+									   AND DELETEYN = 'T')
+	</delete>
+	
+	<delete id="setQmsOrderFrcnTempReset" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderFrcnTempReset */
+		DELETE FROM QMS_ORD_FRCN
+		 WHERE (QMS_ID,QMS_SEQ) IN (SELECT QMS_ID,QMS_SEQ FROM QMS_ORD_MAST
+									 WHERE QMS_ID = #{qmsId}
+									   AND DELETEYN = 'T')
+	</delete>
+	
+	<delete id="setQmsOrderFileTempReset" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderFrcnTempReset */
+		DELETE FROM QMS_ORD_FILE
+		 WHERE QMS_ID = #{qmsId}
+		   AND DELETEYN = 'T'
+	</delete>
+	
+	<insert id="setQmsOrderMastTempUpdate" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderMastTempUpdate */
+		UPDATE QMS_ORD_MAST
+		   SET SHIPTO_CD = #{shiptoCd}
+		      ,SHIPTO_NM = #{shiptoNm}
+		      ,SHIPTO_ADDR = #{shiptoAddr}
+		      ,SHIPTO_EMAIL = #{shiptoEmail}
+		      <!-- ,CNSTR_CD = #{cnstrCd} -->
+		      ,CNSTR_NM = #{cnstrNm}
+		      ,CNSTR_ADDR = #{cnstrAddr}
+		      ,CNSTR_BIZ_NO = #{cnstrBizNo}
+		      ,CNSTR_TEL = #{cnstrTel}
+		      <!-- ,SUPVS_CD = #{supvsCd} -->
+		      ,SUPVS_NM = #{supvsNm}
+		      ,SUPVS_ADDR = #{supvsAddr}
+		      <!-- ,SUPVS_BIZ_NO = #{supvsBizNo} -->
+		      ,SUPVS_QLF_NO = #{supvsQlfNo}
+		      ,SUPVS_DEC_NO = #{supvsDecNo}
+		      ,SUPVS_TEL = #{supvsTel}
+		      ,UPDATEUSER = #{userId}
+			  ,UPDATETIME = SYSDATE
+		 WHERE QMS_ID = #{qmsId}
+		   AND QMS_SEQ = #{qmsSeq}
+	</insert>
+	
+	<insert id="setQmsOrderMastUpdate" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderMastUpdate */
+		UPDATE QMS_ORD_MAST
+		   SET SHIPTO_CD = #{shiptoCd}
+		      ,SHIPTO_NM = #{shiptoNm}
+		      ,SHIPTO_ADDR = #{shiptoAddr}
+		      ,SHIPTO_EMAIL = #{shiptoEmail}
+		      <!-- ,CNSTR_CD = #{cnstrCd} -->
+		      ,CNSTR_NM = #{cnstrNm}
+		      ,CNSTR_ADDR = #{cnstrAddr}
+		      ,CNSTR_BIZ_NO = #{cnstrBizNo}
+		      ,CNSTR_TEL = #{cnstrTel}
+		      <!-- ,SUPVS_CD = #{supvsCd} -->
+		      ,SUPVS_NM = #{supvsNm}
+		      ,SUPVS_ADDR = #{supvsAddr}
+		      <!-- ,SUPVS_BIZ_NO = #{supvsBizNo} -->
+		      ,SUPVS_QLF_NO = #{supvsQlfNo}
+		      ,SUPVS_DEC_NO = #{supvsDecNo}
+		      ,SUPVS_TEL = #{supvsTel}
+		      ,UPDATEUSER = #{userId}
+			  ,UPDATETIME = SYSDATE
+			  ,DELETEYN = 'N'
+		 WHERE QMS_ID = #{qmsId}
+		   AND QMS_SEQ = #{qmsSeq}
+	</insert>
+	
+	<insert id="setQmsOrderMastHistory" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderMastHistory */
+	MERGE INTO QMS_ORD_CORP F
+    USING DUAL
+       ON (F.SHIPTO_CD = #{shiptoCd})
+    WHEN MATCHED THEN
+        UPDATE SET F.SHIPTO_ADDR = #{shiptoAddr}
+                  ,F.SHIPTO_EMAIL = #{shiptoEmail}
+                  ,F.CNSTR_ADDR = #{cnstrAddr}
+                  ,F.CNSTR_BIZ_NO = #{cnstrBizNo}
+                  ,F.CNSTR_TEL = #{cnstrTel}
+                  ,F.SUPVS_ADDR = #{supvsAddr}
+                  <!--  ,F.SUPVS_BIZ_NO = #{supvsBizNo}  -->
+                  ,F.SUPVS_QLF_NO = #{supvsQlfNo}
+		      	  ,F.SUPVS_DEC_NO = #{supvsDecNo}
+                  ,F.SUPVS_TEL = #{supvsTel}
+                  ,F.UPDATEUSER = #{userId}
+                  ,F.UPDATETIME = SYSDATE
+    WHEN NOT MATCHED THEN
+        INSERT (SHIPTO_CD,SHIPTO_NM,SHIPTO_ADDR,SHIPTO_EMAIL,CNSTR_NM,CNSTR_ADDR,CNSTR_BIZ_NO,CNSTR_TEL
+                ,SUPVS_NM,SUPVS_ADDR 
+                <!-- ,SUPVS_BIZ_NO  -->
+                ,SUPVS_QLF_NO,SUPVS_DEC_NO,SUPVS_TEL,CREATEUSER,CREATETIME,UPDATEUSER,UPDATETIME,DELETEYN)
+        VALUES (#{shiptoCd}
+		      ,#{shiptoNm}
+		      ,#{shiptoAddr}
+		      ,#{shiptoEmail}
+		      ,#{cnstrNm}
+		      ,#{cnstrAddr}
+		      ,#{cnstrBizNo}
+		      ,#{cnstrTel}
+		      ,#{supvsNm}
+		      ,#{supvsAddr}
+		      <!--  ,#{supvsBizNo}  -->
+		      ,#{supvsQlfNo}
+		      ,#{supvsDecNo}
+		      ,#{supvsTel}
+		      ,#{userId}
+			  ,SYSDATE
+			  ,#{userId}
+			  ,SYSDATE
+			  ,'N')
+	</insert>
+	
+	
+	<insert id="setQmsOrderMastDelete" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderMastDelete */
+		UPDATE QMS_ORD_MAST
+		   SET DELETEYN = 'Y'
+		 WHERE QMS_ID = #{qmsId}
+		   AND QMS_SEQ = #{qmsSeq}
+	</insert>
+	
+	<insert id="setQmsOrderDetlDelete" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderDetlDelete */
+		UPDATE QMS_ORD_DETL
+		   SET DELETEYN = 'Y'
+		 WHERE QMS_ID  = #{qmsId}
+		   AND QMS_SEQ = #{qmsSeq}
+	</insert>
+	
+	<insert id="setQmsOrderFireDelete" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderFireDelete */
+		UPDATE QMS_ORD_DETL
+		   SET DELETEYN = 'Y'
+		 WHERE QMS_ID  = #{qmsId}
+		   AND QMS_SEQ = #{qmsSeq}
+	</insert>
+	
+	
+	<update id="setQmsOrderDetlClear" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderMastClear */
+		UPDATE QMS_ORD_DETL 
+		   SET DELETEYN = 'Y'
+		 WHERE QMS_ID = #{qmsId}
+		   AND QMS_SEQ &lt;&gt; #{qmsSeq}
+		   AND DELETEYN = 'T'
+	</update>
+	
+	
+	<update id="setQmsOrderMastClear" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderMastClear */
+		UPDATE QMS_ORD_MAST 
+		   SET DELETEYN = 'Y'
+		 WHERE QMS_ID = #{qmsId}
+		   AND QMS_SEQ &lt;&gt; #{qmsSeq}
+		   AND DELETEYN = 'T'
+	</update>
+	
+	
+	<insert id="setQmsOrderMastSplit" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderMastSplit */
+		INSERT INTO QMS_ORD_MAST(QMS_ID,QMS_SEQ,CUST_CD,SHIPTO_CD,SHIPTO_NM,SHIPTO_ADDR,SHIPTO_TEL,SHIPTO_EMAIL
+								,CNSTR_CD,CNSTR_NM,CNSTR_ADDR,CNSTR_BIZ_NO,CNSTR_TEL,CNSTR_EMAIL
+								,SUPVS_CD,SUPVS_NM,SUPVS_ADDR,SUPVS_BIZ_NO,SUPVS_QLF_NO,SUPVS_DEC_NO,SUPVS_TEL,SUPVS_EMAIL,CREATEUSER,CREATETIME,UPDATEUSER,UPDATETIME,DELETEYN)
+		SELECT QMS_ID,(SELECT MAX(QMS_SEQ)+1 FROM QMS_ORD_MAST WHERE QMS_ID = #{qmsId}) AS QMS_SEQ,CUST_CD
+		      ,NULL,NULL,NULL,NULL,NULL
+		      ,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
+		      ,NULL,NULL,NULL,NULL,NULL,NULL
+		      <!-- 
+		      ,SHIPTO_CD,SHIPTO_NM,SHIPTO_ADDR,SHIPTO_TEL,SHIPTO_EMAIL
+		      ,CNSTR_CD,CNSTR_NM,CNSTR_ADDR,CNSTR_BIZ_NO,CNSTR_TEL,CNSTR_EMAIL
+		      ,SUPVS_CD,SUPVS_NM,SUPVS_ADDR,SUPVS_BIZ_NO,SUPVS_TEL,SUPVS_EMAIL
+		       -->
+		      ,#{userId},SYSDATE,#{userId},SYSDATE,'T'
+		  FROM QMS_ORD_MAST 
+		 WHERE QMS_ID  = #{qmsId} 
+		   AND QMS_SEQ = #{qmsSeq}
+	</insert>
+	
+	<insert id="setQmsOrderDetlSplit" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderDetlSplit */
+		INSERT INTO QMS_ORD_DETL(QMS_ID,QMS_SEQ,ORDERNO,CUST_PO,ORDERTY,LINE_NO,ITEM_CD,LOTNO,ORDER_QTY,QMS_ORD_QTY,QMS_REMARK,DELETEYN)
+		SELECT QMS_ID,(SELECT MAX(QMS_SEQ) FROM QMS_ORD_MAST WHERE QMS_ID = #{qmsId}) AS QMS_SEQ
+		      ,ORDERNO,CUST_PO,ORDERTY,LINE_NO,ITEM_CD,LOTNO,ORDER_QTY,0,NULL,'T'
+		  FROM QMS_ORD_DETL
+		 WHERE QMS_ID  = #{qmsId} 
+		   AND QMS_SEQ = #{qmsSeq}
+	</insert>
+	
+	
+	<insert id="setQmsOrderDetlTempUpdate" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderDetlTempUpdate */
+		UPDATE QMS_ORD_DETL
+		   SET QMS_REMARK  = #{QMS_REMARK}
+		      ,DELETEYN    = 'N'
+		 WHERE QMS_ID      = #{QMS_ID}
+		   AND QMS_SEQ     = #{QMS_SEQ}
+		   AND QMS_DETL_ID = #{QMS_DETL_ID}
+	</insert>
+	
+	
+	<insert id="setQmsOrderDetlUpdate" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderDetlUpdate */
+		UPDATE QMS_ORD_DETL
+		   SET QMS_ORD_QTY = #{QMS_ORD_QTY}
+		      ,QMS_REMARK  = #{QMS_REMARK}
+		      ,DELETEYN    = 'N'
+		 WHERE QMS_ID      = #{QMS_ID}
+		   AND QMS_SEQ     = #{QMS_SEQ}
+		   AND QMS_DETL_ID = #{QMS_DETL_ID}
+	</insert>
+	
+	<update id="setQmsOrderFireproofInit" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderFireproofInit */
+		UPDATE QMS_ORD_FRCN 
+		   SET DELETEYN = 'Y'
+		 WHERE QMS_ID = #{qmsId}
+		   AND QMS_SEQ = #{qmsSeq}
+	</update>
+	
+	
+	<insert id="setQmsOrderFireproofInsert" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderFireproofInsert */
+	INSERT INTO QMS_ORD_FRCN(QMS_ID,QMS_SEQ,QMS_FRCN_ID,KEYCODE,CREATEUSER,CREATETIME,UPDATEUSER,UPDATETIME,DELETEYN)
+	SELECT #{qmsId},#{qmsSeq},QMS_FRCN_ID,KEYCODE,CREATEUSER,CREATETIME,UPDATEUSER,UPDATETIME,DELETEYN
+	  FROM QMS_ORD_FRCN 
+	 WHERE (QMS_ID,QMS_SEQ) IN (SELECT QMS_ID,QMS_SEQ
+	                              FROM
+	                            (SELECT RANK() OVER(PARTITION BY A.CUST_CD,C.SHIPTO_CD ORDER BY A.QMS_ID DESC, A.QMS_SEQ DESC,B.QMS_DETL_ID DESC) AS RNUM 
+	                                  ,A.*
+	                              FROM QMS_ORD_MAST A
+	                                  ,QMS_ORD_DETL B
+	                                  ,QMS_SALESORDER C
+	                             WHERE A.QMS_ID = B.QMS_ID
+	                               AND A.QMS_SEQ = B.QMS_SEQ
+	                               AND A.DELETEYN = 'N'
+	                               AND B.DELETEYN = 'N'
+	                               AND B.ORDERNO = C.ORDERNO
+	                               AND B.LINE_NO = C.LINE_NO
+	                               AND A.CUST_CD = #{custCd}
+	                               AND C.SHIPTO_CD = #{orgShiptoCd}
+	                            )WHERE RNUM = 1)
+	</insert>
+	
+	<insert id="setQmsOrderFireproofUpdate" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderFireproofUpdate */
+		MERGE INTO QMS_ORD_FRCN F
+		USING DUAL
+		   ON (F.QMS_ID = #{qmsId} AND F.QMS_SEQ = #{qmsSeq} AND F.KEYCODE = #{keyCode})
+		WHEN MATCHED THEN
+		    UPDATE SET F.DELETEYN = 'N'
+		WHEN NOT MATCHED THEN
+		    INSERT (F.QMS_ID,QMS_SEQ,KEYCODE,CREATEUSER,CREATETIME,UPDATEUSER,UPDATETIME)
+		    VALUES (#{qmsId},#{qmsSeq},#{keyCode},#{userId},SYSDATE,#{userId},SYSDATE)
+	</insert>
+	
+	<select id="getQmsPopMastList" parameterType="hashmap" resultType="hashmap">
+		/* eorder.o_qmsorder.getQmsPopMastList */
+		SELECT A.* 
+		      ,CASE WHEN (SELECT COUNT(*) FROM (SELECT QMS_ID,ORDERNO FROM QMS_ORD_DETL GROUP BY QMS_ID,ORDERNO) WHERE QMS_ID = A.QMS_ID) > 1 THEN 'N' ELSE 'Y' END AS QMS_SPLIT_YN
+		      ,B.CUST_NM
+		      /*,B.ADD1 ||' '|| B.ADD2 || B.ADD3 || B.ADD4 AS CUST_ADDR*/
+		      ,B.ADD1 AS CUST_ADDR
+		      ,SF_GETQMSBIZNO(B.TAX_ID) AS CUST_BIZ_NO
+		      ,B.ZIP_CD
+		      ,B.SALESREP_CD
+		      ,B.SALESREP_NM
+		      ,B.TEAM_CD
+		      ,B.TEAM_NM
+		      ,B.MAILING_NM
+		      ,SF_GETQMSACTIVEYN(QMS_ID) AS ACTIVEYN
+		  FROM QMS_ORD_MAST A
+		      ,O_CUSTOMER B
+		 WHERE A.CUST_CD = B.CUST_CD(+)
+		    AND A.QMS_ID = #{qmsId}
+		    <if test="work != null and work.equals( 'mod' )">
+		    AND A.QMS_SEQ = #{qmsSeq}
+		    </if>
+		    <if test="work != null and work.equals( 'split' )">
+		    AND A.DELETEYN &lt;&gt; 'Y'
+		    </if>
+		    <if test="work != null and work.equals( 'write' )">
+		    AND A.DELETEYN &lt;&gt; 'Y'
+		    </if>
+		    <if test="work == null">
+		    AND A.DELETEYN = 'N'
+		    </if>
+		    <!-- AND DELETEYN = 'N' -->
+	</select>
+	
+	<select id="getQmsPopDetlList" parameterType="hashmap" resultType="hashmap">
+		/* eorder.o_qmsorder.getQmsPopDetlList */
+		SELECT B.*
+		  FROM QMS_ORD_MAST A
+		      ,QMS_ORD_DETL B
+		 WHERE A.QMS_ID = B.QMS_ID
+		   AND A.QMS_ID = #{qmsId}
+		   <if test="work != null">
+		   	AND A.QMS_SEQ = #{qmsSeq}
+		   </if>
+		   <if test="work != null and work.equals( 'split' )">
+		    AND A.DELETEYN &lt;&gt; 'Y'
+		   </if>
+		   <if test="work != null and work.equals( 'write' )">
+		    AND A.DELETEYN &lt;&gt; 'Y'
+		   </if>
+		   <if test="work == null">
+		    AND A.DELETEYN = 'N'
+		   </if>
+	</select>
+	
+	
+	<select id="getQmsFireproofList" parameterType="hashmap" resultType="hashmap">
+		/* eorder.o_qmsorder.getQmsFireproofList */
+		SELECT A.KEYCODE
+		      ,A.FIREPROOFTYPE
+		      ,A.FIRETIME
+		      ,A.FILENAME
+		      ,CEIL((SELECT COUNT(*) FROM O_FIREPROOFMASTER F WHERE F.FIRETIME = A.FIRETIME AND F.ACTIVE = 'Y' ) / 4) AS ROWSPAN_CNT
+		      ,ROW_NUMBER() OVER (PARTITION BY A.FIRETIME ORDER BY A.KEYCODE ASC) AS RNUM
+		      ,ROW_NUMBER() OVER (ORDER BY A.KEYCODE ASC) AS RCNT
+		      ,(SELECT COUNT(F.FIRETIME) FROM O_FIREPROOFMASTER F WHERE F.ACTIVE = 'Y') AS RLAST
+		      ,CASE WHEN DENSE_RANK() OVER (PARTITION BY A.FIRETIME ORDER BY A.KEYCODE DESC) = 1 THEN 'Y' ELSE 'N' END AS LAST_YN
+              ,CASE WHEN (B.KEYCODE IS NOT NULL AND B.DELETEYN='N') THEN 'Y' ELSE 'N' END AS CHK_YN
+		  FROM O_FIREPROOFMASTER A
+          LEFT OUTER JOIN QMS_ORD_FRCN B
+            ON A.KEYCODE = B.KEYCODE(+)
+           AND B.QMS_ID  = #{qmsId}
+           AND B.QMS_SEQ = #{qmsSeq}
+		 WHERE A.ACTIVE = 'Y'
+		 ORDER BY A.FIRETIME,A.DISPLAYORDER
+	</select>
+	
+	<select id="getQmsPopDetlGridList" parameterType="hashmap" resultType="hashmap">
+		/* eorder.o_qmsorder.getQmsPopDetlGridList */
+		SELECT ROWNUM RR, XX.* ,B.QMS_ID, B.QMS_SEQ ,B.QMS_REMARK ,B.QMS_DETL_ID ,B.QMS_ID ||'-'|| B.QMS_SEQ AS QMS_ORD_NO
+		        ,(SELECT CASE WHEN COUNT(Q.QMS_ORD_QTY) > 0 THEN SUM(Q.QMS_ORD_QTY) ELSE 0 END 
+					  FROM QMS_ORD_DETL Q , QMS_ORD_MAST M
+					 WHERE Q.QMS_ID = M.QMS_ID AND Q.QMS_SEQ = M.QMS_SEQ AND Q.DELETEYN = 'N' AND M.DELETEYN = 'N'
+					   AND Q.ORDERNO = XX.ORDERNO AND Q.LINE_NO = XX.LINE_NO AND Q.ITEM_CD = XX.ITEM_CD AND Q.LOTNO = XX.LOTN ) AS QMS_ORD_BALANCE
+                 ,CASE WHEN NVL(B.QMS_ORD_QTY,0) = 0 
+                      THEN XX.ORDER_QTY - (SELECT CASE WHEN COUNT(Q.QMS_ORD_QTY) > 0 THEN SUM(Q.QMS_ORD_QTY) ELSE 0 END 
+											  FROM QMS_ORD_DETL Q , QMS_ORD_MAST M
+											 WHERE Q.QMS_ID = M.QMS_ID AND Q.QMS_SEQ = M.QMS_SEQ AND Q.DELETEYN = 'N' AND M.DELETEYN = 'N'
+											   AND Q.ORDERNO = XX.ORDERNO AND Q.LINE_NO = XX.LINE_NO AND Q.ITEM_CD = XX.ITEM_CD AND Q.LOTNO = XX.LOTN )
+                      ELSE B.QMS_ORD_QTY END AS QMS_ORD_QTY
+		        ,CASE WHEN (SELECT COUNT(*) FROM (SELECT QMS_ID,ORDERNO FROM QMS_ORD_DETL GROUP BY QMS_ID,ORDERNO) WHERE QMS_ID = A.QMS_ID) > 1 THEN 'N' ELSE 'Y' END AS QMS_SPLIT_YN
+		  FROM (SELECT ORDERNO,LINE_NO ,ITEM_CD,ORDERTY , CUST_PO, CUST_NM, 
+		    CONCAT(CONCAT(CONCAT(CONCAT(SUBSTR(ORDER_DT, 0,4), '-'), SUBSTR(ORDER_DT, 5, 2)), '-'), SUBSTR(ORDER_DT, 7, 2)) AS ORDER_DT, 
+		    CONCAT(CONCAT(CONCAT(CONCAT(SUBSTR(ACTUAL_SHIP_DT, 0,4), '-'), SUBSTR(ACTUAL_SHIP_DT, 5, 2)), '-'), SUBSTR(ACTUAL_SHIP_DT, 7, 2)) AS ACTUAL_SHIP_DT,
+		    SHIPTO_NM, RTRIM(CONCAT(ADD1, ADD2)) AS ADDR, ITEM_DESC, LOTN, ORDER_QTY, UNIT, SALESREP_NM
+		  FROM qms_salesorder SO) XX 
+		      ,QMS_ORD_MAST A
+		      ,QMS_ORD_DETL B
+		 WHERE A.QMS_ID   = B.QMS_ID
+		   AND A.QMS_SEQ  = B.QMS_SEQ
+		   AND B.ORDERNO  = XX.ORDERNO
+		   AND B.LINE_NO  = XX.LINE_NO
+		   AND A.QMS_ID   = #{qmsId}
+		   AND A.QMS_SEQ  = #{qmsSeq}
+	</select>
+	
+	
+	
+	<select id="getQmsPopEmailGridList" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getQmsPopEmailGridList */
+	SELECT XX.*
+	  FROM (SELECT A.QMS_ID||'-'||A.QMS_SEQ AS QMS_ORD_NO
+	      ,A.QMS_ID
+	      ,A.QMS_SEQ
+	      ,A.SHIPTO_NM
+	      ,CASE WHEN (SELECT COUNT(*) FROM (SELECT D.QMS_ID,D.ORDERNO FROM QMS_ORD_DETL D GROUP BY D.QMS_ID,D.ORDERNO)DD WHERE DD.QMS_ID = A.QMS_ID) > 1 THEN 'N' ELSE 'Y' END AS QMS_SPLIT_YN
+	      ,B.CUST_NM
+	      ,B.ADD1 ||' '|| B.ADD2 || B.ADD3 || B.ADD4 AS CUST_ADDR
+	      ,SF_GETQMSBIZNO(B.TAX_ID) AS CUST_BIZ_NO
+	      ,B.ZIP_CD
+	      ,B.SALESREP_CD
+	      ,B.SALESREP_NM
+	      ,B.TEAM_CD
+	      ,B.TEAM_NM
+	      ,B.MAILING_NM
+	      ,(SELECT MM.SHIPTOREP_NM
+	          FROM (
+	        SELECT ROW_NUMBER() OVER (ORDER BY M.CREATETIME DESC) AS R1
+	              ,M.*
+	          FROM QMS_ORD_MAIL M
+	           )MM
+	       WHERE MM.QMS_ID = A.QMS_ID
+	       AND MM.QMS_SEQ  = A.QMS_SEQ
+	       AND MM.R1 = 1) AS SHIPTOREP_NM
+	      ,NVL((SELECT MM.SHIPTO_EMAIL
+	          FROM (
+	        SELECT ROW_NUMBER() OVER (ORDER BY M.CREATETIME DESC) AS R1
+	              ,M.*
+	          FROM QMS_ORD_MAIL M
+	           )MM
+	       WHERE MM.QMS_ID = A.QMS_ID
+	       AND MM.QMS_SEQ  = A.QMS_SEQ
+	       AND MM.R1 = 1),A.SHIPTO_EMAIL) AS SHIPTO_EMAIL
+	       ,(SELECT TO_CHAR(MM.CREATETIME,'YYYY-MM-DD') AS SEND_DT
+	          FROM (
+	        SELECT ROW_NUMBER() OVER (ORDER BY M.CREATETIME DESC) AS R1
+	              ,M.*
+	          FROM QMS_ORD_MAIL M
+	           )MM
+	       WHERE MM.QMS_ID = A.QMS_ID
+	       AND MM.QMS_SEQ  = A.QMS_SEQ
+	       AND MM.R1 = 1) AS SEND_DT
+	  FROM QMS_ORD_MAST A
+	      ,O_CUSTOMER B
+	 WHERE A.CUST_CD = B.CUST_CD(+)
+	   AND A.DELETEYN = 'N'
+	   AND A.QMS_ID||'-'||A.QMS_SEQ IN
+        <foreach collection="qmsIdArr" item="arr" index="index"  open="(" close=")" separator=",">
+            #{arr}
+        </foreach>
+       )XX
+       
+	<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+	</select>
+	
+	<insert id="setQmsMailLog" parameterType="hashmap" >
+		/* eorder.o_qmsorder.setQmsMailLog */
+		INSERT INTO QMS_ORD_MAIL(QMS_ID ,QMS_SEQ ,SHIPTOREP_NM ,SHIPTO_EMAIL ,CREATEUSER ,CREATETIME ,SEND_TYPE ,SEND_YN)
+		VALUES(#{qmsId},#{qmsSeq},#{shiptorepNm},#{shiptoEmail},#{userId},SYSDATE,'AFTER','Y')
+	</insert>
+	
+	<select id="getQmsCorpShiptoCd" parameterType="hashmap" resultType="hashmap">
+		/* eorder.o_qmsorder.getQmsCorpShiptoCd */
+		SELECT 'C'||LPAD(COUNT(*)+1,9,'0') AS SHIPTO_CD 
+		  FROM QMS_ORD_CORP
+	</select>
+	
+	<select id="getQmsCorpCnt" parameterType="hashmap" resultType="int">
+		/* eorder.o_qmsorder.getQmsCorpCnt */
+		SELECT COUNT(*) 
+  		  FROM QMS_ORD_CORP
+		<!-- SELECT COUNT(*) 
+		FROM O_CUSTOMER CU
+			LEFT JOIN O_USER US ON CU.SALESREP_CD = US.USERID -->
+		<where>
+			<if test="rl_shiptoCd != null and rl_shiptoCd != ''">AND SHIPTO_CD  LIKE '%' || #{rl_shiptoCd}|| '%'</if>
+			<if test="rl_shiptoNm != null and rl_shiptoNm != ''">AND SHIPTO_NM  LIKE '%' || #{rl_shiptoNm}|| '%'</if>
+			<if test="rl_cnstrNm != null and rl_cnstrNm != ''">AND CNSTR_NM  LIKE '%' || #{rl_cnstrNm}|| '%'</if>
+			<if test="rl_supvsNm != null and rl_supvsNm != '' ">AND SUPVS_NM LIKE '%' || #{rl_supvsNm} || '%'</if>
+			<if test="userId != null and userId != '' ">AND CREATEUSER = #{userId} </if>
+		</where>
+	</select>
+	
+	<select id="getQmsCorpList" parameterType="hashmap" resultType="hashmap">
+		/* eorder.o_qmsorder.getQmsCorpList */
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		
+		SELECT * 
+  		  FROM QMS_ORD_CORP
+		<where>
+			<if test="rl_shiptoCd != null and rl_shiptoCd != ''">AND SHIPTO_CD  LIKE '%' || #{rl_shiptoCd}|| '%'</if>
+			<if test="rl_shiptoNm != null and rl_shiptoNm != ''">AND SHIPTO_NM  LIKE '%' || #{rl_shiptoNm}|| '%'</if>
+			<if test="rl_cnstrNm != null and rl_cnstrNm != ''">AND CNSTR_NM  LIKE '%' || #{rl_cnstrNm}|| '%'</if>
+			<if test="rl_supvsNm != null and rl_supvsNm != '' ">AND SUPVS_NM LIKE '%' || #{rl_supvsNm} || '%'</if>
+			<if test="userId != null and userId != '' ">AND CREATEUSER = #{userId} </if>
+		</where>
+		
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+	</select>
+	
+	
+	<select id="getQmsPopList" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getQmsPopList */
+	SELECT RANK() OVER(ORDER BY QMS_ORD_NO) AS RNUM
+		  ,XX.*
+	  FROM (SELECT A.QMS_ID||'-'||A.QMS_SEQ AS QMS_ORD_NO
+	      ,A.QMS_ID
+	      ,A.QMS_SEQ
+	      ,C.QMS_FILE_ORG_NM
+	      ,C.QMS_FILE_NM
+	      ,C.QMS_FILE_ID
+	      ,C.QMS_FILE_EXT
+	      ,C.QMS_FILE_TYPE
+	      ,A.SHIPTO_NM
+	      ,CASE WHEN (SELECT COUNT(*) FROM (SELECT D.QMS_ID,D.ORDERNO FROM QMS_ORD_DETL D GROUP BY D.QMS_ID,D.ORDERNO)DD WHERE DD.QMS_ID = A.QMS_ID) > 1 THEN 'N' ELSE 'Y' END AS QMS_SPLIT_YN
+	      ,B.CUST_NM
+	      ,B.ADD1 ||' '|| B.ADD2 || B.ADD3 || B.ADD4 AS CUST_ADDR
+	      ,SF_GETQMSBIZNO(B.TAX_ID) AS CUST_BIZ_NO
+	      ,B.ZIP_CD
+	      ,B.SALESREP_CD
+	      ,B.SALESREP_NM
+	      ,B.TEAM_CD
+	      ,B.TEAM_NM
+	      ,B.MAILING_NM
+	      ,(SELECT MM.SHIPTOREP_NM
+	          FROM (
+	        SELECT ROW_NUMBER() OVER (ORDER BY M.CREATETIME DESC) AS R1
+	              ,M.*
+	          FROM QMS_ORD_MAIL M
+	           )MM
+	       WHERE MM.QMS_ID = A.QMS_ID
+	       AND MM.QMS_SEQ  = A.QMS_SEQ
+	       AND MM.R1 = 1) AS SHIPTOREP_NM
+	      ,NVL((SELECT MM.SHIPTO_EMAIL
+	          FROM (
+	        SELECT ROW_NUMBER() OVER (ORDER BY M.CREATETIME DESC) AS R1
+	              ,M.*
+	          FROM QMS_ORD_MAIL M
+	           )MM
+	       WHERE MM.QMS_ID = A.QMS_ID
+	       AND MM.QMS_SEQ  = A.QMS_SEQ
+	       AND MM.R1 = 1),A.SHIPTO_EMAIL) AS SHIPTO_EMAIL
+	       ,(SELECT TO_CHAR(MM.CREATETIME,'YYYY-MM-DD') AS SEND_DT
+	          FROM (
+	        SELECT ROW_NUMBER() OVER (ORDER BY M.CREATETIME DESC) AS R1
+	              ,M.*
+	          FROM QMS_ORD_MAIL M
+	           )MM
+	       WHERE MM.QMS_ID = A.QMS_ID
+	       AND MM.QMS_SEQ  = A.QMS_SEQ
+	       AND MM.R1 = 1) AS SEND_DT
+	 FROM
+	 (SELECT QMS_ID,QMS_SEQ,CUST_CD,SHIPTO_NM,SHIPTO_EMAIL
+	  FROM
+	(SELECT B.*
+	   FROM QMS_ORD_DETL A
+	       ,QMS_ORD_MAST B
+	       ,(SELECT * FROM QMS_SALESORDER SO
+	       <where>
+			<if test="wherebody_status != null and wherebody_status != '' ">
+				${wherebody_status}
+			</if>
+		
+			<if test="r_ordersdt != null and r_ordersdt != '' ">AND SO.ORDER_DT <![CDATA[>=]]> #{r_ordersdt}</if>
+			<if test="r_orderedt != null and r_orderedt != '' ">AND SO.ORDER_DT <![CDATA[<=]]> #{r_orderedt}</if>
+			<if test="r_actualshipsdt != null and r_actualshipsdt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[>=]]> #{r_actualshipsdt}</if>
+			<if test="r_actualshipedt != null and r_actualshipedt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[<=]]> #{r_actualshipedt}</if>
+			<if test="rl_salesrepnm != null and rl_salesrepnm != '' ">
+				AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%'
+				<!-- AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%' -->
+			</if>
+			<if test="rl_orderno != null and rl_orderno != '' ">AND SO.ORDERNO LIKE '%' || #{rl_orderno} || '%' </if>
+			<if test="r_custcd != null and r_custcd != '' ">AND SO.CUST_CD  = #{r_custcd}</if>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND SO.SHIPTO_CD = #{r_shiptocd}</if>
+			<!-- 관리자 권한에 따른 조건절 -->
+ 			
+ 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+ 				<if test='"AD".equals(r_adminauthority)'>
+ 				</if>
+ 				<if test='"CS".equals(r_adminauthority)'>
+ 					AND SO.SALESREP_CD IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+ 				</if>
+ 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+ 					<if test='"SH".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SM".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SR".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD = #{r_adminuserid}
+ 					</if>
+ 				</if>
+ 				<if test='"MK".equals(r_adminauthority)'>
+ 					
+ 				</if>
+ 			</if>
+ 			<!-- End. -->
+		</where>
+		)SO
+	  WHERE A.QMS_ID = B.QMS_ID
+	    AND A.QMS_SEQ = B.QMS_SEQ
+	    AND A.ORDERNO = SO.ORDERNO
+	    AND A.LINE_NO = SO.LINE_NO
+	    <!-- AND A.CUST_PO = SO.CUST_PO -->
+	    AND A.DELETEYN = 'N'
+	    AND B.DELETEYN = 'N'
+	    )
+	 GROUP BY QMS_ID,QMS_SEQ,CUST_CD,SHIPTO_NM,SHIPTO_EMAIL)A
+	, O_CUSTOMER B
+	,(SELECT * FROM (SELECT RANK() OVER(PARTITION BY QMS_ID,QMS_SEQ ORDER BY QMS_FILE_ID DESC) AS R1
+	    ,F.* FROM QMS_ORD_FILE F)F WHERE F.R1 = 1) C
+	WHERE A.QMS_ID  = C.QMS_ID(+)
+	  AND A.QMS_SEQ = C.QMS_SEQ(+)
+	  AND A.CUST_CD = B.CUST_CD(+)
+	   <if test="qmsIdArr != null and qmsIdArr != ''">
+	   AND A.QMS_ID||'-'||A.QMS_SEQ IN
+        <foreach collection="qmsIdArr" item="arr" index="index"  open="(" close=")" separator=",">
+            #{arr}
+        </foreach>
+	   </if>
+	   <if test="qmsIdToDown != null and qmsIdToDown != ''">
+	   AND A.QMS_ID||'-'||A.QMS_SEQ IN
+	    <foreach collection="qmsIdToDown" item="arr2" index="index"  open="(" close=")" separator=",">
+            #{arr2}
+        </foreach>
+	   </if>
+       )XX
+	</select>
+
+	<insert id="setQmsFileDatainsert" parameterType="hashmap" >
+		/* eorder.o_qmsorder.setQmsFileDatainsert */
+		INSERT INTO QMS_ORD_FILE (QMS_ID, QMS_SEQ, QMS_FILE_NM, QMS_FILE_DIR, QMS_FILE_ORG_NM, QMS_FILE_EXT, QMS_FILE_TYPE)
+		VALUES (#{qmsId},#{qmsSeq},#{qmsFileNm},#{qmsFileDir},#{qmsFileOrgNm},#{qmsFileExt},#{qmsFileType})
+	</insert>
+	
+	
+	<select id="getQmsOrderQtyCheck" parameterType="hashmap" resultType="hashmap">
+		/* eorder.o_qmsorder.getQmsOrderQtyCheck */
+		SELECT ((SELECT CASE WHEN COUNT(Q.QMS_ORD_QTY) > 0 THEN SUM(Q.QMS_ORD_QTY) 
+				        ELSE 0 END AS QMS_BALANCE
+				  FROM QMS_ORD_DETL Q 
+				      ,QMS_ORD_MAST M 
+				 WHERE Q.QMS_ID  = M.QMS_ID 
+				   AND Q.QMS_SEQ = M.QMS_SEQ 
+				   AND Q.ORDERNO = #{ORDERNO}
+				   AND Q.LINE_NO = #{LINE_NO}
+				   AND Q.ITEM_CD = #{ITEM_CD}
+				   AND Q.LOTNO   = #{LOTN}
+				   AND M.DELETEYN = 'N') -
+				(SELECT CASE WHEN COUNT(Q.QMS_ORD_QTY) > 0 THEN SUM(Q.QMS_ORD_QTY) 
+						ELSE 0 END AS QMS_BALANCE
+				  FROM QMS_ORD_DETL Q 
+				      ,QMS_ORD_MAST M 
+				 WHERE Q.QMS_ID  = M.QMS_ID 
+				   AND Q.QMS_SEQ = M.QMS_SEQ 
+				   AND Q.ORDERNO = #{ORDERNO}
+				   AND Q.LINE_NO = #{LINE_NO}
+				   AND Q.ITEM_CD = #{ITEM_CD}
+				   AND Q.LOTNO   = #{LOTN} 
+				   AND Q.QMS_ID = #{qmsId}
+				   AND Q.QMS_SEQ = #{qmsSeq}
+				   AND M.DELETEYN = 'N')) AS QMS_BALANCE
+				FROM DUAL
+		<!-- 
+		<where>
+			<if test="rl_shiptoCd != null and rl_shiptoCd != ''">AND SHIPTO_CD  LIKE '%' || #{rl_shiptoCd}|| '%'</if>
+			<if test="rl_shiptoNm != null and rl_shiptoNm != ''">AND SHIPTO_NM  LIKE '%' || #{rl_shiptoNm}|| '%'</if>
+			<if test="rl_cnstrNm != null and rl_cnstrNm != ''">AND CNSTR_NM  LIKE '%' || #{rl_cnstrNm}|| '%'</if>
+			<if test="rl_supvsNm != null and rl_supvsNm != '' ">AND SUPVS_NM LIKE '%' || #{rl_supvsNm} || '%'</if>
+			<if test="userId != null and userId != '' ">AND CREATEUSER = #{userId} </if>
+		</where> -->
+	</select>
+	
+	
+	<select id="getQmsOrderDupCheck" parameterType="hashmap" resultType="String">
+	/* eorder.o_qmsorder.list */
+		SELECT CASE WHEN COUNT(CUST_CD) = 0 OR COUNT(CUST_CD) > 1 OR COUNT(ACTUAL_SHIP_QUARTER) > 1 THEN 'Y' ELSE 'N' END AS DUPYN
+         FROM(SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (SELECT ORDERNO,LINE_NO
+			,SF_GETQMSID(ORDERNO,LINE_NO)AS QMS_ARR 
+			,SF_GETQMSID(ORDERNO,LINE_NO)AS QMS_ARR_TXT 
+			,SF_GETQMSQTY(ORDERNO,LINE_NO)AS QMS_ARR_QTY
+			,SF_GETQMSSHIPTO(ORDERNO,LINE_NO)AS QMS_ARR_SHIPTO
+			,SF_GETMAILYN(ORDERNO,LINE_NO) AS MAIL_YN
+			,SF_GETFILEYN(ORDERNO,LINE_NO) AS FILE_YN
+			,ITEM_CD,ORDERTY ,CUST_PO ,CUST_CD ,CUST_NM, 
+	        CONCAT(CONCAT(CONCAT(CONCAT(SUBSTR(ORDER_DT, 0,4), '-'), SUBSTR(ORDER_DT, 5, 2)), '-'), SUBSTR(ORDER_DT, 7, 2)) AS ORDER_DT, 
+	        CONCAT(CONCAT(CONCAT(CONCAT(SUBSTR(ACTUAL_SHIP_DT, 0,4), '-'), SUBSTR(ACTUAL_SHIP_DT, 5, 2)), '-'), SUBSTR(ACTUAL_SHIP_DT, 7, 2)) AS ACTUAL_SHIP_DT,
+	        SF_GETQMSQUARTER(ACTUAL_SHIP_DT) AS ACTUAL_SHIP_QUARTER,
+	        SF_GETQMSACTIVEYN(SF_GETQMSQUARTER(ACTUAL_SHIP_DT)) AS ACTIVEYN,
+	        SHIPTO_CD,SHIPTO_NM, RTRIM(CONCAT(ADD1, ADD2)) AS ADDR, ITEM_DESC, LOTN, ORDER_QTY, UNIT, SALESREP_NM
+		FROM qms_salesorder SO
+		<where>
+			<if test="wherebody_status != null and wherebody_status != '' ">
+				${wherebody_status}
+			</if>
+		
+			<if test="r_ordersdt != null and r_ordersdt != '' ">AND SO.ORDER_DT <![CDATA[>=]]> #{r_ordersdt}</if>
+			<if test="r_orderedt != null and r_orderedt != '' ">AND SO.ORDER_DT <![CDATA[<=]]> #{r_orderedt}</if>
+			<if test="r_actualshipsdt != null and r_actualshipsdt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[>=]]> #{r_actualshipsdt}</if>
+			<if test="r_actualshipedt != null and r_actualshipedt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[<=]]> #{r_actualshipedt}</if>
+			<if test="rl_salesrepnm != null and rl_salesrepnm != '' ">
+				AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%'
+				<!-- AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%' -->
+			</if>
+			<if test="rl_orderno != null and rl_orderno != '' ">AND SO.ORDERNO LIKE '%' || #{rl_orderno} || '%' </if>
+			<if test="r_custcd != null and r_custcd != '' ">AND SO.CUST_CD  = #{r_custcd}</if>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND SO.SHIPTO_CD = #{r_shiptocd}</if>
+			<!-- 관리자 권한에 따른 조건절 -->
+ 			
+ 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+ 				<if test='"AD".equals(r_adminauthority)'>
+ 				</if>
+ 				<if test='"CS".equals(r_adminauthority)'>
+ 					AND SO.SALESREP_CD IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+ 				</if>
+ 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+ 					<if test='"SH".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SM".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SR".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD = #{r_adminuserid}
+ 					</if>
+ 				</if>
+ 				<if test='"MK".equals(r_adminauthority)'>
+ 					
+ 				</if>
+ 			</if>
+ 			<!-- End. -->
+		</where>
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+		) XX 
+		WHERE XX.ACTIVEYN = 'N'
+		)
+		GROUP BY CUST_CD,ACTUAL_SHIP_QUARTER
+        )
+	</select>
+	
+	
+	<select id="getOrderDupCheck" parameterType="hashmap" resultType="String">
+	/* eorder.o_qmsorder.getOrderDupCheck */
+		SELECT CASE WHEN COUNT(CUST_CD) > 1 THEN 'Y' ELSE 'N' END
+		  FROM
+		(SELECT CUST_CD
+		FROM QMS_SALESORDER SO
+		<where>
+			<if test="wherebody_status != null and wherebody_status != '' ">
+				${wherebody_status}
+			</if>
+		
+			<if test="r_ordersdt != null and r_ordersdt != '' ">AND SO.ORDER_DT <![CDATA[>=]]> #{r_ordersdt}</if>
+			<if test="r_orderedt != null and r_orderedt != '' ">AND SO.ORDER_DT <![CDATA[<=]]> #{r_orderedt}</if>
+			<if test="r_actualshipsdt != null and r_actualshipsdt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[>=]]> #{r_actualshipsdt}</if>
+			<if test="r_actualshipedt != null and r_actualshipedt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[<=]]> #{r_actualshipedt}</if>
+			<if test="rl_salesrepnm != null and rl_salesrepnm != '' ">
+				AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%'
+				<!-- AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%' -->
+			</if>
+			<if test="rl_orderno != null and rl_orderno != '' ">AND SO.ORDERNO LIKE '%' || #{rl_orderno} || '%' </if>
+			<if test="r_custcd != null and r_custcd != '' ">AND SO.CUST_CD  = #{r_custcd}</if>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND SO.SHIPTO_CD = #{r_shiptocd}</if>
+			<!-- 관리자 권한에 따른 조건절 -->
+ 			
+ 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+ 				<if test='"AD".equals(r_adminauthority)'>
+ 				</if>
+ 				<if test='"CS".equals(r_adminauthority)'>
+ 					AND SO.SALESREP_CD IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+ 				</if>
+ 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+ 					<if test='"SH".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SM".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SR".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD = #{r_adminuserid}
+ 					</if>
+ 				</if>
+ 				<if test='"MK".equals(r_adminauthority)'>
+ 					
+ 				</if>
+ 			</if>
+ 			<!-- End. -->
+		</where>
+		GROUP BY SO.CUST_CD
+		) SO
+		
+	</select>
+	
+	<select id="getOrderCustDupCheck" parameterType="hashmap" resultType="String">
+	/* eorder.o_qmsorder.getOrderDupCheck */
+		SELECT CASE WHEN COUNT(*) > 1 THEN 'Y' ELSE 'N' END
+		  FROM
+		(SELECT *
+		FROM QMS_SALESORDER SO
+		<where>
+			<if test="wherebody_status != null and wherebody_status != '' ">
+				${wherebody_status}
+			</if>
+		
+			<if test="r_ordersdt != null and r_ordersdt != '' ">AND SO.ORDER_DT <![CDATA[>=]]> #{r_ordersdt}</if>
+			<if test="r_orderedt != null and r_orderedt != '' ">AND SO.ORDER_DT <![CDATA[<=]]> #{r_orderedt}</if>
+			<if test="r_actualshipsdt != null and r_actualshipsdt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[>=]]> #{r_actualshipsdt}</if>
+			<if test="r_actualshipedt != null and r_actualshipedt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[<=]]> #{r_actualshipedt}</if>
+			<if test="rl_salesrepnm != null and rl_salesrepnm != '' ">
+				AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%'
+				<!-- AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%' -->
+			</if>
+			<if test="rl_orderno != null and rl_orderno != '' ">AND SO.ORDERNO LIKE '%' || #{rl_orderno} || '%' </if>
+			<if test="r_custcd != null and r_custcd != '' ">AND SO.CUST_CD  = #{r_custcd}</if>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND SO.SHIPTO_CD = #{r_shiptocd}</if>
+			<!-- 관리자 권한에 따른 조건절 -->
+ 			
+ 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+ 				<if test='"AD".equals(r_adminauthority)'>
+ 				</if>
+ 				<if test='"CS".equals(r_adminauthority)'>
+ 					AND SO.SALESREP_CD IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+ 				</if>
+ 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+ 					<if test='"SH".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SM".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SR".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD = #{r_adminuserid}
+ 					</if>
+ 				</if>
+ 				<if test='"MK".equals(r_adminauthority)'>
+ 					
+ 				</if>
+ 			</if>
+ 			<!-- End. -->
+		</where>
+		GROUP BY SO.CUST_CD
+		) SO
+		
+	</select>
+	
+	<select id="getShipToList" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getShipToList */
+		SELECT SHIPTO_CD,SHIPTO_NM FROM (SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (SELECT ORDERNO,LINE_NO
+			,SF_GETQMSID(ORDERNO,LINE_NO)AS QMS_ARR 
+			,SF_GETQMSID(ORDERNO,LINE_NO)AS QMS_ARR_TXT 
+			,SF_GETQMSQTY(ORDERNO,LINE_NO)AS QMS_ARR_QTY
+			,SF_GETQMSSHIPTO(ORDERNO,LINE_NO)AS QMS_ARR_SHIPTO
+			,SF_GETMAILYN(ORDERNO,LINE_NO) AS MAIL_YN
+			,SF_GETFILEYN(ORDERNO,LINE_NO) AS FILE_YN
+			,ITEM_CD,ORDERTY ,CUST_PO ,CUST_CD ,CUST_NM, 
+	        CONCAT(CONCAT(CONCAT(CONCAT(SUBSTR(ORDER_DT, 0,4), '-'), SUBSTR(ORDER_DT, 5, 2)), '-'), SUBSTR(ORDER_DT, 7, 2)) AS ORDER_DT, 
+	        CONCAT(CONCAT(CONCAT(CONCAT(SUBSTR(ACTUAL_SHIP_DT, 0,4), '-'), SUBSTR(ACTUAL_SHIP_DT, 5, 2)), '-'), SUBSTR(ACTUAL_SHIP_DT, 7, 2)) AS ACTUAL_SHIP_DT,
+	        SHIPTO_CD, SHIPTO_NM, RTRIM(CONCAT(ADD1, ADD2)) AS ADDR, ITEM_DESC, LOTN, ORDER_QTY, UNIT, SALESREP_NM
+		FROM qms_salesorder SO
+		<where>
+			<if test="wherebody_status != null and wherebody_status != '' ">
+				${wherebody_status}
+			</if>
+		
+			<if test="r_ordersdt != null and r_ordersdt != '' ">AND SO.ORDER_DT <![CDATA[>=]]> #{r_ordersdt}</if>
+			<if test="r_orderedt != null and r_orderedt != '' ">AND SO.ORDER_DT <![CDATA[<=]]> #{r_orderedt}</if>
+			<if test="r_actualshipsdt != null and r_actualshipsdt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[>=]]> #{r_actualshipsdt}</if>
+			<if test="r_actualshipedt != null and r_actualshipedt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[<=]]> #{r_actualshipedt}</if>
+			<if test="rl_salesrepnm != null and rl_salesrepnm != '' ">
+				AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%'
+				<!-- AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%' -->
+			</if>
+			<if test="rl_orderno != null and rl_orderno != '' ">AND SO.ORDERNO LIKE '%' || #{rl_orderno} || '%' </if>
+			<if test="r_custcd != null and r_custcd != '' ">AND SO.CUST_CD  = #{r_custcd}</if>
+			<!-- <if test="r_shiptocd != null and r_shiptocd != '' ">AND SO.SHIPTO_NM LIKE '%' || #{r_shiptocd} || '%'</if> -->
+			<!-- 관리자 권한에 따른 조건절 -->
+ 			
+ 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+ 				<if test='"AD".equals(r_adminauthority)'>
+ 				</if>
+ 				<if test='"CS".equals(r_adminauthority)'>
+ 					AND SO.SALESREP_CD IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+ 				</if>
+ 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+ 					<if test='"SH".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SM".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SR".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD = #{r_adminuserid}
+ 					</if>
+ 				</if>
+ 				<if test='"MK".equals(r_adminauthority)'>
+ 					
+ 				</if>
+ 			</if>
+ 			<!-- End. -->
+		</where>
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+		) GROUP BY SHIPTO_CD,SHIPTO_NM
+	</select>
+	
+	<update id="setQmsOrderRemove" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderRemove */
+		DELETE FROM QMS_ORD_FILE
+		 WHERE QMS_ID = #{qmsId}
+		   AND DELETEYN = 'T'
+	</update>
+	
+	<select id="getQmsShiptoInfo" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getQmsShiptoInfo */
+		SELECT * 
+		  FROM 
+		(SELECT RANK() OVER(PARTITION BY C.CUST_CD,C.SHIPTO_CD,C.ORDERNO ORDER BY C.LINE_NO DESC) AS RNUM 
+		      ,C.CUST_PO
+		      ,C.CUST_NM
+		      ,C.SHIPTO_CD AS ORG_SHIPTO_CD
+		      ,C.SHIPTO_NM AS ORG_SHIPTO_NM
+		      ,C.ADD1||' '||ADD2 AS ORG_SHIPTO_ADDR
+		  FROM QMS_SALESORDER C
+		 WHERE C.CUST_CD   = #{custCd}
+		   AND C.SHIPTO_CD = #{shiptoCd}
+		   AND C.ORDERNO   = #{orderNo}
+		   AND C.LINE_NO   = #{lineNo}
+		  ) WHERE RNUM = 1
+		
+		   
+	</select>
+	
+	<select id="getQmsLastShiptoInfo" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getQmsLastShiptoCd */
+		SELECT * 
+		  FROM
+		(SELECT RANK() OVER(PARTITION BY A.CUST_CD,C.SHIPTO_CD ORDER BY A.QMS_ID DESC, A.QMS_SEQ DESC,B.QMS_DETL_ID DESC) AS RNUM 
+		      ,A.*
+		      ,B.ORDERNO
+		      ,B.LINE_NO
+		      ,B.QMS_DETL_ID
+		      ,C.CUST_PO
+		      ,C.CUST_NM
+		      ,C.SHIPTO_CD AS ORG_SHIPTO_CD
+		      ,C.SHIPTO_NM AS ORG_SHIPTO_NM
+		      ,C.ADD1||' '||ADD2 AS ORG_SHIPTO_ADDR
+		      ,(SELECT OU.USER_EMAIL
+				  FROM O_CUSTOMER OC
+				      ,O_USER OU
+				 WHERE OC.CUST_CD = OU.CUST_CD
+				   AND OC.CUST_CD = OU.USER_SHIPTOCD
+				   AND OU.CUST_CD = A.CUST_CD
+				   AND ROWNUM = 1) AS ORG_SHIPTO_EMAIL
+		  FROM QMS_ORD_MAST A
+		      ,QMS_ORD_DETL B
+		      ,QMS_SALESORDER C
+		 WHERE A.QMS_ID = B.QMS_ID
+		   AND A.QMS_SEQ = B.QMS_SEQ
+		   AND A.DELETEYN = 'N'
+		   AND B.DELETEYN = 'N'
+		   AND B.ORDERNO = C.ORDERNO
+		   AND B.LINE_NO = C.LINE_NO
+		   AND A.CUST_CD = #{custCd}
+		   AND C.SHIPTO_CD = #{shiptoCd}
+		)
+		WHERE RNUM = 1 
+	</select>
+	
+	<select id="getQmsDepartmentListAjaxCnt" parameterType="hashmap" resultType="int">
+	/* eorder.o_qmsorder.getQmsDepartmentListAjaxCnt */
+		SELECT COUNT(*)
+		  FROM O_USER U, QMS_DEPT_MAST Q
+		 WHERE U.USERID NOT IN ('9', '1', '2', '3', '4')
+		   AND U.AUTHORITY IN ('SH', 'SM', 'SR')
+		   AND U.USERID = Q.USERID(+)
+		   <if test="m_dept != null and m_dept != ''">AND Q.QMS_DEPT_NM LIKE '%' || #{m_dept} || '%'</if>
+		   <if test="m_team != null and m_team != ''">AND Q.QMS_TEAM_NM LIKE '%' || #{m_team} || '%'</if>
+		   <if test="m_salesrepnm != null and m_salesrepnm != ''">AND U.USER_NM LIKE '%' || #{m_salesrepnm} || '%'</if>
+		   <if test="m_salesYn != null and m_salesYn != ''">AND DECODE(Q.USERID,NULL,'N','Y') = #{m_salesYn} </if>
+		   <if test="m_activeYn != null and m_activeYn != ''">AND NVL(Q.ACTIVEYN,'N') = #{m_activeYn}</if>
+	</select>
+	
+	<select id="getQmsDepartmentListAjax" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getQmsDepartmentListAjax */
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+			SELECT NVL(Q.ACTIVEYN, 'N') ACTIVE,
+				   U.USERID,
+			       U.USER_NM,
+			       Q.QMS_DEPT_ID,
+			       Q.QMS_DEPT_NM,
+			       Q.QMS_TEAM_NM,
+			       Q.QMS_DEPT_REMARK,
+			       TO_CHAR(Q.CREATETIME, 'YYYY-MM-DD') CREATETIME
+			  FROM O_USER U, QMS_DEPT_MAST Q
+			 WHERE U.USERID NOT IN ('9', '1', '2', '3', '4')
+			   AND U.AUTHORITY IN ('SH', 'SM', 'SR')
+			   AND U.USERID = Q.USERID(+)
+			   <if test="m_dept != null and m_dept != ''">AND Q.QMS_DEPT_NM LIKE '%' || #{m_dept} || '%'</if>
+			   <if test="m_team != null and m_team != ''">AND Q.QMS_TEAM_NM LIKE '%' || #{m_team} || '%'</if>
+			   <if test="m_salesrepnm != null and m_salesrepnm != ''">AND U.USER_NM LIKE '%' || #{m_salesrepnm} || '%'</if>
+			   <if test="m_salesYn != null and m_salesYn != ''">AND DECODE(Q.USERID,NULL,'N','Y') = #{m_salesYn} </if>
+			   <if test="m_activeYn != null and m_activeYn != ''">AND NVL(Q.ACTIVEYN,'N') = #{m_activeYn}</if>
+	      GROUP BY NVL(Q.ACTIVEYN, 'N'),
+	            U.USERID,
+	            U.USER_NM,
+	            Q.QMS_DEPT_ID,
+	            Q.QMS_DEPT_NM,
+	            Q.QMS_TEAM_NM,
+	            Q.QMS_DEPT_REMARK,
+	            TO_CHAR(Q.CREATETIME, 'YYYY-MM-DD')
+	            <if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+		
+	</select>
+	
+	<insert id="setQmsDepartment" parameterType="hashmap" >
+		/* eorder.o_qmsorder.setQmsDepartment */
+		MERGE INTO QMS_DEPT_MAST F
+	      USING DUAL
+	         ON (F.USERID = #{m_userid, jdbcType=VARCHAR} AND F.QMS_DEPT_ID = #{m_qmsDeptId, jdbcType=VARCHAR})
+	      WHEN MATCHED THEN
+	          UPDATE SET F.QMS_DEPT_NM = #{m_qmsDeptNm, jdbcType=VARCHAR},
+	                     F.QMS_TEAM_NM = #{m_qmsTeamNm, jdbcType=VARCHAR},
+	                     F.QMS_DEPT_REMARK = #{m_qmsDeptRemark, jdbcType=VARCHAR},
+	                     F.UPDATEUSER = #{m_setUserId, jdbcType=VARCHAR},
+	                     F.UPDATETIME = SYSDATE,
+	                     F.ACTIVEYN = #{m_active, jdbcType=VARCHAR}
+	      WHEN NOT MATCHED THEN
+	          INSERT (F.USERID, F.QMS_DEPT_NM, F.QMS_TEAM_NM, F.QMS_DEPT_REMARK, F.CREATEUSER, F.CREATETIME, F.ACTIVEYN)
+	          VALUES (#{m_userid, jdbcType=VARCHAR}
+	                , #{m_qmsDeptNm, jdbcType=VARCHAR}
+	                , #{m_qmsTeamNm, jdbcType=VARCHAR}
+	                , #{m_qmsDeptRemark, jdbcType=VARCHAR}
+	                , #{m_setUserId, jdbcType=VARCHAR}
+	                , SYSDATE
+	                , #{m_active, jdbcType=VARCHAR})
+	</insert>
+	
+	<select id="getQmsDedalinesListAjaxCnt" parameterType="hashmap" resultType="int">
+	/* eorder.o_qmsorder.getQmsDedalinesListAjaxCnt */
+		SELECT COUNT(*)
+		  FROM 
+		(SELECT SUBSTR(ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+		      ,DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+		  FROM QMS_SALESORDER 
+		GROUP BY SUBSTR(ACTUAL_SHIP_DT,0,4),DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q')
+		)A
+		,QMS_ORD_DELN B
+		WHERE A.QMS_YEAR = B.QMS_DELN_YEAR(+)
+		  AND A.QMS_DELN_QUAT = B.QMS_DELN_QUAT(+)
+	   <if test="m_year != null and m_year != ''">AND A.QMS_YEAR = #{m_year}</if>
+	   <if test="m_quarter != null and m_quarter != ''">AND A.QMS_DELN_QUAT = #{m_quarter}</if>
+	   
+	</select>
+	
+	<select id="getQmsYearList" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getQmsYearList */
+	SELECT SUBSTR(ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+	      ,SUBSTR(ACTUAL_SHIP_DT,0,4)||'년' AS QMS_YEAR_NM
+	  FROM QMS_SALESORDER 
+	GROUP BY SUBSTR(ACTUAL_SHIP_DT,0,4)
+	<!-- 	SELECT SUBSTR(ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+	      ,SUBSTR(ACTUAL_SHIP_DT,0,4)||'년' AS QMS_YEAR_NM
+	      ,SUBSTR(ACTUAL_SHIP_DT,0,4),DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1','02','1','03','1','04','2','05','2','06','2','07','3','08','3','09','3','10','4','11','4','12','4')||'Q' AS QMS_DELN_QUAT
+	      ,SUBSTR(ACTUAL_SHIP_DT,0,4),DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1','02','1','03','1','04','2','05','2','06','2','07','3','08','3','09','3','10','4','11','4','12','4')||'분기' AS QMS_DELN_QUAT_NM
+	  FROM QMS_SALESORDER 
+	GROUP BY SUBSTR(ACTUAL_SHIP_DT,0,4),DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1','02','1','03','1','04','2','05','2','06','2','07','3','08','3','09','3','10','4','11','4','12','4') -->
+	</select>
+	
+	<select id="getQmsOrderYearList" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getQmsOrderYearList */
+	SELECT SUBSTR(ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+	      ,SUBSTR(ACTUAL_SHIP_DT,0,4)||'년' AS QMS_YEAR_NM
+	      ,SUBSTR(ACTUAL_SHIP_DT,0,4),DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1','02','1','03','1','04','2','05','2','06','2','07','3','08','3','09','3','10','4','11','4','12','4')||'Q' AS QMS_DELN_QUAT
+	      ,SUBSTR(ACTUAL_SHIP_DT,0,4),DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1','02','1','03','1','04','2','05','2','06','2','07','3','08','3','09','3','10','4','11','4','12','4')||'분기' AS QMS_DELN_QUAT_NM
+	FROM QMS_SALESORDER 
+	WHERE ACTUAL_SHIP_DT IS NOT NULL
+		AND STATUS2 >= 620 AND STATUS1 <![CDATA[<>]]> 980
+	GROUP BY SUBSTR(ACTUAL_SHIP_DT,0,4),DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1','02','1','03','1','04','2','05','2','06','2','07','3','08','3','09','3','10','4','11','4','12','4')
+	ORDER BY SUBSTR(ACTUAL_SHIP_DT,0,4) DESC,DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1','02','1','03','1','04','2','05','2','06','2','07','3','08','3','09','3','10','4','11','4','12','4') DESC
+	</select>
+	
+	<select id="getQmsReleaseYearList" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getQmsReleaseYearList */
+	SELECT SUBSTR(ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+	      ,SUBSTR(ACTUAL_SHIP_DT,0,4)||'년' AS QMS_YEAR_NM
+	      ,SUBSTR(ACTUAL_SHIP_DT,0,4),DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1','02','1','03','1','04','2','05','2','06','2','07','3','08','3','09','3','10','4','11','4','12','4')||'Q' AS QMS_DELN_QUAT
+	      ,SUBSTR(ACTUAL_SHIP_DT,0,4),DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1','02','1','03','1','04','2','05','2','06','2','07','3','08','3','09','3','10','4','11','4','12','4')||'분기' AS QMS_DELN_QUAT_NM
+	FROM QMS_SALESORDER 
+	WHERE ACTUAL_SHIP_DT IS NOT NULL
+		AND STATUS2 >= 620 AND STATUS1 <![CDATA[<>]]> 980
+	GROUP BY SUBSTR(ACTUAL_SHIP_DT,0,4),DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1','02','1','03','1','04','2','05','2','06','2','07','3','08','3','09','3','10','4','11','4','12','4')
+	ORDER BY SUBSTR(ACTUAL_SHIP_DT,0,4) DESC,DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1','02','1','03','1','04','2','05','2','06','2','07','3','08','3','09','3','10','4','11','4','12','4') DESC
+	</select>
+	
+	<select id="getQmsDedalinesListAjax" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getQmsDedalinesListAjax */
+	SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		SELECT A.QMS_YEAR AS QMS_DELN_YEAR
+		      ,A.QMS_DELN_QUAT
+		      ,A.QMS_YEAR || '-' || A.QMS_DELN_QUAT AS FULL_QUAT
+		      ,A.QMS_YEAR||'년 '||DECODE(A.QMS_DELN_QUAT,'1Q','1분기 (1월~3월)','2Q','2분기 (4월~6월)','3Q','3분기 (7월~9월)','4Q','4분기 (10월~12월)') AS QMS_DELN_NM
+		      ,B.QMS_DELN_DESC
+		      ,NVL(B.ACTIVEYN,'N') AS ACTIVE
+		  FROM 
+		(SELECT SUBSTR(ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+		      ,DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+		  FROM QMS_SALESORDER 
+		GROUP BY SUBSTR(ACTUAL_SHIP_DT,0,4),DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q')
+		ORDER BY SUBSTR(ACTUAL_SHIP_DT,0,4) DESC
+		, DECODE(SUBSTR(ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') DESC
+		)A
+		,QMS_ORD_DELN B
+		WHERE A.QMS_YEAR = B.QMS_DELN_YEAR(+)
+		  AND A.QMS_DELN_QUAT = B.QMS_DELN_QUAT(+)
+		<if test="m_year != null and m_year != ''">AND A.QMS_YEAR = #{m_year}</if>
+	    <if test="m_quarter != null and m_quarter != ''">AND A.QMS_DELN_QUAT = #{m_quarter}</if>
+	    <if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> ) XY
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+		ORDER BY XY.QMS_DELN_YEAR DESC, XY.QMS_DELN_QUAT DESC
+	</select>
+	
+	<insert id="setQmsDedalines" parameterType="hashmap" >
+		/* eorder.o_qmsorder.setQmsDedalines */
+		MERGE INTO QMS_ORD_DELN F
+	      USING DUAL
+	         ON (F.QMS_DELN_YEAR = #{m_qmsDelnYear, jdbcType=VARCHAR}
+	         AND F.QMS_DELN_QUAT = #{m_qmsDelnQuat, jdbcType=VARCHAR})
+	      WHEN MATCHED THEN
+	          UPDATE SET F.ACTIVEYN      = #{m_active, jdbcType=VARCHAR},
+	          			 F.UPDATEUSER    = #{m_setUserId, jdbcType=VARCHAR},
+	          			 F.QMS_DELN_DESC = #{m_qmsDelnDesc, jdbcType=VARCHAR},
+	                     F.UPDATETIME    = SYSDATE
+	      WHEN NOT MATCHED THEN
+	          INSERT (F.QMS_DELN_YEAR, F.QMS_DELN_QUAT, F.QMS_DELN_DESC, F.ACTIVEYN, F.CREATEUSER, F.CREATETIME)
+	          VALUES (#{m_qmsDelnYear, jdbcType=VARCHAR}
+	                , #{m_qmsDelnQuat, jdbcType=VARCHAR}
+	                , #{m_qmsDelnDesc, jdbcType=VARCHAR}
+	                , #{m_active, jdbcType=VARCHAR}
+	                , #{m_setUserId, jdbcType=VARCHAR}
+	                , SYSDATE
+	                )
+	</insert>
+	
+	<select id="getQmsStasticsSalesListAjaxCnt" parameterType="hashmap" resultType="int">
+	/* eorder.o_qmsorder.getQmsStasticsSalesListAjaxCnt */
+		SELECT COUNT(*) FROM (SELECT ROWNUM RR, XX.* FROM (
+		(SELECT P1.QMS_DEPT_NM,P1.QMS_TEAM_NM,P1.SALESREP_NM,P1.ORDER_QTY
+      ,NVL(P1.QMS_ORDER_CNT,0) AS QMS_ORDER_CNT
+      ,NVL(P1.QMS_END_CNT,0) AS QMS_END_CNT
+      ,P1.RETURN_RATE
+      ,P2.QMS_ORDER_CNT AS TEAM_ORDER_CNT
+      ,P2.QMS_FILE_CNT AS TEAM_RETURN_CNT
+      ,TRUNC(CASE WHEN P2.QMS_END_CNT > 0 /*AND P2.QMS_MAIL_CNT > 0*/
+            THEN P2.QMS_END_CNT / P2.QMS_ORDER_CNT * 100 ELSE 0 END,1) AS TEAM_RETURN_RATE
+	  FROM
+	(SELECT TT1.QMS_DEPT_NM
+	      ,TT1.QMS_TEAM_NM
+	      ,TT1.SALESREP_CD
+	      ,TT1.SALESREP_NM
+	      ,TT1.ORDER_QTY
+	      ,TT1.QMS_YEAR
+	      ,TT1.QMS_DELN_QUAT
+	      ,TT2.QMS_ORDER_CNT
+	      ,TT2.QMS_MAIL_CNT
+	      ,TT2.QMS_FILE_CNT
+	      ,TT2.QMS_END_CNT
+	      ,TRUNC(CASE WHEN TT2.QMS_END_CNT > 0 /*AND TT2.QMS_MAIL_CNT > 0*/
+	            THEN TT2.QMS_END_CNT / TT2.QMS_ORDER_CNT * 100 ELSE 0 END,1) AS RETURN_RATE
+	  FROM
+	(SELECT T2.QMS_DEPT_NM
+	      ,T2.QMS_TEAM_NM
+	      ,T1.SALESREP_CD
+	      ,T1.SALESREP_NM
+	      ,COUNT(T1.ORDERNO) AS ORDER_QTY
+	      ,T1.QMS_YEAR
+	      ,T1.QMS_DELN_QUAT
+	  FROM 
+	(SELECT AA.SALESREP_CD
+	      ,AA.SALESREP_NM
+	      ,AA.ORDERNO
+	      ,AA.QMS_YEAR
+	      ,AA.QMS_DELN_QUAT
+	  FROM 
+	(SELECT A.SALESREP_CD,A.SALESREP_NM
+	      ,A.ORDERNO
+	      ,A.LINE_NO
+	      ,SUBSTR(A.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+	      ,DECODE(SUBSTR(A.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+	  FROM QMS_SALESORDER A
+	  WHERE CASE
+         WHEN Sf_getpreorderyn(A.cust_po) = 'Y' THEN
+         Sf_getpreqtyyn(A.cust_po)
+         ELSE 'Y'
+       END = 'Y'
+	  )AA
+	 GROUP BY AA.SALESREP_CD,AA.SALESREP_NM,AA.ORDERNO,AA.QMS_YEAR,AA.QMS_DELN_QUAT
+	 )T1
+	 ,QMS_DEPT_MAST T2
+	 WHERE T1.SALESREP_CD = T2.USERID(+)
+	 GROUP BY T2.QMS_DEPT_NM
+	      ,T2.QMS_TEAM_NM
+	      ,T1.SALESREP_CD
+	      ,T1.SALESREP_NM
+	      ,T1.QMS_YEAR
+	      ,T1.QMS_DELN_QUAT
+	)TT1
+	,(SELECT T3.SALESREP_CD
+	      ,COUNT(T3.QMS_ID) AS QMS_ORDER_CNT
+	      ,T3.QMS_YEAR
+	      ,T3.QMS_DELN_QUAT
+	      ,SUM(QMS_MAIL_CNT) AS QMS_MAIL_CNT
+	      ,SUM(QMS_FILE_CNT) AS QMS_FILE_CNT
+	      ,SUM(QMS_END_CNT) AS QMS_END_CNT
+	  FROM
+	(SELECT BB.SALESREP_CD
+	      ,BB.QMS_ID
+	      ,BB.QMS_YEAR
+	      ,BB.QMS_DELN_QUAT
+	      ,CASE WHEN COUNT(BB.SHIPTO_EMAIL) > 0 THEN 1 ELSE 0 END QMS_MAIL_CNT
+	      ,CASE WHEN COUNT(BB.QMS_FILE_ID) > 0 THEN 1 ELSE 0 END QMS_FILE_CNT
+	      ,CASE WHEN /*COUNT(BB.SHIPTO_EMAIL) > 0 AND*/ COUNT(BB.QMS_FILE_ID) > 0 THEN 1 ELSE 0 END QMS_END_CNT
+	  FROM
+	(SELECT A.QMS_ID
+	      ,C.SALESREP_CD
+	      ,SUBSTR(C.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+	      ,DECODE(SUBSTR(C.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+	      ,D.SHIPTO_EMAIL
+	      ,E.QMS_FILE_ID
+	  FROM QMS_ORD_MAST A
+	      ,QMS_ORD_DETL B
+	      ,QMS_SALESORDER C
+	      ,QMS_ORD_MAIL D
+	      ,QMS_ORD_FILE E
+	 WHERE A.QMS_ID = B.QMS_ID
+	   AND A.QMS_SEQ = B.QMS_SEQ
+	   AND A.DELETEYN = 'N'
+	   AND B.ORDERNO = C.ORDERNO
+	   AND B.LINE_NO = C.LINE_NO
+	   AND A.QMS_ID  = D.QMS_ID(+)
+	   AND A.QMS_SEQ = D.QMS_SEQ(+)
+	   AND A.QMS_ID  = E.QMS_ID(+)
+	   AND A.QMS_SEQ = E.QMS_SEQ(+)
+	   AND CASE
+         WHEN Sf_getpreorderyn(C.cust_po) = 'Y' THEN
+         Sf_getpreqtyyn(C.cust_po)
+         ELSE 'Y'
+       END = 'Y'
+	   )BB
+	 GROUP BY BB.QMS_ID
+	      ,BB.SALESREP_CD
+	      ,BB.QMS_YEAR
+	      ,BB.QMS_DELN_QUAT
+	)T3
+	GROUP BY T3.SALESREP_CD
+	      ,T3.QMS_YEAR
+	      ,T3.QMS_DELN_QUAT
+	      ) TT2
+	WHERE TT1.SALESREP_CD = TT2.SALESREP_CD(+)
+	  AND TT1.QMS_YEAR = TT2.QMS_YEAR(+)
+	  AND TT1.QMS_DELN_QUAT = TT2.QMS_DELN_QUAT(+)
+	  <!-- AND TT1.QMS_YEAR = '2021'
+	  AND TT1.QMS_DELN_QUAT = '3Q' -->
+	  <if test="m_quat != null and m_quat != ''">AND TT1.QMS_YEAR||TT1.QMS_DELN_QUAT = #{m_quat}</if>
+	  )P1,
+	(SELECT TT1.QMS_DEPT_NM
+	      ,TT1.QMS_TEAM_NM
+	      ,TT1.QMS_YEAR
+	      ,TT1.QMS_DELN_QUAT
+	      ,NVL(SUM(TT2.QMS_ORDER_CNT),0) AS QMS_ORDER_CNT
+	      ,NVL(SUM(TT2.QMS_MAIL_CNT),0) AS QMS_MAIL_CNT
+	      ,NVL(SUM(TT2.QMS_FILE_CNT),0) AS QMS_FILE_CNT
+	      ,NVL(SUM(TT2.QMS_END_CNT),0) AS QMS_END_CNT
+	      ,TRUNC(NVL(CASE WHEN SUM(TT2.QMS_END_CNT) > 0 /*AND SUM(TT2.QMS_MAIL_CNT) > 0*/
+	            THEN SUM(TT2.QMS_END_CNT) / SUM(TT2.QMS_ORDER_CNT) * 100 ELSE 0 END,0),1) AS RETURN_RATE
+	  FROM
+	(SELECT T2.QMS_DEPT_NM
+	      ,T2.QMS_TEAM_NM
+	      ,T1.SALESREP_CD
+	      ,T1.SALESREP_NM
+	      ,COUNT(T1.ORDERNO) AS ORDER_CNT
+	      ,T1.QMS_YEAR
+	      ,T1.QMS_DELN_QUAT
+	  FROM 
+	/*(SELECT AA.SALESREP_CD
+	      ,AA.SALESREP_NM
+	      ,AA.ORDERNO
+	      ,AA.QMS_YEAR
+	      ,AA.QMS_DELN_QUAT
+	  FROM */
+	(SELECT A.SALESREP_CD,A.SALESREP_NM
+	      ,A.ORDERNO
+	      ,A.LINE_NO
+	      ,SUBSTR(A.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+	      ,DECODE(SUBSTR(A.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+	  FROM QMS_SALESORDER A
+	  WHERE CASE
+         WHEN Sf_getpreorderyn(A.cust_po) = 'Y' THEN
+         Sf_getpreqtyyn(A.cust_po)
+         ELSE 'Y'
+       END = 'Y'
+	  ) /*AA
+	 GROUP BY AA.SALESREP_CD,AA.SALESREP_NM,AA.ORDERNO,AA.QMS_YEAR,AA.QMS_DELN_QUAT
+	 )*/ T1
+	 ,QMS_DEPT_MAST T2
+	 WHERE T1.SALESREP_CD = T2.USERID(+)
+	 GROUP BY T2.QMS_DEPT_NM
+	      ,T2.QMS_TEAM_NM
+	      ,T1.SALESREP_CD
+	      ,T1.SALESREP_NM
+	      ,T1.QMS_YEAR
+	      ,T1.QMS_DELN_QUAT
+	)TT1
+	,(SELECT T3.SALESREP_CD
+	      ,COUNT(T3.QMS_ID) AS QMS_ORDER_CNT
+	      ,T3.QMS_YEAR
+	      ,T3.QMS_DELN_QUAT
+	      ,SUM(QMS_MAIL_CNT) AS QMS_MAIL_CNT
+	      ,SUM(QMS_FILE_CNT) AS QMS_FILE_CNT
+	      ,SUM(QMS_END_CNT) AS QMS_END_CNT
+	  FROM
+	(SELECT BB.SALESREP_CD
+	      ,BB.QMS_ID
+	      ,BB.QMS_YEAR
+	      ,BB.QMS_DELN_QUAT
+	      ,CASE WHEN COUNT(BB.SHIPTO_EMAIL) > 0 THEN 1 ELSE 0 END QMS_MAIL_CNT
+	      ,CASE WHEN COUNT(BB.QMS_FILE_ID) > 0 THEN 1 ELSE 0 END QMS_FILE_CNT
+	      ,CASE WHEN /*COUNT(BB.SHIPTO_EMAIL) > 0 AND*/ COUNT(BB.QMS_FILE_ID) > 0 THEN 1 ELSE 0 END QMS_END_CNT
+	  FROM
+	(SELECT A.QMS_ID
+	      ,C.SALESREP_CD
+	      ,SUBSTR(C.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+	      ,DECODE(SUBSTR(C.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+	      ,D.SHIPTO_EMAIL
+	      ,E.QMS_FILE_ID
+	  FROM QMS_ORD_MAST A
+	      ,QMS_ORD_DETL B
+	      ,QMS_SALESORDER C
+	      ,QMS_ORD_MAIL D
+	      ,QMS_ORD_FILE E
+	 WHERE A.QMS_ID = B.QMS_ID
+	   AND A.QMS_SEQ = B.QMS_SEQ
+	   AND A.DELETEYN = 'N'
+	   AND B.ORDERNO = C.ORDERNO
+	   AND B.LINE_NO = C.LINE_NO
+	   AND A.QMS_ID  = D.QMS_ID(+)
+	   AND A.QMS_SEQ = D.QMS_SEQ(+)
+	   AND A.QMS_ID  = E.QMS_ID(+)
+	   AND A.QMS_SEQ = E.QMS_SEQ(+)
+	   AND CASE
+         WHEN Sf_getpreorderyn(C.cust_po) = 'Y' THEN
+         Sf_getpreqtyyn(C.cust_po)
+         ELSE 'Y'
+       END = 'Y'
+	   )BB
+	 GROUP BY BB.QMS_ID
+	      ,BB.SALESREP_CD
+	      ,BB.QMS_YEAR
+	      ,BB.QMS_DELN_QUAT
+	)T3
+	GROUP BY T3.SALESREP_CD
+	      ,T3.QMS_YEAR
+	      ,T3.QMS_DELN_QUAT
+	      ) TT2
+	WHERE TT1.SALESREP_CD = TT2.SALESREP_CD(+)
+	  AND TT1.QMS_YEAR = TT2.QMS_YEAR(+)
+	  AND TT1.QMS_DELN_QUAT = TT2.QMS_DELN_QUAT(+)
+	  <!-- AND TT1.QMS_YEAR = '2021'
+	  AND TT1.QMS_DELN_QUAT = '3Q' -->
+	  <if test="m_quat != null and m_quat != ''">AND TT1.QMS_YEAR||TT1.QMS_DELN_QUAT = #{m_quat}</if>
+	 GROUP BY TT1.QMS_DEPT_NM
+	      ,TT1.QMS_TEAM_NM
+	      ,TT1.QMS_YEAR
+	      ,TT1.QMS_DELN_QUAT) P2
+	 WHERE P1.QMS_DEPT_NM = P2.QMS_DEPT_NM(+)
+	   AND P1.QMS_TEAM_NM = P2.QMS_TEAM_NM(+)
+	   AND P1.QMS_YEAR = P2.QMS_YEAR(+)
+	   AND P1.QMS_DELN_QUAT = P2.QMS_DELN_QUAT(+)
+		)
+		)XX
+		)
+	</select>
+	
+	<select id="getQmsStasticsSalesListAjax" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getQmsStasticsSalesListAjax */
+		SELECT * FROM (SELECT /*+ HASH(table) */ ROWNUM RR, XX.* FROM (
+		(SELECT P1.QMS_DEPT_NM,P1.QMS_TEAM_NM,P1.SALESREP_CD, P1.SALESREP_NM,P1.ORDER_QTY
+      ,NVL(P1.QMS_ORDER_CNT,0) AS QMS_ORDER_CNT
+      ,NVL(P1.QMS_END_CNT,0) AS QMS_END_CNT
+      ,P1.RETURN_RATE
+      ,P2.QMS_ORDER_CNT AS TEAM_ORDER_CNT
+      ,P2.QMS_FILE_CNT AS TEAM_RETURN_CNT
+      ,TRUNC(CASE WHEN P2.QMS_END_CNT > 0 /*AND P2.QMS_MAIL_CNT > 0*/
+            THEN P2.QMS_END_CNT / P2.QMS_ORDER_CNT * 100 ELSE 0 END,1) AS TEAM_RETURN_RATE
+	  FROM
+	(SELECT TT1.QMS_DEPT_NM
+	      ,TT1.QMS_TEAM_NM
+	      ,TT1.SALESREP_CD
+	      ,TT1.SALESREP_NM
+	      ,TT1.ORDER_QTY
+	      ,TT1.QMS_YEAR
+	      ,TT1.QMS_DELN_QUAT
+	      ,TT2.QMS_ORDER_CNT
+	      ,TT2.QMS_MAIL_CNT
+	      ,TT2.QMS_FILE_CNT
+	      ,TT2.QMS_END_CNT
+	      ,TRUNC(CASE WHEN TT2.QMS_END_CNT > 0 /*AND TT2.QMS_MAIL_CNT > 0*/
+	            THEN TT2.QMS_END_CNT / TT2.QMS_ORDER_CNT * 100 ELSE 0 END,1) AS RETURN_RATE
+	  FROM
+	(SELECT T2.QMS_DEPT_NM
+	      ,T2.QMS_TEAM_NM
+	      ,T1.SALESREP_CD
+	      ,T1.SALESREP_NM
+	      ,COUNT(T1.ORDERNO) AS ORDER_QTY
+	      ,T1.QMS_YEAR
+	      ,T1.QMS_DELN_QUAT
+	  FROM 
+	/*(SELECT AA.SALESREP_CD
+	      ,AA.SALESREP_NM
+	      ,AA.ORDERNO
+	      ,AA.QMS_YEAR
+	      ,AA.QMS_DELN_QUAT
+	  FROM */
+	(SELECT A.SALESREP_CD,A.SALESREP_NM
+	      ,A.ORDERNO
+	      ,A.LINE_NO
+	      ,SUBSTR(A.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+	      ,DECODE(SUBSTR(A.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+	  FROM QMS_SALESORDER A
+	  WHERE
+	  	 A.ACTUAL_SHIP_DT BETWEEN #{r_actualshipsdt} AND #{r_actualshipedt}
+	  	 AND 
+           CASE WHEN A.cust_po != NULL THEN
+           CASE WHEN
+               (SELECT SUM(SB.ORDER_QTY) 
+                 FROM QMS_PRE_MAST SA
+                     ,QMS_PRE_DETL SB
+                     ,O_ORDER_CONFIRM_H SC
+               WHERE SA.QMS_TEMP_ID = SB.QMS_TEMP_ID
+                  AND SA.REQ_NO = SC.REQ_NO
+                  AND SC.CUST_PO = A.cust_po)
+               = (SELECT SUM(ORDER_QTY) 
+                 FROM QMS_SALESORDER 
+                WHERE CUST_PO  = A.cust_po)
+               THEN 'Y' ELSE 'N' 
+               END
+            ELSE 'Y'
+            END
+                = 'Y'
+	  ) /*AA
+	 GROUP BY AA.SALESREP_CD,AA.SALESREP_NM,AA.ORDERNO,AA.QMS_YEAR,AA.QMS_DELN_QUAT
+	 ) */T1
+	 ,QMS_DEPT_MAST T2
+	 WHERE T1.SALESREP_CD = T2.USERID(+)
+	 GROUP BY T2.QMS_DEPT_NM
+	      ,T2.QMS_TEAM_NM
+	      ,T1.SALESREP_CD
+	      ,T1.SALESREP_NM
+	      ,T1.QMS_YEAR
+	      ,T1.QMS_DELN_QUAT
+	)TT1
+	,(SELECT T3.SALESREP_CD
+	      ,COUNT(T3.QMS_ID) AS QMS_ORDER_CNT
+	      ,T3.QMS_YEAR
+	      ,T3.QMS_DELN_QUAT
+	      ,SUM(QMS_MAIL_CNT) AS QMS_MAIL_CNT
+	      ,SUM(QMS_FILE_CNT) AS QMS_FILE_CNT
+	      ,SUM(QMS_END_CNT) AS QMS_END_CNT
+	  FROM
+	(SELECT BB.SALESREP_CD
+	      ,BB.QMS_ID
+	      ,BB.QMS_YEAR
+	      ,BB.QMS_DELN_QUAT
+	      ,CASE WHEN COUNT(BB.SHIPTO_EMAIL) > 0 THEN 1 ELSE 0 END QMS_MAIL_CNT
+	      ,CASE WHEN COUNT(BB.QMS_FILE_ID) > 0 THEN 1 ELSE 0 END QMS_FILE_CNT
+	      ,CASE WHEN /*COUNT(BB.SHIPTO_EMAIL) > 0 AND*/ COUNT(BB.QMS_FILE_ID) > 0 THEN 1 ELSE 0 END QMS_END_CNT
+	  FROM
+	(SELECT A.QMS_ID
+	      ,C.SALESREP_CD
+	      ,SUBSTR(C.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+	      ,DECODE(SUBSTR(C.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+	      ,D.SHIPTO_EMAIL
+	      ,E.QMS_FILE_ID
+	  FROM QMS_ORD_MAST A
+	      ,QMS_ORD_DETL B
+	      ,QMS_SALESORDER C
+	      ,QMS_ORD_MAIL D
+	      ,QMS_ORD_FILE E
+	 WHERE A.QMS_ID = B.QMS_ID
+	   AND A.QMS_SEQ = B.QMS_SEQ
+	   AND A.DELETEYN = 'N'
+	   AND B.ORDERNO = C.ORDERNO
+	   AND B.LINE_NO = C.LINE_NO
+	   AND A.QMS_ID  = D.QMS_ID(+)
+	   AND A.QMS_SEQ = D.QMS_SEQ(+)
+	   AND A.QMS_ID  = E.QMS_ID(+)
+	   AND A.QMS_SEQ = E.QMS_SEQ(+)
+	   AND
+         CASE WHEN C.cust_po != NULL THEN
+           CASE WHEN
+               (SELECT SUM(SB.ORDER_QTY) 
+                 FROM QMS_PRE_MAST SA
+                     ,QMS_PRE_DETL SB
+                     ,O_ORDER_CONFIRM_H SC
+               WHERE SA.QMS_TEMP_ID = SB.QMS_TEMP_ID
+                  AND SA.REQ_NO = SC.REQ_NO
+                  AND SC.CUST_PO = C.cust_po)
+               = (SELECT SUM(ORDER_QTY) 
+                 FROM QMS_SALESORDER 
+                WHERE CUST_PO  = C.cust_po)
+               THEN 'Y' ELSE 'N' 
+               END
+            ELSE 'Y'
+            END
+                = 'Y'
+       )BB
+	 GROUP BY BB.QMS_ID
+	      ,BB.SALESREP_CD
+	      ,BB.QMS_YEAR
+	      ,BB.QMS_DELN_QUAT
+	)T3
+	GROUP BY T3.SALESREP_CD
+	      ,T3.QMS_YEAR
+	      ,T3.QMS_DELN_QUAT
+	      ) TT2
+	WHERE TT1.SALESREP_CD = TT2.SALESREP_CD(+)
+	  AND TT1.QMS_YEAR = TT2.QMS_YEAR(+)
+	  AND TT1.QMS_DELN_QUAT = TT2.QMS_DELN_QUAT(+)
+	  <!-- AND TT1.QMS_YEAR = '2021'
+	  AND TT1.QMS_DELN_QUAT = '3Q' -->
+	  <if test="m_quat != null and m_quat != ''">AND TT1.QMS_YEAR||TT1.QMS_DELN_QUAT = #{m_quat}</if>
+	  )P1,
+	(SELECT TT1.QMS_DEPT_NM
+	      ,TT1.QMS_TEAM_NM
+	      ,TT1.QMS_YEAR
+	      ,TT1.QMS_DELN_QUAT
+	      ,NVL(SUM(TT2.QMS_ORDER_CNT),0) AS QMS_ORDER_CNT
+	      ,NVL(SUM(TT2.QMS_MAIL_CNT),0) AS QMS_MAIL_CNT
+	      ,NVL(SUM(TT2.QMS_FILE_CNT),0) AS QMS_FILE_CNT
+	      ,NVL(SUM(TT2.QMS_END_CNT),0) AS QMS_END_CNT
+	      ,TRUNC(NVL(CASE WHEN SUM(TT2.QMS_END_CNT) > 0 /*AND SUM(TT2.QMS_MAIL_CNT) > 0*/
+	            THEN SUM(TT2.QMS_END_CNT) / SUM(TT2.QMS_ORDER_CNT) * 100 ELSE 0 END,0),1) AS RETURN_RATE
+	  FROM
+	(SELECT T2.QMS_DEPT_NM
+	      ,T2.QMS_TEAM_NM
+	      ,T1.SALESREP_CD
+	      ,T1.SALESREP_NM
+	      ,COUNT(T1.ORDERNO) AS ORDER_CNT
+	      ,T1.QMS_YEAR
+	      ,T1.QMS_DELN_QUAT
+	  FROM 
+	/*(SELECT AA.SALESREP_CD
+	      ,AA.SALESREP_NM
+	      ,AA.ORDERNO
+	      ,AA.QMS_YEAR
+	      ,AA.QMS_DELN_QUAT
+	  FROM */
+	(SELECT A.SALESREP_CD,A.SALESREP_NM
+	      ,A.ORDERNO
+	      ,A.LINE_NO
+	      ,SUBSTR(A.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+	      ,DECODE(SUBSTR(A.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+	  FROM QMS_SALESORDER A
+	  WHERE
+         A.ACTUAL_SHIP_DT BETWEEN #{r_actualshipsdt} AND #{r_actualshipedt}
+         AND
+           CASE WHEN A.cust_po != NULL THEN
+           CASE WHEN
+               (SELECT SUM(SB.ORDER_QTY) 
+                 FROM QMS_PRE_MAST SA
+                     ,QMS_PRE_DETL SB
+                     ,O_ORDER_CONFIRM_H SC
+               WHERE SA.QMS_TEMP_ID = SB.QMS_TEMP_ID
+                  AND SA.REQ_NO = SC.REQ_NO
+                  AND SC.CUST_PO = A.cust_po)
+               = (SELECT SUM(ORDER_QTY) 
+                 FROM QMS_SALESORDER 
+                WHERE CUST_PO  = A.cust_po)
+               THEN 'Y' ELSE 'N' 
+               END
+            ELSE 'Y'
+            END
+                = 'Y'
+         ) /*AA
+	 GROUP BY AA.SALESREP_CD,AA.SALESREP_NM,AA.ORDERNO,AA.QMS_YEAR,AA.QMS_DELN_QUAT
+	 )*/ T1
+	 ,QMS_DEPT_MAST T2
+	 WHERE T1.SALESREP_CD = T2.USERID(+)
+	 GROUP BY T2.QMS_DEPT_NM
+	      ,T2.QMS_TEAM_NM
+	      ,T1.SALESREP_CD
+	      ,T1.SALESREP_NM
+	      ,T1.QMS_YEAR
+	      ,T1.QMS_DELN_QUAT
+	)TT1
+	,(SELECT T3.SALESREP_CD
+	      ,COUNT(T3.QMS_ID) AS QMS_ORDER_CNT
+	      ,T3.QMS_YEAR
+	      ,T3.QMS_DELN_QUAT
+	      ,SUM(QMS_MAIL_CNT) AS QMS_MAIL_CNT
+	      ,SUM(QMS_FILE_CNT) AS QMS_FILE_CNT
+	      ,SUM(QMS_END_CNT) AS QMS_END_CNT
+	  FROM
+	(SELECT BB.SALESREP_CD
+	      ,BB.QMS_ID
+	      ,BB.QMS_YEAR
+	      ,BB.QMS_DELN_QUAT
+	      ,CASE WHEN COUNT(BB.SHIPTO_EMAIL) > 0 THEN 1 ELSE 0 END QMS_MAIL_CNT
+	      ,CASE WHEN COUNT(BB.QMS_FILE_ID) > 0 THEN 1 ELSE 0 END QMS_FILE_CNT
+	      ,CASE WHEN /*COUNT(BB.SHIPTO_EMAIL) > 0 AND*/ COUNT(BB.QMS_FILE_ID) > 0 THEN 1 ELSE 0 END QMS_END_CNT
+	  FROM
+	(SELECT A.QMS_ID
+	      ,C.SALESREP_CD
+	      ,SUBSTR(C.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+	      ,DECODE(SUBSTR(C.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+	      ,D.SHIPTO_EMAIL
+	      ,E.QMS_FILE_ID
+	  FROM QMS_ORD_MAST A
+	      ,QMS_ORD_DETL B
+	      ,QMS_SALESORDER C
+	      ,QMS_ORD_MAIL D
+	      ,QMS_ORD_FILE E
+	 WHERE A.QMS_ID = B.QMS_ID
+	   AND A.QMS_SEQ = B.QMS_SEQ
+	   AND A.DELETEYN = 'N'
+	   AND B.ORDERNO = C.ORDERNO
+	   AND B.LINE_NO = C.LINE_NO
+	   AND A.QMS_ID  = D.QMS_ID(+)
+	   AND A.QMS_SEQ = D.QMS_SEQ(+)
+	   AND A.QMS_ID  = E.QMS_ID(+)
+	   AND A.QMS_SEQ = E.QMS_SEQ(+)
+	   AND         
+           CASE WHEN C.cust_po != NULL THEN
+           CASE WHEN
+                         (SELECT SUM(SB.ORDER_QTY) 
+                           FROM QMS_PRE_MAST SA
+                               ,QMS_PRE_DETL SB
+                               ,O_ORDER_CONFIRM_H SC
+                         WHERE SA.QMS_TEMP_ID = SB.QMS_TEMP_ID
+                            AND SA.REQ_NO = SC.REQ_NO
+                            AND SC.CUST_PO = C.cust_po)
+                         = (SELECT SUM(ORDER_QTY) 
+                           FROM QMS_SALESORDER 
+                          WHERE CUST_PO  = C.cust_po)
+                         THEN 'Y' ELSE 'N' 
+             END 
+             ELSE 'Y'
+             END
+                 = 'Y'
+	   )BB
+	 GROUP BY BB.QMS_ID
+	      ,BB.SALESREP_CD
+	      ,BB.QMS_YEAR
+	      ,BB.QMS_DELN_QUAT
+	)T3
+	GROUP BY T3.SALESREP_CD
+	      ,T3.QMS_YEAR
+	      ,T3.QMS_DELN_QUAT
+	      ) TT2
+	WHERE TT1.SALESREP_CD = TT2.SALESREP_CD(+)
+	  AND TT1.QMS_YEAR = TT2.QMS_YEAR(+)
+	  AND TT1.QMS_DELN_QUAT = TT2.QMS_DELN_QUAT(+)
+	  <!-- AND TT1.QMS_YEAR = '2021'
+	  AND TT1.QMS_DELN_QUAT = '3Q' -->
+	  <if test="m_quat != null and m_quat != ''">AND TT1.QMS_YEAR||TT1.QMS_DELN_QUAT = #{m_quat}</if>
+	 GROUP BY TT1.QMS_DEPT_NM
+	      ,TT1.QMS_TEAM_NM
+	      ,TT1.QMS_YEAR
+	      ,TT1.QMS_DELN_QUAT) P2
+	 WHERE P1.QMS_DEPT_NM = P2.QMS_DEPT_NM(+)
+	   AND P1.QMS_TEAM_NM = P2.QMS_TEAM_NM(+)
+	   AND P1.QMS_YEAR = P2.QMS_YEAR(+)
+	   AND P1.QMS_DELN_QUAT = P2.QMS_DELN_QUAT(+)
+		)
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+		)XX
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+		
+	</select>
+	
+	<select id="getQmsStasticsTeamListAjaxCnt" parameterType="hashmap" resultType="int">
+	/* eorder.o_qmsorder.getQmsStasticsTeamListAjaxCnt */
+		SELECT COUNT(*) FROM (
+		SELECT * 
+		  FROM
+		(SELECT '2' AS TEAM_SEQ
+		      ,TA.TEAM_NM AS QMS_TEAM_NM
+		      ,DENSE_RANK() OVER(ORDER BY MAX(QMS_DEPT_NM) ASC) AS QMS_DEPT_SEQ
+		      ,SUM(ORDER_QTY) AS ORDER_QTY
+		      ,SUM(QMS_CNT) AS QMS_ORDER_CNT
+		      ,SUM(QMS_DELN_CNT) AS QMS_END_CNT
+		      ,TRUNC(CASE WHEN SUM(QMS_DELN_CNT) > 0 AND SUM(QMS_CNT) > 0 
+		            THEN SUM(QMS_DELN_CNT) / SUM(QMS_CNT) * 100 
+		            ELSE 0
+		            END,1) AS RETURN_RATE
+		  FROM
+		(SELECT AA.* 
+		      ,NVL(BB.ACTIVEYN,'N') AS ACTIVEYN
+		  FROM
+		(SELECT B.QMS_DEPT_NM,B.QMS_TEAM_NM AS TEAM_NM
+		      ,SUBSTR(A.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+		      ,DECODE(SUBSTR(A.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+		      ,A.TEAM_CD
+		      ,A.SALESREP_CD
+		      ,A.SALESREP_NM
+		      ,A.ORDERNO
+		      ,A.LINE_NO
+		      ,A.ORDER_QTY
+		      ,NVL(Q.QMS_ORD_QTY,0) AS QMS_ORD_QTY
+		      ,NVL(Q.QMS_CNT,0) AS QMS_CNT
+		      ,NVL(Q.QMS_FILE_CNT,0) AS QMS_FILE_CNT
+		      ,NVL(Q.QMS_MAIL_CNT,0) AS QMS_MAIL_CNT
+		      ,NVL(Q.QMS_DELN_CNT,0) AS QMS_DELN_CNT
+		  FROM QMS_SALESORDER A
+		    ,(
+		        SELECT A.QMS_ID,A.QMS_SEQ,B.ORDERNO,B.LINE_NO
+		              ,COUNT(A.QMS_ID) AS QMS_CNT
+		              ,SUM(B.QMS_ORD_QTY) AS QMS_ORD_QTY
+		              ,DECODE(C.QMS_FILE_ID,NULL,0,1) AS QMS_FILE_CNT
+		              ,DECODE(D.QMS_ID,NULL,0,1) AS QMS_MAIL_CNT
+		              ,CASE WHEN DECODE(C.QMS_FILE_ID,NULL,0,1) > 0 AND DECODE(D.QMS_ID,NULL,0,1) > 0 THEN 1 ELSE 0 END AS QMS_DELN_CNT
+		          FROM QMS_ORD_MAST A
+		              ,QMS_ORD_DETL B
+		              ,QMS_ORD_FILE C
+		              ,(SELECT QMS_ID,QMS_SEQ FROM QMS_ORD_MAIL GROUP BY QMS_ID,QMS_SEQ) D
+		         WHERE A.QMS_ID = B.QMS_ID
+		           AND A.QMS_SEQ = B.QMS_SEQ
+		           AND A.DELETEYN = 'N'
+		           AND A.QMS_ID  = C.QMS_ID(+)
+		           AND A.QMS_SEQ = C.QMS_SEQ(+)
+		           AND A.QMS_ID  = D.QMS_ID(+)
+		           AND A.QMS_SEQ = D.QMS_SEQ(+)
+		         GROUP BY A.QMS_ID,A.QMS_SEQ,B.ORDERNO,B.LINE_NO,A.CREATEUSER,C.QMS_FILE_ID,D.QMS_ID
+		        )Q
+		      ,QMS_DEPT_MAST B
+		 WHERE A.ORDERNO = Q.ORDERNO(+)
+		   AND A.LINE_NO = Q.LINE_NO(+)
+		   AND A.SALESREP_CD = B.USERID(+)
+		)AA
+		,QMS_ORD_DELN BB
+		
+		WHERE AA.QMS_YEAR = BB.QMS_DELN_YEAR(+)
+		  AND AA.QMS_DELN_QUAT = BB.QMS_DELN_QUAT(+)
+		)TA
+		GROUP BY TA.TEAM_NM
+		
+		UNION ALL
+		
+		SELECT '1' AS TEAM_SEQ,TA.QMS_DEPT_NM AS QMS_TEAM_NM
+		      ,DENSE_RANK() OVER(ORDER BY TA.QMS_DEPT_NM ASC) AS QMS_DEPT_SEQ
+		      ,SUM(ORDER_QTY) AS ORDER_QTY
+		      ,SUM(QMS_CNT) AS QMS_ORDER_CNT
+		      ,SUM(QMS_DELN_CNT) AS QMS_END_CNT
+		      ,TRUNC(CASE WHEN SUM(QMS_DELN_CNT) > 0 AND SUM(QMS_CNT) > 0 
+		            THEN SUM(QMS_DELN_CNT) / SUM(QMS_CNT) * 100 
+		            ELSE 0
+		            END,1) AS RETURN_RATE
+		  FROM
+		(SELECT AA.* 
+		      ,NVL(BB.ACTIVEYN,'N') AS ACTIVEYN
+		  FROM
+		(SELECT B.QMS_DEPT_NM,B.QMS_TEAM_NM AS TEAM_NM
+		      ,SUBSTR(A.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+		      ,DECODE(SUBSTR(A.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+		      ,A.TEAM_CD
+		      ,A.SALESREP_CD
+		      ,A.SALESREP_NM
+		      ,A.ORDERNO
+		      ,A.LINE_NO
+		      ,A.ORDER_QTY
+		      ,NVL(Q.QMS_ORD_QTY,0) AS QMS_ORD_QTY
+		      ,NVL(Q.QMS_CNT,0) AS QMS_CNT
+		      ,NVL(Q.QMS_FILE_CNT,0) AS QMS_FILE_CNT
+		      ,NVL(Q.QMS_MAIL_CNT,0) AS QMS_MAIL_CNT
+		      ,NVL(Q.QMS_DELN_CNT,0) AS QMS_DELN_CNT
+		  FROM QMS_SALESORDER A
+		    ,(
+		        SELECT A.QMS_ID,A.QMS_SEQ,B.ORDERNO,B.LINE_NO
+		              ,COUNT(A.QMS_ID) AS QMS_CNT
+		              ,SUM(B.QMS_ORD_QTY) AS QMS_ORD_QTY
+		              ,DECODE(C.QMS_FILE_ID,NULL,0,1) AS QMS_FILE_CNT
+		              ,DECODE(D.QMS_ID,NULL,0,1) AS QMS_MAIL_CNT
+		              ,CASE WHEN DECODE(C.QMS_FILE_ID,NULL,0,1) > 0 AND DECODE(D.QMS_ID,NULL,0,1) > 0 THEN 1 ELSE 0 END AS QMS_DELN_CNT
+		          FROM QMS_ORD_MAST A
+		              ,QMS_ORD_DETL B
+		              ,QMS_ORD_FILE C
+		              ,(SELECT QMS_ID,QMS_SEQ FROM QMS_ORD_MAIL GROUP BY QMS_ID,QMS_SEQ) D
+		         WHERE A.QMS_ID = B.QMS_ID
+		           AND A.QMS_SEQ = B.QMS_SEQ
+		           AND A.DELETEYN = 'N'
+		           AND A.QMS_ID  = C.QMS_ID(+)
+		           AND A.QMS_SEQ = C.QMS_SEQ(+)
+		           AND A.QMS_ID  = D.QMS_ID(+)
+		           AND A.QMS_SEQ = D.QMS_SEQ(+)
+		         GROUP BY A.QMS_ID,A.QMS_SEQ,B.ORDERNO,B.LINE_NO,A.CREATEUSER,C.QMS_FILE_ID,D.QMS_ID
+		        )Q
+		      ,QMS_DEPT_MAST B
+		 WHERE A.ORDERNO = Q.ORDERNO(+)
+		   AND A.LINE_NO = Q.LINE_NO(+)
+		   AND A.SALESREP_CD = B.USERID(+)
+		)AA
+		,QMS_ORD_DELN BB
+		
+		WHERE AA.QMS_YEAR = BB.QMS_DELN_YEAR(+)
+		  AND AA.QMS_DELN_QUAT = BB.QMS_DELN_QUAT(+)
+		)TA
+		GROUP BY TA.QMS_DEPT_NM
+		)
+		ORDER BY QMS_DEPT_SEQ,TEAM_SEQ)XX
+	</select>
+	
+	<select id="getQmsStasticsTeamListAjax" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getQmsStasticsTeamListAjax */
+		SELECT ROWNUM RR, XX.* FROM (
+		SELECT * FROM
+		(SELECT PP1.*
+		  FROM
+		(SELECT 2 AS TEAM_SEQ
+		      <if test="where != null and where eq 'excel'">,P1.QMS_TEAM_NM</if>
+		      <if test="where == null">,'　'||P1.QMS_TEAM_NM AS QMS_TEAM_NM</if>
+		      ,DENSE_RANK() OVER(ORDER BY MAX(P1.QMS_DEPT_NM) ASC) AS QMS_DEPT_SEQ
+		      ,P1.QMS_YEAR
+		      ,P1.QMS_DELN_QUAT
+		      ,SUM(P1.QMS_ORDER_CNT) AS QMS_ORDER_CNT
+		      ,SUM(P1.QMS_FILE_CNT) AS QMS_FILE_CNT
+		      ,SUM(P1.QMS_END_CNT)  AS QMS_END_CNT
+		      ,TRUNC(CASE WHEN SUM(P1.QMS_ORDER_CNT) > 0 AND SUM(P1.QMS_END_CNT) > 0
+                    THEN SUM(P1.QMS_END_CNT) / SUM(P1.QMS_ORDER_CNT) * 100
+                    ELSE 0 END,1) AS RETURN_RATE
+		  FROM
+		(SELECT TT1.QMS_DEPT_NM
+		      ,TT1.QMS_TEAM_NM
+		      ,TT1.QMS_YEAR
+		      ,TT1.QMS_DELN_QUAT
+		      ,NVL(SUM(TT2.QMS_ORDER_CNT),0) AS QMS_ORDER_CNT
+		      ,NVL(SUM(TT2.QMS_MAIL_CNT),0) AS QMS_MAIL_CNT
+		      ,NVL(SUM(TT2.QMS_FILE_CNT),0) AS QMS_FILE_CNT
+		      ,NVL(SUM(TT2.QMS_END_CNT),0) AS QMS_END_CNT
+		      ,TRUNC(NVL(CASE WHEN SUM(TT2.QMS_END_CNT) > 0 /*AND SUM(TT2.QMS_MAIL_CNT) > 0*/
+		            THEN SUM(TT2.QMS_END_CNT) / SUM(TT2.QMS_ORDER_CNT) * 100 ELSE 0 END,0),1) AS RETURN_RATE
+		  FROM
+		(SELECT T2.QMS_DEPT_NM
+		      ,T2.QMS_TEAM_NM
+		      ,T1.SALESREP_CD
+		      ,T1.SALESREP_NM
+		      ,COUNT(T1.ORDERNO) AS ORDER_CNT
+		      ,T1.QMS_YEAR
+		      ,T1.QMS_DELN_QUAT
+		  FROM 
+		(SELECT AA.SALESREP_CD
+		      ,AA.SALESREP_NM
+		      ,AA.ORDERNO
+		      ,AA.QMS_YEAR
+		      ,AA.QMS_DELN_QUAT
+		  FROM 
+		(SELECT A.SALESREP_CD,A.SALESREP_NM
+		      ,A.ORDERNO
+		      ,A.LINE_NO
+		      ,SUBSTR(A.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+		      ,DECODE(SUBSTR(A.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+		  FROM QMS_SALESORDER A
+		  WHERE
+		       A.ACTUAL_SHIP_DT BETWEEN #{r_actualshipsdt} AND #{r_actualshipedt}
+		       AND
+                CASE WHEN A.cust_po != NULL THEN
+                CASE WHEN
+                     (SELECT SUM(SB.ORDER_QTY) 
+                       FROM QMS_PRE_MAST SA
+                           ,QMS_PRE_DETL SB
+                           ,O_ORDER_CONFIRM_H SC
+                     WHERE SA.QMS_TEMP_ID = SB.QMS_TEMP_ID
+                        AND SA.REQ_NO = SC.REQ_NO
+                        AND SC.CUST_PO = A.cust_po)
+                     = (SELECT SUM(ORDER_QTY) 
+                       FROM QMS_SALESORDER 
+                      WHERE CUST_PO  = A.cust_po)
+                     THEN 'Y' ELSE 'N' 
+         END 
+         ELSE 'Y'
+         END
+             = 'Y'
+		  )AA
+		 GROUP BY AA.SALESREP_CD,AA.SALESREP_NM,AA.ORDERNO,AA.QMS_YEAR,AA.QMS_DELN_QUAT
+		 )T1
+		 ,QMS_DEPT_MAST T2
+		 WHERE T1.SALESREP_CD = T2.USERID(+)
+		 GROUP BY T2.QMS_DEPT_NM
+		      ,T2.QMS_TEAM_NM
+		      ,T1.SALESREP_CD
+		      ,T1.SALESREP_NM
+		      ,T1.QMS_YEAR
+		      ,T1.QMS_DELN_QUAT
+		)TT1
+		,(SELECT T3.SALESREP_CD
+		      ,COUNT(T3.QMS_ID) AS QMS_ORDER_CNT
+		      ,T3.QMS_YEAR
+		      ,T3.QMS_DELN_QUAT
+		      ,SUM(QMS_MAIL_CNT) AS QMS_MAIL_CNT
+		      ,SUM(QMS_FILE_CNT) AS QMS_FILE_CNT
+		      ,SUM(QMS_END_CNT) AS QMS_END_CNT
+		  FROM
+		(SELECT BB.SALESREP_CD
+		      ,BB.QMS_ID
+		      ,BB.QMS_YEAR
+		      ,BB.QMS_DELN_QUAT
+		      ,CASE WHEN COUNT(BB.SHIPTO_EMAIL) > 0 THEN 1 ELSE 0 END QMS_MAIL_CNT
+		      ,CASE WHEN COUNT(BB.QMS_FILE_ID) > 0 THEN 1 ELSE 0 END QMS_FILE_CNT
+		      ,CASE WHEN /*COUNT(BB.SHIPTO_EMAIL) > 0 AND*/ COUNT(BB.QMS_FILE_ID) > 0 THEN 1 ELSE 0 END QMS_END_CNT
+		  FROM
+		(SELECT A.QMS_ID
+		      ,C.SALESREP_CD
+		      ,SUBSTR(C.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+		      ,DECODE(SUBSTR(C.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+		      ,D.SHIPTO_EMAIL
+		      ,E.QMS_FILE_ID
+		  FROM QMS_ORD_MAST A
+		      ,QMS_ORD_DETL B
+		      ,QMS_SALESORDER C
+		      ,QMS_ORD_MAIL D
+		      ,QMS_ORD_FILE E
+		 WHERE A.QMS_ID = B.QMS_ID
+		   AND A.QMS_SEQ = B.QMS_SEQ
+		   AND A.DELETEYN = 'N'
+		   AND B.ORDERNO = C.ORDERNO
+		   AND B.LINE_NO = C.LINE_NO
+		   AND A.QMS_ID  = D.QMS_ID(+)
+		   AND A.QMS_SEQ = D.QMS_SEQ(+)
+		   AND A.QMS_ID  = E.QMS_ID(+)
+		   AND A.QMS_SEQ = E.QMS_SEQ(+)
+		   AND
+             CASE WHEN C.cust_po != NULL THEN
+                CASE WHEN
+                     (SELECT SUM(SB.ORDER_QTY) 
+                       FROM QMS_PRE_MAST SA
+                           ,QMS_PRE_DETL SB
+                           ,O_ORDER_CONFIRM_H SC
+                     WHERE SA.QMS_TEMP_ID = SB.QMS_TEMP_ID
+                        AND SA.REQ_NO = SC.REQ_NO
+                        AND SC.CUST_PO = C.cust_po)
+                     = (SELECT SUM(ORDER_QTY) 
+                       FROM QMS_SALESORDER 
+                      WHERE CUST_PO  = C.cust_po)
+                     THEN 'Y' ELSE 'N' 
+         END 
+         ELSE 'Y'
+         END
+             = 'Y'
+		   )BB
+		 GROUP BY BB.QMS_ID
+		      ,BB.SALESREP_CD
+		      ,BB.QMS_YEAR
+		      ,BB.QMS_DELN_QUAT
+		)T3
+		GROUP BY T3.SALESREP_CD
+		      ,T3.QMS_YEAR
+		      ,T3.QMS_DELN_QUAT
+		      ) TT2
+		WHERE TT1.SALESREP_CD = TT2.SALESREP_CD(+)
+		  AND TT1.QMS_YEAR = TT2.QMS_YEAR(+)
+		  AND TT1.QMS_DELN_QUAT = TT2.QMS_DELN_QUAT(+)
+		<if test="m_quat != null and m_quat != ''">AND TT1.QMS_YEAR||TT1.QMS_DELN_QUAT = #{m_quat}</if>
+		 GROUP BY TT1.QMS_DEPT_NM
+		      ,TT1.QMS_TEAM_NM
+		      ,TT1.QMS_YEAR
+		      ,TT1.QMS_DELN_QUAT
+		)P1
+		GROUP BY  P1.QMS_TEAM_NM
+		      ,P1.QMS_YEAR
+		      ,P1.QMS_DELN_QUAT)
+		PP1
+		UNION ALL
+		SELECT 1 AS TEAM_SEQ,P1.QMS_DEPT_NM QMS_TEAM_NM
+		      ,DENSE_RANK() OVER(ORDER BY MAX(P1.QMS_DEPT_NM) ASC) AS QMS_DEPT_SEQ
+		      ,P1.QMS_YEAR
+		      ,P1.QMS_DELN_QUAT
+		      ,SUM(P1.QMS_ORDER_CNT) AS QMS_ORDER_CNT
+		      ,SUM(P1.QMS_FILE_CNT) AS QMS_FILE_CNT
+		      ,SUM(P1.QMS_END_CNT)  AS QMS_END_CNT
+		      ,TRUNC(CASE WHEN SUM(P1.QMS_ORDER_CNT) > 0 AND SUM(P1.QMS_END_CNT) > 0
+                    THEN SUM(P1.QMS_END_CNT) / SUM(P1.QMS_ORDER_CNT) * 100
+                    ELSE 0 END,1) AS RETURN_RATE
+		  FROM
+		(SELECT TT1.QMS_DEPT_NM
+		      ,TT1.QMS_TEAM_NM
+		      ,TT1.QMS_YEAR
+		      ,TT1.QMS_DELN_QUAT
+		      ,NVL(SUM(TT2.QMS_ORDER_CNT),0) AS QMS_ORDER_CNT
+		      ,NVL(SUM(TT2.QMS_MAIL_CNT),0) AS QMS_MAIL_CNT
+		      ,NVL(SUM(TT2.QMS_FILE_CNT),0) AS QMS_FILE_CNT
+		      ,NVL(SUM(TT2.QMS_END_CNT),0) AS QMS_END_CNT
+		      ,TRUNC(NVL(CASE WHEN SUM(TT2.QMS_END_CNT) > 0 /*AND SUM(TT2.QMS_MAIL_CNT) > 0*/
+		            THEN SUM(TT2.QMS_END_CNT) / SUM(TT2.QMS_ORDER_CNT) * 100 ELSE 0 END,0),1) AS RETURN_RATE
+		  FROM
+		(SELECT T2.QMS_DEPT_NM
+		      ,T2.QMS_TEAM_NM
+		      ,T1.SALESREP_CD
+		      ,T1.SALESREP_NM
+		      ,COUNT(T1.ORDERNO) AS ORDER_CNT
+		      ,T1.QMS_YEAR
+		      ,T1.QMS_DELN_QUAT
+		  FROM 
+		(SELECT AA.SALESREP_CD
+		      ,AA.SALESREP_NM
+		      ,AA.ORDERNO
+		      ,AA.QMS_YEAR
+		      ,AA.QMS_DELN_QUAT
+		  FROM 
+		(SELECT A.SALESREP_CD,A.SALESREP_NM
+		      ,A.ORDERNO
+		      ,A.LINE_NO
+		      ,SUBSTR(A.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+		      ,DECODE(SUBSTR(A.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+		  FROM QMS_SALESORDER A
+		  WHERE
+		         A.ACTUAL_SHIP_DT BETWEEN #{r_actualshipsdt} AND #{r_actualshipedt}
+		         AND
+                   CASE WHEN A.cust_po != NULL THEN
+                   CASE WHEN
+                     (SELECT SUM(SB.ORDER_QTY) 
+                       FROM QMS_PRE_MAST SA
+                           ,QMS_PRE_DETL SB
+                           ,O_ORDER_CONFIRM_H SC
+                     WHERE SA.QMS_TEMP_ID = SB.QMS_TEMP_ID
+                        AND SA.REQ_NO = SC.REQ_NO
+                        AND SC.CUST_PO = A.cust_po)
+                     = (SELECT SUM(ORDER_QTY) 
+                       FROM QMS_SALESORDER 
+                      WHERE CUST_PO  = A.cust_po)
+                     THEN 'Y' ELSE 'N' 
+         END 
+         ELSE 'Y'
+         END
+             = 'Y'
+		  )AA
+		 GROUP BY AA.SALESREP_CD,AA.SALESREP_NM,AA.ORDERNO,AA.QMS_YEAR,AA.QMS_DELN_QUAT
+		 )T1
+		 ,QMS_DEPT_MAST T2
+		 WHERE T1.SALESREP_CD = T2.USERID(+)
+		 GROUP BY T2.QMS_DEPT_NM
+		      ,T2.QMS_TEAM_NM
+		      ,T1.SALESREP_CD
+		      ,T1.SALESREP_NM
+		      ,T1.QMS_YEAR
+		      ,T1.QMS_DELN_QUAT
+		)TT1
+		,(SELECT T3.SALESREP_CD
+		      ,COUNT(T3.QMS_ID) AS QMS_ORDER_CNT
+		      ,T3.QMS_YEAR
+		      ,T3.QMS_DELN_QUAT
+		      ,SUM(QMS_MAIL_CNT) AS QMS_MAIL_CNT
+		      ,SUM(QMS_FILE_CNT) AS QMS_FILE_CNT
+		      ,SUM(QMS_END_CNT) AS QMS_END_CNT
+		  FROM
+		(SELECT BB.SALESREP_CD
+		      ,BB.QMS_ID
+		      ,BB.QMS_YEAR
+		      ,BB.QMS_DELN_QUAT
+		      ,CASE WHEN COUNT(BB.SHIPTO_EMAIL) > 0 THEN 1 ELSE 0 END QMS_MAIL_CNT
+		      ,CASE WHEN COUNT(BB.QMS_FILE_ID) > 0 THEN 1 ELSE 0 END QMS_FILE_CNT
+		      ,CASE WHEN /*COUNT(BB.SHIPTO_EMAIL) > 0 AND*/ COUNT(BB.QMS_FILE_ID) > 0 THEN 1 ELSE 0 END QMS_END_CNT
+		  FROM
+		(SELECT A.QMS_ID
+		      ,C.SALESREP_CD
+		      ,SUBSTR(C.ACTUAL_SHIP_DT,0,4) AS QMS_YEAR
+		      ,DECODE(SUBSTR(C.ACTUAL_SHIP_DT,5,2),'01','1Q','02','1Q','03','1Q','04','2Q','05','2Q','06','2Q','07','3Q','08','3Q','09','3Q','10','4Q','11','4Q','12','4Q') AS QMS_DELN_QUAT
+		      ,D.SHIPTO_EMAIL
+		      ,E.QMS_FILE_ID
+		  FROM QMS_ORD_MAST A
+		      ,QMS_ORD_DETL B
+		      ,QMS_SALESORDER C
+		      ,QMS_ORD_MAIL D
+		      ,QMS_ORD_FILE E
+		 WHERE A.QMS_ID = B.QMS_ID
+		   AND A.QMS_SEQ = B.QMS_SEQ
+		   AND A.DELETEYN = 'N'
+		   AND B.ORDERNO = C.ORDERNO
+		   AND B.LINE_NO = C.LINE_NO
+		   AND A.QMS_ID  = D.QMS_ID(+)
+		   AND A.QMS_SEQ = D.QMS_SEQ(+)
+		   AND A.QMS_ID  = E.QMS_ID(+)
+		   AND A.QMS_SEQ = E.QMS_SEQ(+)
+		   AND
+             CASE WHEN C.cust_po != NULL THEN
+                CASE WHEN
+                     (SELECT SUM(SB.ORDER_QTY) 
+                       FROM QMS_PRE_MAST SA
+                           ,QMS_PRE_DETL SB
+                           ,O_ORDER_CONFIRM_H SC
+                     WHERE SA.QMS_TEMP_ID = SB.QMS_TEMP_ID
+                        AND SA.REQ_NO = SC.REQ_NO
+                        AND SC.CUST_PO = C.cust_po)
+                     = (SELECT SUM(ORDER_QTY) 
+                       FROM QMS_SALESORDER 
+                      WHERE CUST_PO  = C.cust_po)
+                     THEN 'Y' ELSE 'N' 
+         END 
+         ELSE 'Y'
+         END
+             = 'Y'
+		   )BB
+		 GROUP BY BB.QMS_ID
+		      ,BB.SALESREP_CD
+		      ,BB.QMS_YEAR
+		      ,BB.QMS_DELN_QUAT
+		)T3
+		GROUP BY T3.SALESREP_CD
+		      ,T3.QMS_YEAR
+		      ,T3.QMS_DELN_QUAT
+		      ) TT2
+		WHERE TT1.SALESREP_CD = TT2.SALESREP_CD(+)
+		  AND TT1.QMS_YEAR = TT2.QMS_YEAR(+)
+		  AND TT1.QMS_DELN_QUAT = TT2.QMS_DELN_QUAT(+)
+		  <if test="m_quat != null and m_quat != ''">AND TT1.QMS_YEAR||TT1.QMS_DELN_QUAT = #{m_quat}</if>
+		 GROUP BY TT1.QMS_DEPT_NM
+		      ,TT1.QMS_TEAM_NM
+		      ,TT1.QMS_YEAR
+		      ,TT1.QMS_DELN_QUAT
+		)P1
+		GROUP BY P1.QMS_DEPT_NM
+		      ,P1.QMS_YEAR
+		      ,P1.QMS_DELN_QUAT)
+		
+		)XX
+		ORDER BY 4,2
+	</select>
+	
+	<select id="getQmsRawStasticsListAjaxCnt" parameterType="hashmap" resultType="int">
+	/* eorder.o_qmsorder.getQmsRawStasticsListAjaxCnt */
+		SELECT COUNT(TA.QMS_ID)
+			  FROM
+			(SELECT 
+			       DENSE_RANK() OVER(PARTITION BY A.QMS_ID,A.QMS_SEQ ORDER BY B.ITEM_CD ASC)-1 AS RNUM
+			      ,A.QMS_ID
+			      ,A.QMS_SEQ
+			      ,B.ORDERNO
+			      ,B.LINE_NO
+			      ,'크나우프 석고보드(주)' AS REFRACT_COMPANY
+			      ,D.ITEM_DESC AS REFRACT_ITEM
+			      ,A.QMS_ID || '-' || A.QMS_SEQ AS REFRACT_AUTH_NUMBER
+			      ,B.ITEM_CD AS REFRACT_PRODUCT
+			      ,(SELECT SUM(QMS_ORD_QTY) FROM QMS_ORD_DETL WHERE QMS_ID = B.QMS_ID AND QMS_SEQ = B.QMS_SEQ AND ITEM_CD = B.ITEM_CD AND LOTNO = B.LOTNO) AS REFRACT_CNT
+			      ,A.SHIPTO_NM AS CONSTRUCTION_SITE
+			      ,A.SHIPTO_ADDR AS CONSTRUCTION_ADDR
+			      ,A.CNSTR_NM AS CONSTRUCTION_COMPANY
+			      ,A.SUPVS_NM AS SUPERVISION_COMPANY
+			      ,D.CUST_NM AS SUPPLIER_COMPANY
+			      ,REPLACE((SELECT MAILING_NM FROM O_CUSTOMER WHERE CUST_CD =D.CUST_CD),D.CUST_NM||' ','') AS SUPPLIER_USER
+			      ,(SELECT TAX_ID FROM O_CUSTOMER WHERE CUST_CD =D.CUST_CD) AS SUPPLIER_ADDR
+			      ,(SELECT ADD1||' '||ADD2||' '||ZIP_CD FROM O_CUSTOMER WHERE CUST_CD =D.CUST_CD) AS CUST_ADDR
+			      ,'' AS SUPPLIER_TELL_NUMBER
+			      ,A.QMS_ID || '-' || A.QMS_SEQ AS MANUFACTURER_QUAL_NUMBER
+			      ,TO_CHAR(A.CREATETIME,'YYYY-MM-DD') AS MANUFACTURER_CDATE
+			      ,D.LOTN AS MANUFACTURER_LOTNUMBER
+			      ,D.SALESREP_NM AS MANUFACTURER_USER
+			      ,'크나우프 석고보드(주)' AS MANUFACTURER_COMPANY
+			      ,'4178117256' AS MANUFACTURER_BS_NUMBER
+			      ,'전남 여수시 낙포동 197-20' AS MANUFACTURER_ADDR
+			      ,'02-6902-3100' AS MANUFACTURER_TELL_NUMBER
+			      /*,CASE WHEN E.QMS_ID IS NOT NULL THEN 1 ELSE 0 END AS QMS_MAIL_CNT
+                  ,CASE WHEN F.QMS_FILE_ID IS NOT NULL THEN 1 ELSE 0 END AS QMS_FILE_CNT*/
+			  FROM QMS_ORD_MAST A
+			      ,QMS_ORD_DETL B
+			      ,O_ITEM_NEW C
+			      ,QMS_SALESORDER D
+			      /*,QMS_ORD_MAIL E
+                  ,QMS_ORD_FILE F*/
+			 WHERE A.QMS_ID  = B.QMS_ID
+			   AND A.QMS_SEQ = B.QMS_SEQ
+			   AND A.DELETEYN = 'N'
+			   AND B.DELETEYN = 'N'
+			   AND B.ITEM_CD = C.ITEM_CD(+)
+			   AND B.ORDERNO = D.ORDERNO
+			   AND B.LINE_NO = D.LINE_NO
+			   /*AND A.QMS_ID  = E.QMS_ID
+			   AND A.QMS_SEQ = E.QMS_SEQ
+			   AND A.QMS_ID  = F.QMS_ID
+			   AND A.QMS_SEQ = F.QMS_SEQ*/
+			   <if test="m_quat != null and m_quat != ''">AND SUBSTR(A.QMS_ID,0,6) = #{m_quat}</if>
+			)TA
+			/*WHERE TA.QMS_MAIL_CNT > 0 AND TA.QMS_FILE_CNT > 0*/
+			WHERE 1=1
+	</select>
+	
+	<select id="getQmsRawStasticsListAjax" parameterType="hashmap" resultType="hashmap">
+	/* eorder.o_qmsorder.getQmsRawStasticsListAjax */
+    SELECT * FROM (SELECT ROWNUM RR, XX.*
+      ,REPLACE(SUBSTR(REFRACT_NAME,INSTR(REFRACT_NAME,'(',-1,1)+1),')','') AS REFRACT_AUTH_NUMBER 
+      ,SUBSTR(REFRACT_NAME,0,INSTR(REFRACT_NAME,'(',-1,1)-1) AS REFRACT_PRODUCT
+      FROM (
+      SELECT ROW_NUMBER() OVER(ORDER BY QMS_ID,QMS_SEQ,MANUFACTURER_CDATE) AS SEQNUM
+          ,TA.*
+          ,(SELECT Z.DESC1
+            FROM
+          (SELECT RANK() OVER(PARTITION BY QMS_ID,QMS_SEQ ORDER BY F.KEYCODE)-1 AS RNUM
+                ,QMS_ID,QMS_SEQ,M.DESC1,FIRETIME,FIREPROOFTYPE
+                ,(SELECT COUNT(*) FROM QMS_ORD_FRCN WHERE QMS_ID = F.QMS_ID AND QMS_SEQ = F.QMS_SEQ) AS FNUM
+            FROM QMS_ORD_FRCN F
+                ,O_FIREPROOFMASTER M
+           WHERE F.KEYCODE = M.KEYCODE
+             AND M.ACTIVE = 'Y'
+          GROUP BY QMS_ID,QMS_SEQ,M.DESC1,FIRETIME,FIREPROOFTYPE,F.KEYCODE)Z
+           WHERE Z.QMS_ID = TA.QMS_ID 
+             AND Z.QMS_SEQ = TA.QMS_SEQ 
+             AND Z.RNUM = MOD(TA.RNUM,FNUM)
+          ) AS REFRACT_ITEM
+          ,(SELECT Z.FIRETIME
+            FROM
+          (SELECT RANK() OVER(PARTITION BY QMS_ID,QMS_SEQ ORDER BY F.KEYCODE)-1 AS RNUM
+                ,QMS_ID,QMS_SEQ,M.DESC1,FIRETIME,FIREPROOFTYPE
+                ,(SELECT COUNT(*) FROM QMS_ORD_FRCN WHERE QMS_ID = F.QMS_ID AND QMS_SEQ = F.QMS_SEQ) AS FNUM
+            FROM QMS_ORD_FRCN F
+                ,O_FIREPROOFMASTER M
+           WHERE F.KEYCODE = M.KEYCODE
+             AND M.ACTIVE = 'Y'
+          GROUP BY QMS_ID,QMS_SEQ,M.DESC1,FIRETIME,FIREPROOFTYPE,F.KEYCODE)Z
+           WHERE Z.QMS_ID = TA.QMS_ID 
+             AND Z.QMS_SEQ = TA.QMS_SEQ 
+             AND Z.RNUM = MOD(TA.RNUM,FNUM)
+          ) AS REFRACT_TIME
+          ,(SELECT Z.FIREPROOFTYPE
+            FROM
+          (SELECT RANK() OVER(PARTITION BY QMS_ID,QMS_SEQ ORDER BY F.KEYCODE)-1 AS RNUM
+                ,QMS_ID,QMS_SEQ,M.DESC1,FIRETIME,FIREPROOFTYPE
+                ,(SELECT COUNT(*) FROM QMS_ORD_FRCN WHERE QMS_ID = F.QMS_ID AND QMS_SEQ = F.QMS_SEQ) AS FNUM
+            FROM QMS_ORD_FRCN F
+                ,O_FIREPROOFMASTER M
+           WHERE F.KEYCODE = M.KEYCODE
+             AND M.ACTIVE = 'Y'
+          GROUP BY QMS_ID,QMS_SEQ,M.DESC1,FIRETIME,FIREPROOFTYPE,F.KEYCODE)Z
+           WHERE Z.QMS_ID = TA.QMS_ID 
+             AND Z.QMS_SEQ = TA.QMS_SEQ 
+             AND Z.RNUM = MOD(TA.RNUM,FNUM)
+          ) AS REFRACT_NAME
+        FROM
+      (SELECT 
+             DENSE_RANK() OVER(PARTITION BY A.QMS_ID,A.QMS_SEQ ORDER BY B.ITEM_CD ASC)-1 AS RNUM
+            ,A.QMS_ID
+            ,A.QMS_SEQ
+            ,B.ORDERNO
+            ,B.LINE_NO
+            ,'크나우프 석고보드(주)' AS REFRACT_COMPANY
+            ,D.ITEM_DESC AS REFRACT_STANDARD
+            ,(SELECT SUM(QMS_ORD_QTY) FROM QMS_ORD_DETL WHERE QMS_ID = B.QMS_ID AND QMS_SEQ = B.QMS_SEQ AND ITEM_CD = B.ITEM_CD AND LOTNO = B.LOTNO) AS REFRACT_CNT
+            ,B.QMS_REMARK AS REFRACT_REMARK
+            ,A.SHIPTO_NM AS CONSTRUCTION_SITE
+            ,A.SHIPTO_ADDR AS CONSTRUCTION_ADDR
+            ,A.CNSTR_NM AS CONSTRUCTION_COMPANY
+            ,A.SUPVS_NM AS SUPERVISION_COMPANY
+            ,D.CUST_NM AS SUPPLIER_COMPANY
+            ,REPLACE((SELECT MAILING_NM FROM O_CUSTOMER WHERE CUST_CD =D.CUST_CD),D.CUST_NM||' ','') AS SUPPLIER_USER 
+            ,SF_GETQMSBIZNO((SELECT TAX_ID FROM O_CUSTOMER WHERE CUST_CD =D.CUST_CD)) AS SUPPLIER_BS_NUMBER
+            ,(SELECT ADD1||' '||ADD2||' '||ZIP_CD FROM O_CUSTOMER WHERE CUST_CD =D.CUST_CD) AS SUPPLIER_ADDR
+            ,'' AS SUPPLIER_TELL_NUMBER
+            ,A.CNSTR_NM
+            ,'' AS CNSTR_USER
+            ,A.CNSTR_ADDR
+            ,A.CNSTR_BIZ_NO
+            ,A.CNSTR_TEL
+            ,A.CNSTR_EMAIL
+            ,A.SUPVS_NM AS SUPERVIS_COMPANY
+			,A.SUPVS_BIZ_NO AS SUPERVIS_BIZ_NO
+			,A.SUPVS_ADDR AS SUPERVIS_ADDR
+			,A.SUPVS_TEL AS SUPERVIS_TEL
+            ,A.QMS_ID || '-' || A.QMS_SEQ AS MANUFACTURER_QUAL_NUMBER
+            ,TO_CHAR(A.CREATETIME,'YYYY-MM-DD') AS MANUFACTURER_CDATE
+            ,D.LOTN AS MANUFACTURER_LOTNUMBER
+            ,D.SALESREP_NM AS MANUFACTURER_USER
+            ,'크나우프 석고보드(주)' AS MANUFACTURER_COMPANY
+            ,SF_GETQMSBIZNO('4178117256') AS MANUFACTURER_BS_NUMBER
+            ,'전남 여수시 낙포동 197-20' AS  MANUFACTURER_ADDR
+            ,'02-6902-3100' AS MANUFACTURER_TELL_NUMBER
+            /*,CASE WHEN E.QMS_ID IS NOT NULL THEN 1 ELSE 0 END AS QMS_MAIL_CNT
+            ,CASE WHEN F.QMS_FILE_ID IS NOT NULL THEN 1 ELSE 0 END AS QMS_FILE_CNT*/
+        FROM QMS_ORD_MAST A
+            ,QMS_ORD_DETL B
+            ,O_ITEM_NEW C
+            ,QMS_SALESORDER D
+            /*,QMS_ORD_MAIL E
+            ,QMS_ORD_FILE F*/
+       WHERE A.QMS_ID  = B.QMS_ID
+         AND A.QMS_SEQ = B.QMS_SEQ
+         AND A.DELETEYN = 'N'
+         AND B.DELETEYN = 'N'
+         AND B.ITEM_CD = C.ITEM_CD(+)
+         AND B.ORDERNO = D.ORDERNO
+         AND B.LINE_NO = D.LINE_NO
+         /*AND A.QMS_ID  = E.QMS_ID
+         AND A.QMS_SEQ = E.QMS_SEQ
+         AND A.QMS_ID  = F.QMS_ID
+         AND A.QMS_SEQ = F.QMS_SEQ*/
+         <if test="m_quat != null and m_quat != ''">AND SUBSTR(A.QMS_ID,0,6) = #{m_quat}</if>
+      )TA
+      /*WHERE QMS_MAIL_CNT > 0 AND QMS_FILE_CNT > 0*/
+      WHERE 1=1 
+      <if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+    ) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+		
+	</select>
+	
+	<select id="getQmsOrderCnt" parameterType="hashmap" resultType="int">
+	/* eorder.o_qmsorder.getQmsOrderCnt */
+		SELECT COUNT(*)
+		  FROM
+		(SELECT MA.QMS_ID,MA.QMS_SEQ
+		  FROM
+		(SELECT *
+		FROM QMS_SALESORDER SO
+		<where>
+			<if test="wherebody_status != null and wherebody_status != '' ">
+				${wherebody_status}
+			</if>
+		
+			<if test="r_ordersdt != null and r_ordersdt != '' ">AND SO.ORDER_DT <![CDATA[>=]]> #{r_ordersdt}</if>
+			<if test="r_orderedt != null and r_orderedt != '' ">AND SO.ORDER_DT <![CDATA[<=]]> #{r_orderedt}</if>
+			<if test="r_actualshipsdt != null and r_actualshipsdt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[>=]]> #{r_actualshipsdt}</if>
+			<if test="r_actualshipedt != null and r_actualshipedt != '' ">AND SO.ACTUAL_SHIP_DT <![CDATA[<=]]> #{r_actualshipedt}</if>
+			<if test="rl_salesrepnm != null and rl_salesrepnm != '' ">
+				AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%'
+				<!-- AND SO.SALESREP_NM LIKE '%' || #{rl_salesrepnm} || '%' -->
+			</if>
+			<if test="rl_orderno != null and rl_orderno != '' ">AND SO.ORDERNO LIKE '%' || #{rl_orderno} || '%' </if>
+			<if test="r_custcd != null and r_custcd != '' ">AND SO.CUST_CD  = #{r_custcd}</if>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND SO.SHIPTO_CD = #{r_shiptocd}</if>
+			<!-- 관리자 권한에 따른 조건절 -->
+ 			
+ 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+ 				<if test='"AD".equals(r_adminauthority)'>
+ 				</if>
+ 				<if test='"CS".equals(r_adminauthority)'>
+ 					AND SO.SALESREP_CD IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+ 				</if>
+ 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+ 					<if test='"SH".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SM".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SR".equals(r_adminauthority)'>
+ 						AND SO.SALESREP_CD = #{r_adminuserid}
+ 					</if>
+ 				</if>
+ 				<if test='"MK".equals(r_adminauthority)'>
+ 					
+ 				</if>
+ 			</if>
+ 			<!-- End. -->
+		</where>
+		) SO
+		,QMS_ORD_DETL MD
+		,QMS_ORD_MAST MA
+		 WHERE SO.ORDERNO = MD.ORDERNO
+		   AND SO.LINE_NO = MD.LINE_NO
+		   AND MD.QMS_ID = MA.QMS_ID
+		   AND MD.QMS_SEQ = MA.QMS_SEQ
+		   AND MA.DELETEYN = 'N'
+		   GROUP BY  MA.QMS_ID,MA.QMS_SEQ)
+	</select>
+	
+	<select id="getQmsTempId" parameterType="hashmap" resultType="String">
+		/* eorder.o_qmsorder.getQmsTempId */
+		SELECT QMS_PRE_MAST_SEQ.NEXTVAL as qmsTempId FROM DUAL
+	</select>
+	
+	<select id="getQmsFirstOrderCheckAjax" parameterType="hashmap" resultType="String">
+		 SELECT MIN(QMS_TEMP_ID)
+		   FROM QMS_PRE_MAST 
+		  WHERE REQ_NO = #{m_reqNo}
+		    AND DELETEYN = 'N'
+	</select>
+	
+	<insert id="setQmsFirstOrderAjax" parameterType="hashmap" >
+		/* eorder.o_qmsorder.setQmsFirstOrderAjax */
+		INSERT INTO QMS_PRE_MAST(QMS_TEMP_ID,REQ_NO,REQUSET_DT,CREATEUSER,CREATETIME,UPDATEUSER,UPDATETIME,DELETEYN)
+			 VALUES(#{qmsTempId},#{m_reqNo},TO_CHAR(SYSDATE,'YYYYMMDD'),#{r_userid},SYSDATE,#{r_userid},SYSDATE,'N')
+	</insert>
+	
+	<insert id="setQmsFirstOrderDetailAjax" parameterType="hashmap" >
+		/* eorder.o_qmsorder.setQmsFirstOrderDetailAjax */
+		INSERT INTO QMS_PRE_DETL(QMS_TEMP_ID,ORDERNO,LINE_NO,ITEM_CD,ORDER_QTY,DELETEYN)
+		VALUES(#{qmsTempId},NULL,#{m_lineno},#{m_itemcd},#{m_quantity},'N')
+	</insert>
+	
+	<select id="getQmsPopPreMastList" parameterType="hashmap" resultType="hashmap">
+		/* eorder.o_qmsorder.getQmsPopPreMastList */
+		SELECT A.QMS_TEMP_ID
+		    ,A.REQ_NO
+		    ,A.REQUSET_DT
+		    ,NVL(A.SHIPTO_CD,B.SHIPTO_CD) AS SHIPTO_CD
+		    ,NVL(A.SHIPTO_NM,(SELECT SHIPTO_NM FROM O_SHIPTO WHERE SHIPTO_CD = B.SHIPTO_CD AND ROWNUM=1)) AS SHIPTO_NM
+		    ,NVL(A.SHIPTO_ADDR,B.ADD1||' '||B.ADD2||' '||B.ZIP_CD) AS SHIPTO_ADDR
+		    ,A.SHIPTO_TEL
+		    ,A.SHIPTO_EMAIL
+		    ,A.CNSTR_CD
+		    ,A.CNSTR_NM
+		    ,A.CNSTR_ADDR
+		    ,A.CNSTR_BIZ_NO
+		    ,A.CNSTR_TEL
+		    ,A.CNSTR_EMAIL
+		    ,A.SUPVS_CD
+		    ,A.SUPVS_NM
+		    ,A.SUPVS_ADDR
+		    ,A.SUPVS_BIZ_NO
+		    ,A.SUPVS_TEL
+		    ,A.SUPVS_EMAIL
+		    ,A.CREATEUSER
+		  FROM QMS_PRE_MAST A 
+		      ,O_CUST_ORDER_H B
+		 WHERE A.QMS_TEMP_ID = #{qmsTempId}
+		   AND A.REQ_NO = B.REQ_NO
+		   AND A.DELETEYN = 'N'
+	</select>
+	
+	<select id="getQmsPopPreDetlList" parameterType="hashmap" resultType="hashmap">
+		/* eorder.o_qmsorder.getQmsPopPreDetlList */
+		SELECT B.QMS_TEMP_ID
+		      ,B.QMS_DETL_ID
+		      ,B.ITEM_CD
+		      ,B.ORDER_QTY
+		      ,B.ORDERNO
+		      ,B.LINE_NO
+		      ,B.ORDER_QTY AS QMS_ORD_QTY
+		      ,C.DESC1 AS ITEM_DESC
+		      ,B.QMS_REMARK
+		  FROM QMS_PRE_MAST A
+		      ,QMS_PRE_DETL B
+		      ,O_ITEM_NEW C
+		 WHERE A.QMS_TEMP_ID = B.QMS_TEMP_ID
+		   AND B.ITEM_CD = C.ITEM_CD
+		   AND A.QMS_TEMP_ID = #{qmsTempId}
+		   AND A.DELETEYN = 'N'
+	</select>
+	
+	<select id="getQmsPreFireproofList" parameterType="hashmap" resultType="hashmap">
+		/* eorder.o_qmsorder.getQmsPreFireproofList */
+		SELECT A.KEYCODE
+		      ,A.FIREPROOFTYPE
+		      ,A.FIRETIME
+		      ,A.FILENAME
+		      ,CEIL((SELECT COUNT(*) FROM O_FIREPROOFMASTER F WHERE F.FIRETIME = A.FIRETIME AND F.ACTIVE = 'Y' ) / 4) AS ROWSPAN_CNT
+		      ,ROW_NUMBER() OVER (PARTITION BY A.FIRETIME ORDER BY A.KEYCODE ASC) AS RNUM
+		      ,ROW_NUMBER() OVER (ORDER BY A.KEYCODE ASC) AS RCNT
+		      ,(SELECT COUNT(F.FIRETIME) FROM O_FIREPROOFMASTER F WHERE F.ACTIVE = 'Y') AS RLAST
+		      ,CASE WHEN DENSE_RANK() OVER (PARTITION BY A.FIRETIME ORDER BY A.KEYCODE DESC) = 1 THEN 'Y' ELSE 'N' END AS LAST_YN
+              ,CASE WHEN (B.KEYCODE IS NOT NULL AND B.DELETEYN='N') THEN 'Y' ELSE 'N' END AS CHK_YN
+		  FROM O_FIREPROOFMASTER A
+          LEFT OUTER JOIN QMS_PRE_FRCN B
+            ON A.KEYCODE = B.KEYCODE(+)
+           AND B.QMS_TEMP_ID  = #{qmsTempId}
+		   AND B.DELETEYN = 'N'
+		 WHERE A.ACTIVE = 'Y'
+		 ORDER BY A.FIRETIME,A.DISPLAYORDER
+	</select>
+	
+	
+	<insert id="setQmsOrderPreMastUpdate" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderPreMastUpdate */
+		UPDATE QMS_PRE_MAST
+		   SET SHIPTO_CD = #{shiptoCd}
+		      ,SHIPTO_NM = #{shiptoNm}
+		      ,SHIPTO_ADDR = #{shiptoAddr}
+		      ,SHIPTO_EMAIL = #{shiptoEmail}
+		      <!-- ,CNSTR_CD = #{cnstrCd} -->
+		      ,CNSTR_NM = #{cnstrNm}
+		      ,CNSTR_ADDR = #{cnstrAddr}
+		      ,CNSTR_BIZ_NO = #{cnstrBizNo}
+		      ,CNSTR_TEL = #{cnstrTel}
+		      <!-- ,SUPVS_CD = #{supvsCd} -->
+		      ,SUPVS_NM = #{supvsNm}
+		      ,SUPVS_ADDR = #{supvsAddr}
+		      ,SUPVS_BIZ_NO = #{supvsBizNo}
+		      ,SUPVS_TEL = #{supvsTel}
+		      ,UPDATEUSER = #{userId}
+			  ,UPDATETIME = SYSDATE
+			  ,DELETEYN = 'N'
+		 WHERE QMS_TEMP_ID = #{qmsTempId}
+	</insert>
+	
+	
+	<insert id="setQmsOrderPreDetlUpdate" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderPreDetlUpdate */
+		UPDATE QMS_PRE_DETL
+		   SET QMS_ORD_QTY = #{QMS_ORD_QTY}
+		      ,QMS_REMARK  = #{QMS_REMARK}
+		      ,DELETEYN    = 'N'
+		 WHERE QMS_TEMP_ID = #{QMS_TEMP_ID}
+		   AND QMS_DETL_ID = #{QMS_DETL_ID}
+	</insert>
+	
+	
+	<update id="setQmsOrderPreFireproofInit" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderPreFireproofInit */
+		UPDATE QMS_PRE_FRCN 
+		   SET DELETEYN = 'Y'
+		 WHERE QMS_TEMP_ID = #{qmsTempId}
+	</update>
+	
+	
+	<insert id="setQmsOrderPreFireproofUpdate" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsOrderPreFireproofUpdate */
+		MERGE INTO QMS_PRE_FRCN F
+		USING DUAL
+		   ON (F.QMS_TEMP_ID = #{qmsTempId} AND F.KEYCODE = #{keyCode})
+		WHEN MATCHED THEN
+		    UPDATE SET F.DELETEYN = 'N'
+		WHEN NOT MATCHED THEN
+		    INSERT (F.QMS_TEMP_ID,KEYCODE,CREATEUSER,CREATETIME,UPDATEUSER,UPDATETIME)
+		    VALUES (#{qmsTempId},#{keyCode},#{userId},SYSDATE,#{userId},SYSDATE)
+	</insert>
+	
+	<select id="setQmsPreTestInsert"  statementType="CALLABLE" parameterType="hashmap"  resultType="hashmap">
+		{call SP_QMS_PRE_MANUAL() }
+	</select>
+	
+	<select id="setQmsPreTestSync"  statementType="CALLABLE" parameterType="hashmap"  resultType="hashmap">
+		{call SP_QMS_PRE_SALESORDER() }
+	</select> 
+	
+	<update id="setQmsFirstOrderCancelAjax" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsFirstOrderCancelAjax */
+		UPDATE QMS_PRE_MAST 
+		   SET DELETEYN = 'Y'
+		 WHERE QMS_TEMP_ID = #{qmsTempId}
+	</update>
+	
+	<!-- <select id="syncQmsSalesOrder"  statementType="CALLABLE" parameterType="hashmap"  resultType="hashmap">
+		{call SP_QMS_SALESORDER() }
+	</select>  -->
+	
+	<select id="syncPreQmsSalesOrder"  statementType="CALLABLE" parameterType="hashmap"  resultType="hashmap">
+		{call SP_QMS_PRE_SALESORDER() }
+	</select> 
+	
+	<select id="getMailPreQmsOrderList"  parameterType="hashmap"  resultType="hashmap">
+	/* eorder.o_qmsorder.getMailPreQmsOrderList */
+		SELECT * FROM QMS_ORD_MAIL WHERE SEND_TYPE = 'PRE' AND SEND_YN ='N'
+	</select>
+	
+	
+	<update id="setQmsMailUpdate" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsMailUpdate */
+		UPDATE QMS_ORD_MAIL
+		   SET SEND_YN = 'Y'
+		 WHERE QMS_ID = #{qmsId} AND QMS_SEQ = #{qmsSeq}
+	</update>
+	
+	<select id="getFindPreQmsOrderId"  parameterType="hashmap"  resultType="String">
+	/* eorder.o_qmsorder.getFindPreQmsOrderId */
+		SELECT A.QMS_TEMP_ID
+		  FROM QMS_PRE_MAST A
+		       ,QMS_PRE_DETL B
+		       ,O_ORDER_CONFIRM_H C
+		  WHERE /*A.QMS_TEMP_ID = B.QMS_TEMP_ID
+		    AND*/ A.REQ_NO = C.REQ_NO
+		    AND A.DELETEYN = 'N'
+		    AND B.DELETEYN = 'N'
+		    AND C.STATUS_CD IN ('05','07') 
+		    AND C.CUST_PO = #{custPo}
+		    AND ROWNUM = 1 /* 라인수는 무시하고 전체 기준으로 삭제 */
+	</select>
+	
+	<update id="setQmsPreOrderMastRemove" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsPreOrderMastRemove */
+		DELETE FROM QMS_PRE_MAST
+		 WHERE QMS_TEMP_ID = #{qmsTempId}
+	</update>
+	
+	<update id="setQmsPreOrderDetlRemove" parameterType="hashmap" >
+	/* eorder.o_qmsorder.setQmsPreOrderDetlRemove */
+		DELETE FROM QMS_PRE_DETL
+		 WHERE QMS_TEMP_ID = #{qmsTempId}
+	</update>
+	
+	<select id="getPulbishCountQmsSalesorder" parameterType="hashmap"  resultType="hashmap">
+	SELECT COUNT(A.QMS_ARR) AS CNT_QMS_ARR
+		, A.SALESREP_CD
+		, A.SALESREP_NM
+	FROM (
+		SELECT
+			SO.SALESREP_CD
+			, SO.SALESREP_NM
+			, SF_GETQMSID(ORDERNO, LINE_NO)AS QMS_ARR 
+		FROM
+			qms_salesorder SO
+		 WHERE 1=1
+			<if test="r_actualshipsdt != null and r_actualshipsdt != '' "> AND SO.ACTUAL_SHIP_DT <![CDATA[>=]]> #{r_actualshipsdt}</if>
+			<if test="r_actualshipedt != null and r_actualshipedt != '' "> AND SO.ACTUAL_SHIP_DT <![CDATA[<=]]> #{r_actualshipedt}</if>
+			<if test="repCdArr != null and repCdArr != '' ">
+			AND SO.SALESREP_CD IN  
+			<foreach collection="repCdArr" item="cdArr" index="index"  open="(" close=")" separator=",">
+			#{cdArr}
+			</foreach>
+			</if>
+	) A
+	GROUP BY A.SALESREP_CD
+		, A.SALESREP_NM
+	</select>
+	
+</mapper>

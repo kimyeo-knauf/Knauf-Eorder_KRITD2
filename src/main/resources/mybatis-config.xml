@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+ 
+<configuration>
+	<settings>
+		<setting name="callSettersOnNulls" value="true" /><!-- hashmap 에 담을때 디비의 값이 null 이면 put을 안하는데 이렇게 하면 put 하게 됨 -->
+	</settings>
+	<!-- 
+	<typeHandlers>
+		<typeHandler handler="com.limenets.common.handler.CustomDateHandler"/>
+	</typeHandlers>
+	 -->
+	<!-- 
+	<typeHandlers>
+		<typeHandler handler="org.apache.ibatis.type.ClobTypeHandler" jdbcType="CLOB" javaType="oracle.jdbc.OracleClob" />
+		<typeHandler handler="org.apache.ibatis.type.BlobTypeHandler" jdbcType="BLOB" javaType="oracle.jdbc.OracleBlob"/>
+		<typeHandler handler="org.apache.ibatis.type.ByteArrayTypeHandler" jdbcType="BINARY" javaType="byte[]"/>
+	</typeHandlers>
+	 -->
+</configuration>

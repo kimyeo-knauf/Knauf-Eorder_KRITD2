@@ -1,0 +1,961 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.o_user">
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO O_USER(
+			USERID
+			, USER_PWD
+			, PASSCHANGE_YN <!-- 비밀번호 변경여부 : 별도 테이블로 뽑고 싶은데... -->
+			, USER_NM
+			, AUTHORITY
+			, TEL_NO
+			, AGREE_YN
+			, CUST_CD
+			, DEPT_CD
+			, JDEID
+			, TEAM_NM
+			, TEAM_CD
+			, CELL_NO
+			, DUMMY
+			, FAIL_CNT <!-- 로그인 실패 카운트 : 별도 테이블로 뽑고 싶은데... -->
+			, INSERTID
+			, INSERT_DT
+			, INDATE
+			
+			, USER_POSITION 
+			, USER_EMAIL 
+			, USER_USE
+			, USER_VIEW
+			, USER_DEPTH
+			, USER_PARENT
+			, USER_CATE1
+			, USER_CATE2
+			, USER_CATE3
+			, USER_CATE4
+			, USER_SORT1
+			, USER_SORT2
+			, USER_SORT3
+			, USER_SORT4
+			, USER_FILE
+			, USER_FILETYPE
+			, USER_EORDER
+			, USER_SHIPTOCD
+			
+			, USER_APPPUSHYN1
+			, USER_APPPUSHYN2
+			, USER_APPPUSHYN3
+			
+		)VALUES(
+			#{m_userid, jdbcType=VARCHAR}
+			, UDF_SETPASSWORD(#{m_userpwd, jdbcType=VARCHAR})
+			<!--, '${@com.limenets.eorder.util.PasswordSHA@getShaPasswd(m_userpwd)}' -->
+			, 'N'
+			, #{m_usernm, jdbcType=VARCHAR}
+			, #{m_authority, jdbcType=VARCHAR}
+			, #{m_telno, jdbcType=VARCHAR}
+			, #{m_agreeyn, jdbcType=VARCHAR}
+			, #{m_custcd, jdbcType=VARCHAR}
+			, #{m_deptcd, jdbcType=VARCHAR}
+			, #{m_jdeid, jdbcType=VARCHAR}
+			, #{m_teamnm, jdbcType=VARCHAR}
+			, #{m_teamcd, jdbcType=VARCHAR}
+			, #{m_cellno, jdbcType=VARCHAR}
+			, #{m_dummy, jdbcType=VARCHAR}
+			, 0
+			, #{m_insertid, jdbcType=VARCHAR}
+			, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI') 
+			, SYSDATE
+			
+			, #{m_userposition, jdbcType=VARCHAR}
+			, #{m_useremail, jdbcType=VARCHAR}
+			, #{m_useruse, jdbcType=VARCHAR}
+			, 'Y'
+			, #{m_userdepth, jdbcType=NUMERIC}
+			, #{m_userparent, jdbcType=VARCHAR}
+			, #{m_usercate1, jdbcType=VARCHAR}
+			, #{m_usercate2, jdbcType=VARCHAR}
+			, #{m_usercate3, jdbcType=VARCHAR}
+			, #{m_usercate4, jdbcType=VARCHAR}
+			, <choose><when test="m_usersort1 != null and m_usersort1 != ''">#{m_usersort1, jdbcType=NUMERIC}</when><otherwise>0</otherwise></choose>
+			, <choose><when test="m_usersort2 != null and m_usersort2 != ''">#{m_usersort2, jdbcType=NUMERIC}</when><otherwise>0</otherwise></choose>
+			, <choose><when test="m_usersort3 != null and m_usersort3 != ''">#{m_usersort3, jdbcType=NUMERIC}</when><otherwise>0</otherwise></choose>
+			, <choose><when test="m_usersort4 != null and m_usersort4 != ''">#{m_usersort4, jdbcType=NUMERIC}</when><otherwise>0</otherwise></choose>
+			, #{m_userfile, jdbcType=VARCHAR}
+			, #{m_userfiletype, jdbcType=VARCHAR}
+			, #{m_usereorder, jdbcType=VARCHAR}
+			, #{m_usershiptocd, jdbcType=VARCHAR}
+			
+			, 'N'
+			, 'N'
+			, 'N'
+		)
+	</insert>
+	
+	<update id="up" parameterType="hashmap">
+		UPDATE O_USER US
+		<set>
+			<if test="m_userpwd != null and m_userpwd != ''">USER_PWD = UDF_SETPASSWORD(#{m_userpwd}),</if> <!-- 비밀번호 초기화 = 사용자 아이디 -->
+			<!-- <if test="m_userpwd != null and m_userpwd != ''">USER_PWD = '${@com.limenets.eorder.util.PasswordSHA@getShaPasswd(m_userpwd)}',</if> -->
+			<if test="m_passchangeyn != null and m_passchangeyn != ''">PASSCHANGE_YN = #{m_passchangeyn},</if>
+			<if test="m_usernm != null and m_usernm != ''">USER_NM = #{m_usernm},</if>
+			<if test="m_authority != null and m_authority != ''">AUTHORITY = #{m_authority},</if>
+			<if test="m_telno != null">TEL_NO = #{m_telno},</if>
+			<if test="m_agreeyn != null and m_agreeyn != ''">AGREE_YN = #{m_agreeyn},</if>
+			<if test="m_custcd != null and m_custcd != ''">CUST_CD = #{m_custcd},</if>
+			<if test="m_deptcd != null and m_deptcd != ''">DEPT_CD = #{m_deptcd},</if>
+			<if test="m_jdeid != null and m_jdeid != ''">JDEID = #{m_jdeid},</if>
+			<if test="m_teamnm != null and m_teamnm != ''">TEAM_NM = #{m_teamnm},</if>
+			<if test="m_teamcd != null and m_teamcd != ''">TEAM_CD = #{m_teamcd},</if>
+			<if test="m_cellno != null and m_cellno != ''">CELL_NO = #{m_cellno},</if>
+			<if test="m_dummy != null and m_dummy != ''">DUMMY = #{m_dummy},</if>
+			<if test="m_failcnt != null and m_failcnt != ''">FAIL_CNT = #{m_failcnt},</if>
+			<if test="m_updateid != null and m_updateid != ''">UPDATEID = #{m_updateid},</if>
+			
+			<if test="m_userposition != null">USER_POSITION = #{m_userposition},</if>
+			<if test="m_useremail != null and m_useremail != ''">USER_EMAIL = #{m_useremail},</if> 
+			<if test="m_useruse != null and m_useruse != ''">USER_USE = #{m_useruse},</if> 
+			<if test="m_userview != null and m_userview != ''">USER_VIEW = #{m_userview},</if>
+			<if test="m_userdepth != null and m_userdepth != ''">USER_DEPTH = #{m_userdepth},</if>
+			<if test="m_userparent != null and m_userparent != ''">USER_PARENT = #{m_userparent},</if>
+			<if test="m_usercate1 != null and m_usercate1 != ''">USER_CATE1 = #{m_usercate1},</if>
+			<if test="m_usercate2 != null and m_usercate2 != ''">USER_CATE2 = #{m_usercate2},</if>
+			<if test="m_usercate3 != null and m_usercate3 != ''">USER_CATE3 = #{m_usercate3},</if>
+			<if test="m_usercate4 != null and m_usercate4 != ''">USER_CATE4 = #{m_usercate4},</if>
+			<if test="m_usersort1 != null and m_usersort1 != ''">USER_SORT1 = #{m_usersort1},</if>
+			<if test="m_usersort2 != null and m_usersort2 != ''">USER_SORT2 = #{m_usersort2},</if>
+			<if test="m_usersort3 != null and m_usersort3 != ''">USER_SORT3 = #{m_usersort3},</if>
+			<if test="m_usersort4 != null and m_usersort4 != ''">USER_SORT4 = #{m_usersort4},</if>
+			<if test="m_userfile != null and m_userfile != ''">USER_FILE = #{m_userfile},</if>
+			<if test="m_userfiletype != null and m_userfiletype != ''">USER_FILETYPE = #{m_userfiletype},</if>
+			<if test="m_usereorder != null and m_usereorder != ''">USER_EORDER = #{m_usereorder},</if>
+			<if test="m_useragree != null and m_useragree != ''">USER_AGREE = #{m_useragree},</if>
+			
+			<if test="m_userapppushkey != null and m_userapppushkey != ''">USER_APPPUSHKEY = #{m_userapppushkey},</if>
+			<if test="m_userapppushyn1 != null and m_userapppushyn1 != ''">USER_APPPUSHYN1 = #{m_userapppushyn1},</if>
+			<if test="m_userapppushyn2 != null and m_userapppushyn2 != ''">USER_APPPUSHYN2 = #{m_userapppushyn2},</if>
+			<if test="m_userapppushyn3 != null and m_userapppushyn3 != ''">USER_APPPUSHYN3 = #{m_userapppushyn3},</if>
+			
+			UPDATE_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI'),
+			MODATE = SYSDATE
+		</set>
+		<where>
+			AND USERID = #{r_userid}
+		</where>
+	</update>
+	
+	<update id="upByArr" parameterType="hashmap">
+		UPDATE O_USER US
+		<set>
+			<if test="m_userpwd != null and m_userpwd != ''">USER_PWD = UDF_SETPASSWORD(#{m_userpwd}),</if>
+			<!-- <if test="m_userpwd != null and m_userpwd != ''">USER_PWD = '${@com.limenets.eorder.util.PasswordSHA@getShaPasswd(m_userpwd)}',</if> -->
+			<if test="m_passchangeyn != null and m_passchangeyn != ''">PASSCHANGE_YN = #{m_passchangeyn},</if>
+			<if test="m_usernm != null and m_usernm != ''">USER_NM = #{m_usernm},</if>
+			<if test="m_authority != null and m_authority != ''">AUTHORITY = #{m_authority},</if>
+			<if test="m_telno != null">TEL_NO = #{m_telno},</if>
+			<if test="m_agreeyn != null and m_agreeyn != ''">AGREE_YN = #{m_agreeyn},</if>
+			<if test="m_custcd != null and m_custcd != ''">CUST_CD = #{m_custcd},</if>
+			<if test="m_deptcd != null and m_deptcd != ''">DEPT_CD = #{m_deptcd},</if>
+			<if test="m_jdeid != null and m_jdeid != ''">JDEID = #{m_jdeid},</if>
+			<if test="m_teamnm != null and m_teamnm != ''">TEAM_NM = #{m_teamnm},</if>
+			<if test="m_teamcd != null and m_teamcd != ''">TEAM_CD = #{m_teamcd},</if>
+			<if test="m_cellno != null and m_cellno != ''">CELL_NO = #{m_cellno},</if>
+			<if test="m_dummy != null and m_dummy != ''">DUMMY = #{m_dummy},</if>
+			<if test="m_failcnt != null and m_failcnt != ''">FAIL_CNT = #{m_failcnt},</if>
+			<if test="m_updateid != null and m_updateid != ''">UPDATEID = #{m_updateid},</if>
+			
+			<if test="m_userposition != null">USER_POSITION = #{m_userposition},</if>
+			<if test="m_useremail != null and m_useremail != ''">USER_EMAIL = #{m_useremail},</if> 
+			<if test="m_useruse != null and m_useruse != ''">USER_USE = #{m_useruse},</if> 
+			<if test="m_userview != null and m_userview != ''">USER_VIEW = #{m_userview},</if>
+			<if test="m_userdepth != null and m_userdepth != ''">USER_DEPTH = #{m_userdepth},</if>
+			<if test="m_userparent != null and m_userparent != ''">USER_PARENT = #{m_userparent},</if>
+			<if test="m_usercate1 != null and m_usercate1 != ''">USER_CATE1 = #{m_usercate1},</if>
+			<if test="m_usercate2 != null and m_usercate2 != ''">USER_CATE2 = #{m_usercate2},</if>
+			<if test="m_usercate3 != null and m_usercate3 != ''">USER_CATE3 = #{m_usercate3},</if>
+			<if test="m_usercate4 != null and m_usercate4 != ''">USER_CATE4 = #{m_usercate4},</if>
+			<if test="m_usersort1 != null and m_usersort1 != ''">USER_SORT1 = #{m_usersort1},</if>
+			<if test="m_usersort2 != null and m_usersort2 != ''">USER_SORT2 = #{m_usersort2},</if>
+			<if test="m_usersort3 != null and m_usersort3 != ''">USER_SORT3 = #{m_usersort3},</if>
+			<if test="m_usersort4 != null and m_usersort4 != ''">USER_SORT4 = #{m_usersort4},</if>
+			<if test="m_userfile != null and m_userfile != ''">USER_FILE = #{m_userfile},</if>
+			<if test="m_userfiletype != null and m_userfiletype != ''">USER_FILETYPE = #{m_userfiletype},</if>
+			<if test="m_usereorder != null and m_usereorder != ''">USER_EORDER = #{m_usereorder},</if>
+			<if test="m_useragree != null and m_useragree != ''">USER_AGREE = #{m_useragree},</if>
+			
+			<if test="m_userapppushkey != null and m_userapppushkey != ''">USER_APPPUSHKEY = #{m_userapppushkey},</if>
+			<if test="m_userapppushyn1 != null and m_userapppushyn1 != ''">USER_APPPUSHYN1 = #{m_userapppushyn1},</if>
+			<if test="m_userapppushyn2 != null and m_userapppushyn2 != ''">USER_APPPUSHYN2 = #{m_userapppushyn2},</if>
+			<if test="m_userapppushyn3 != null and m_userapppushyn3 != ''">USER_APPPUSHYN3 = #{m_userapppushyn3},</if>
+			
+			UPDATE_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI'),
+			MODATE = SYSDATE
+		</set>
+		<where>
+			AND USERID IN <foreach collection="ri_userid" item="userid" separator="," open="(" close=")">#{userid}</foreach>
+		</where>
+	</update>
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			US.*, ST.*, CU.CUST_NM, NVL((SELECT USER_NM FROM O_USER WHERE USERID = CU.SALESREP_CD), '') SALES_NM 
+		FROM O_USER US
+		LEFT JOIN O_SHIPTO ST ON ST.CUST_CD = US.CUST_CD AND ST.SHIPTO_CD = US.USER_SHIPTOCD
+		LEFT JOIN O_CUSTOMER CU ON CU.CUST_CD = US.CUST_CD
+		<where>
+			AND USERID NOT IN ('9', '1', '2','3', '4', '5')
+			<if test="r_userid != null and r_userid != '' ">AND USERID = #{r_userid}</if>
+			<if test="rl_userid != null and rl_userid != '' ">AND USERID LIKE '%' || #{rl_userid} || '%'</if>
+			<if test="r_userpwd != null and r_userpwd != '' ">AND USER_PWD = UDF_SETPASSWORD(#{r_userpwd})</if>
+			<!-- <if test="r_userpwd != null and r_userpwd != '' ">AND USER_PWD = '${@com.limenets.eorder.util.PasswordSHA@getShaPasswd(r_userpwd)}'</if> -->
+			<if test="r_passchangeyn != null and r_passchangeyn != '' ">AND PASSCHANGE_YN = #{r_passchangeyn}</if>
+			<if test="r_usernm != null and r_usernm != '' ">AND USER_NM = #{r_usernm}</if>
+			<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' || #{rl_usernm} || '%'</if>
+			<if test="r_authority != null and r_authority != '' ">AND AUTHORITY = #{r_authority}</if>
+			<if test="rn_authority != null and rn_authority != '' ">AND AUTHORITY != #{rn_authority}</if>
+			<if test="rl_telno != null and rl_telno != '' ">AND TEL_NO LIKE '%' || #{rl_telno} || '%'</if>
+			<if test="r_agreeyn != null and r_agreeyn != '' ">AND AGREE_YN = #{r_agreeyn}</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND US.CUST_CD = #{r_custcd}</if>
+			<if test="r_deptcd != null and r_deptcd != '' ">AND DEPT_CD = #{r_deptcd}</if>
+			<if test="r_jdeid != null and r_jdeid != '' ">AND JDEID = #{r_jdeid}</if>
+			<if test="rl_teamnm != null and rl_teamnm != '' ">AND TEAM_NM LIKE '%' || #{rl_teamnm} || '%'</if>
+			<if test="r_teamcd != null and r_teamcd != '' ">AND TEAM_CD = #{r_teamcd}</if>
+			<if test="r_cellno != null and r_cellno != '' ">AND CELL_NO = #{r_cellno}</if>
+			<if test="rl_cellno != null and rl_cellno != '' ">AND CELL_NO LIKE '%' || #{rl_cellno} || '%'</if>
+			<if test="rl_dummy != null and rl_dummy != '' ">AND DUMMY LIKE '%' || #{rl_dummy} || '%'</if>
+			<if test="r_failcnt != null and r_failcnt != '' ">AND FAIL_CNT = #{r_failcnt}</if>
+			<if test="r_userdepth != null and r_userdepth != '' ">AND USER_DEPTH = #{r_userdepth}</if>
+			<if test="r_usercate1 != null and r_usercate1 != '' ">AND USER_CATE1 = #{r_usercate1}</if>
+			<if test="r_usercate2 != null and r_usercate2 != '' ">AND USER_CATE2 = #{r_usercate2}</if>
+			<if test="r_usercate3 != null and r_usercate3 != '' ">AND USER_CATE3 = #{r_usercate3}</if>
+			<if test="r_usercate4 != null and r_usercate4 != '' ">AND USER_CATE4 = #{r_usercate4}</if>
+			<if test="ri_useruse != null">
+				AND USER_USE IN <foreach collection="ri_useruse" item="user_use" separator="," open="(" close=")">#{user_use}</foreach>
+			</if>
+			<if test="ri_authority != null">
+   				AND AUTHORITY IN <foreach collection="ri_authority" item="authority" separator="," open="(" close=")">#{authority}</foreach>
+ 			</if>
+ 			<if test="rni_authority != null">
+   				AND AUTHORITY NOT IN <foreach collection="rni_authority" item="authority" separator="," open="(" close=")">#{authority}</foreach>
+ 			</if>
+ 			
+ 			<if test="r_userposition != null and r_userposition != '' ">AND USER_POSITION = #{r_userposition}</if>
+ 			<if test="rl_userposition != null and rl_userposition != '' ">AND USER_POSITION LIKE '%' || #{rl_userposition} || '%'</if>
+ 			<if test="r_useremail != null and r_useremail != '' ">AND USER_EMAIL = #{r_useremail}</if>
+ 			<if test="rl_useremail != null and rl_useremail != '' ">AND USER_EMAIL LIKE '%' || #{rl_useremail} || '%'</if>
+ 			<if test="r_useruse != null and r_useruse != '' ">AND USER_USE = #{r_useruse}</if>
+			<if test="r_userview != null and r_userview != '' ">AND USER_VIEW = #{r_userview}</if>
+			<if test="r_userdepth != null and r_userdepth != '' ">AND USER_DEPTH = #{r_userdepth}</if>
+			<if test="r_userparent != null and r_userparent != '' ">AND USER_PARENT = #{r_userparent}</if>
+			<if test="r_usercate1 != null and r_usercate1 != '' ">AND USER_CATE1 = #{r_usercate1}</if>
+			<if test="r_usercate2 != null and r_usercate2 != '' ">AND USER_CATE2 = #{r_usercate2}</if>
+			<if test="r_usercate3 != null and r_usercate3 != '' ">AND USER_CATE3 = #{r_usercate3}</if>
+			<if test="r_usercate4 != null and r_usercate4 != '' ">AND USER_CATE4 = #{r_usercate4}</if>
+			<if test="r_usersort1 != null and r_usersort1 != '' ">AND USER_SORT1 = #{r_usersort1}</if>
+			<if test="r_usersort2 != null and r_usersort2 != '' ">AND USER_SORT2 = #{r_usersort2}</if>
+			<if test="r_usersort3 != null and r_usersort3 != '' ">AND USER_SORT3 = #{r_usersort3}</if>
+			<if test="r_usersort4 != null and r_usersort4 != '' ">AND USER_SORT4 = #{r_usersort4}</if>
+			<if test="r_usereorder != null and r_usereorder != '' ">AND USER_EORDER = #{r_usereorder}</if>
+			<if test="r_usershiptocd != null and r_usershiptocd != '' ">AND USER_SHIPTOCD = #{r_usershiptocd}</if>
+		</where>
+	</select>
+	
+	<select id="oneAll" parameterType="hashmap" resultType="hashmap">
+		SELECT US.* 
+		FROM O_USER US
+		<where>
+			<if test="r_userid != null and r_userid != '' ">AND USERID = #{r_userid}</if>
+			<if test="rl_userid != null and rl_userid != '' ">AND USERID LIKE '%' || #{rl_userid} || '%'</if>
+			<if test="r_userpwd != null and r_userpwd != '' ">AND USER_PWD = UDF_SETPASSWORD(#{r_userpwd})</if>
+			<!-- <if test="r_userpwd != null and r_userpwd != '' ">AND USER_PWD = '${@com.limenets.eorder.util.PasswordSHA@getShaPasswd(r_userpwd)}'</if> -->
+			<if test="r_passchangeyn != null and r_passchangeyn != '' ">AND PASSCHANGE_YN = #{r_passchangeyn}</if>
+			<if test="r_usernm != null and r_usernm != '' ">AND USER_NM = #{r_usernm}</if>
+			<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' || #{rl_usernm} || '%'</if>
+			<if test="r_authority != null and r_authority != '' ">AND AUTHORITY = #{r_authority}</if>
+			<if test="rn_authority != null and rn_authority != '' ">AND AUTHORITY != #{rn_authority}</if>
+			<if test="rl_telno != null and rl_telno != '' ">AND TEL_NO LIKE '%' || #{rl_telno} || '%'</if>
+			<if test="r_agreeyn != null and r_agreeyn != '' ">AND AGREE_YN = #{r_agreeyn}</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND CUST_CD = #{r_custcd}</if>
+			<if test="r_deptcd != null and r_deptcd != '' ">AND DEPT_CD = #{r_deptcd}</if>
+			<if test="r_jdeid != null and r_jdeid != '' ">AND JDEID = #{r_jdeid}</if>
+			<if test="rl_teamnm != null and rl_teamnm != '' ">AND TEAM_NM LIKE '%' || #{rl_teamnm} || '%'</if>
+			<if test="r_teamcd != null and r_teamcd != '' ">AND TEAM_CD = #{r_teamcd}</if>
+			<if test="rl_cellno != null and rl_cellno != '' ">AND CELL_NO LIKE '%' || #{rl_cellno} || '%'</if>
+			<if test="rl_dummy != null and rl_dummy != '' ">AND DUMMY LIKE '%' || #{rl_dummy} || '%'</if>
+			<if test="r_failcnt != null and r_failcnt != '' ">AND FAIL_CNT = #{r_failcnt}</if>
+			<if test="r_userdepth != null and r_userdepth != '' ">AND USER_DEPTH = #{r_userdepth}</if>
+			<if test="r_usercate1 != null and r_usercate1 != '' ">AND USER_CATE1 = #{r_usercate1}</if>
+			<if test="r_usercate2 != null and r_usercate2 != '' ">AND USER_CATE2 = #{r_usercate2}</if>
+			<if test="r_usercate3 != null and r_usercate3 != '' ">AND USER_CATE3 = #{r_usercate3}</if>
+			<if test="r_usercate4 != null and r_usercate4 != '' ">AND USER_CATE4 = #{r_usercate4}</if>
+			<if test="ri_useruse != null">
+				AND USER_USE IN <foreach collection="ri_useruse" item="user_use" separator="," open="(" close=")">#{user_use}</foreach>
+			</if>
+			<if test="ri_authority != null">
+   				AND AUTHORITY IN <foreach collection="ri_authority" item="authority" separator="," open="(" close=")">#{authority}</foreach>
+ 			</if>
+ 			<if test="rni_authority != null">
+   				AND AUTHORITY NOT IN <foreach collection="rni_authority" item="authority" separator="," open="(" close=")">#{authority}</foreach>
+ 			</if>
+ 			
+ 			<if test="r_userposition != null and r_userposition != '' ">AND USER_POSITION = #{r_userposition}</if>
+ 			<if test="rl_userposition != null and rl_userposition != '' ">AND USER_POSITION LIKE '%' || #{rl_userposition} || '%'</if>
+ 			<if test="r_useremail != null and r_useremail != '' ">AND USER_EMAIL = #{r_useremail}</if>
+ 			<if test="rl_useremail != null and rl_useremail != '' ">AND USER_EMAIL LIKE '%' || #{rl_useremail} || '%'</if>
+ 			<if test="r_useruse != null and r_useruse != '' ">AND USER_USE = #{r_useruse}</if>
+			<if test="r_userview != null and r_userview != '' ">AND USER_VIEW = #{r_userview}</if>
+			<if test="r_userdepth != null and r_userdepth != '' ">AND USER_DEPTH = #{r_userdepth}</if>
+			<if test="r_userparent != null and r_userparent != '' ">AND USER_PARENT = #{r_userparent}</if>
+			<if test="r_usercate1 != null and r_usercate1 != '' ">AND USER_CATE1 = #{r_usercate1}</if>
+			<if test="r_usercate2 != null and r_usercate2 != '' ">AND USER_CATE2 = #{r_usercate2}</if>
+			<if test="r_usercate3 != null and r_usercate3 != '' ">AND USER_CATE3 = #{r_usercate3}</if>
+			<if test="r_usercate4 != null and r_usercate4 != '' ">AND USER_CATE4 = #{r_usercate4}</if>
+			<if test="r_usersort1 != null and r_usersort1 != '' ">AND USER_SORT1 = #{r_usersort1}</if>
+			<if test="r_usersort2 != null and r_usersort2 != '' ">AND USER_SORT2 = #{r_usersort2}</if>
+			<if test="r_usersort3 != null and r_usersort3 != '' ">AND USER_SORT3 = #{r_usersort3}</if>
+			<if test="r_usersort4 != null and r_usersort4 != '' ">AND USER_SORT4 = #{r_usersort4}</if>
+		</where>
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM O_USER
+		<where>
+			AND USERID NOT IN ('9', '1', '2','3', '4', '5', '6')
+			<if test="r_userid != null and r_userid != '' ">AND USERID = #{r_userid}</if>
+			<if test="rl_userid != null and rl_userid != '' ">AND USERID LIKE '%' || #{rl_userid} || '%'</if>
+			<if test="r_userpwd != null and r_userpwd != '' ">AND USER_PWD = UDF_SETPASSWORD(#{r_userpwd})</if>
+			<!-- <if test="r_userpwd != null and r_userpwd != '' ">AND USER_PWD = '${@com.limenets.eorder.util.PasswordSHA@getShaPasswd(r_userpwd)}'</if> -->
+			<if test="r_passchangeyn != null and r_passchangeyn != '' ">AND PASSCHANGE_YN = #{r_passchangeyn}</if>
+			<if test="r_usernm != null and r_usernm != '' ">AND USER_NM = #{r_usernm}</if>
+			<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' || #{rl_usernm} || '%'</if>
+			<if test="r_authority != null and r_authority != '' ">AND AUTHORITY = #{r_authority}</if>
+			<if test="rn_authority != null and rn_authority != '' ">AND AUTHORITY != #{rn_authority}</if>
+			<if test="rl_telno != null and rl_telno != '' ">AND TEL_NO LIKE '%' || #{rl_telno} || '%'</if>
+			<if test="r_agreeyn != null and r_agreeyn != '' ">AND AGREE_YN = #{r_agreeyn}</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND CUST_CD = #{r_custcd}</if>
+			<if test="r_deptcd != null and r_deptcd != '' ">AND DEPT_CD = #{r_deptcd}</if>
+			<if test="r_jdeid != null and r_jdeid != '' ">AND JDEID = #{r_jdeid}</if>
+			<if test="rl_teamnm != null and rl_teamnm != '' ">AND TEAM_NM LIKE '%' || #{rl_teamnm} || '%'</if>
+			<if test="r_teamcd != null and r_teamcd != '' ">AND TEAM_CD = #{r_teamcd}</if>
+			<if test="rl_cellno != null and rl_cellno != '' ">AND CELL_NO LIKE '%' || #{rl_cellno} || '%'</if>
+			<if test="rl_dummy != null and rl_dummy != '' ">AND DUMMY LIKE '%' || #{rl_dummy} || '%'</if>
+			<if test="r_failcnt != null and r_failcnt != '' ">AND FAIL_CNT = #{r_failcnt}</if>
+			<if test="r_userdepth != null and r_userdepth != '' ">AND USER_DEPTH = #{r_userdepth}</if>
+			<if test="r_usercate1 != null and r_usercate1 != '' ">AND USER_CATE1 = #{r_usercate1}</if>
+			<if test="r_usercate2 != null and r_usercate2 != '' ">AND USER_CATE2 = #{r_usercate2}</if>
+			<if test="r_usercate3 != null and r_usercate3 != '' ">AND USER_CATE3 = #{r_usercate3}</if>
+			<if test="r_usercate4 != null and r_usercate4 != '' ">AND USER_CATE4 = #{r_usercate4}</if>
+			<if test="ri_useruse != null">
+				AND USER_USE IN <foreach collection="ri_useruse" item="user_use" separator="," open="(" close=")">#{user_use}</foreach>
+			</if>
+			<if test="ri_authority != null">
+   				AND AUTHORITY IN <foreach collection="ri_authority" item="authority" separator="," open="(" close=")">#{authority}</foreach>
+ 			</if>
+			<if test="rni_authority != null">
+   				AND AUTHORITY NOT IN <foreach collection="rni_authority" item="authority" separator="," open="(" close=")">#{authority}</foreach>
+ 			</if>
+ 			
+ 			<if test="r_userposition != null and r_userposition != '' ">AND USER_POSITION = #{r_userposition}</if>
+ 			<if test="rl_userposition != null and rl_userposition != '' ">AND USER_POSITION LIKE '%' || #{rl_userposition} || '%'</if>
+ 			<if test="r_useremail != null and r_useremail != '' ">AND USER_EMAIL = #{r_useremail}</if>
+ 			<if test="rl_useremail != null and rl_useremail != '' ">AND USER_EMAIL LIKE '%' || #{rl_useremail} || '%'</if>
+ 			<if test="r_useruse != null and r_useruse != '' ">AND USER_USE = #{r_useruse}</if>
+			<if test="r_userview != null and r_userview != '' ">AND USER_VIEW = #{r_userview}</if>
+			<if test="r_userdepth != null and r_userdepth != '' ">AND USER_DEPTH = #{r_userdepth}</if>
+			<if test="r_userparent != null and r_userparent != '' ">AND USER_PARENT = #{r_userparent}</if>
+			<if test="r_usercate1 != null and r_usercate1 != '' ">AND USER_CATE1 = #{r_usercate1}</if>
+			<if test="r_usercate2 != null and r_usercate2 != '' ">AND USER_CATE2 = #{r_usercate2}</if>
+			<if test="r_usercate3 != null and r_usercate3 != '' ">AND USER_CATE3 = #{r_usercate3}</if>
+			<if test="r_usercate4 != null and r_usercate4 != '' ">AND USER_CATE4 = #{r_usercate4}</if>
+			<if test="r_usersort1 != null and r_usersort1 != '' ">AND USER_SORT1 = #{r_usersort1}</if>
+			<if test="r_usersort2 != null and r_usersort2 != '' ">AND USER_SORT2 = #{r_usersort2}</if>
+			<if test="r_usersort3 != null and r_usersort3 != '' ">AND USER_SORT3 = #{r_usersort3}</if>
+			<if test="r_usersort4 != null and r_usersort4 != '' ">AND USER_SORT4 = #{r_usersort4}</if>
+			<if test="r_usereorder != null and r_usereorder != '' ">AND USER_EORDER = #{r_usereorder}</if>
+			
+			<if test="rni_userid != null">
+				AND USERID NOT IN <foreach collection="rni_userid" item="userid" separator="," open="(" close=")">#{userid}</foreach>
+			</if>
+			
+			<!-- 영업사원 : 관리자 권한에 따른 조건절 -->
+ 			<if test='page_type != null and "orderlist_salesuser".equals(page_type)'>
+	 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+	 				<if test='"AD".equals(r_adminauthority)'>
+	 				</if>
+	 				<if test='"CS".equals(r_adminauthority)'>
+	 					AND USERID IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+	 				</if>
+	 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+	 					<if test='"SH".equals(r_adminauthority)'>
+	 						AND USERID IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+	 					</if>
+	 					<if test='"SM".equals(r_adminauthority)'>
+	 						AND USERID IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+	 					</if>
+	 					<if test='"SR".equals(r_adminauthority)'>
+	 						AND USERID = #{r_adminuserid}
+	 					</if>
+	 				</if>
+	 				<if test='"MK".equals(r_adminauthority)'>
+	 					
+	 				</if>
+	 			</if>
+ 			</if>
+ 			
+		</where>
+	</select>
+	
+	<select id="cntAll" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM O_USER
+		<where>
+			<if test="r_userid != null and r_userid != '' ">AND USERID = #{r_userid}</if>
+			<if test="rl_userid != null and rl_userid != '' ">AND USERID LIKE '%' || #{rl_userid} || '%'</if>
+			<if test="r_userpwd != null and r_userpwd != '' ">AND USER_PWD = UDF_SETPASSWORD(#{r_userpwd})</if>
+			<!-- <if test="r_userpwd != null and r_userpwd != '' ">AND USER_PWD = '${@com.limenets.eorder.util.PasswordSHA@getShaPasswd(r_userpwd)}'</if> -->
+			<if test="r_passchangeyn != null and r_passchangeyn != '' ">AND PASSCHANGE_YN = #{r_passchangeyn}</if>
+			<if test="r_usernm != null and r_usernm != '' ">AND USER_NM = #{r_usernm}</if>
+			<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' || #{rl_usernm} || '%'</if>
+			<if test="r_authority != null and r_authority != '' ">AND AUTHORITY = #{r_authority}</if>
+			<if test="rn_authority != null and rn_authority != '' ">AND AUTHORITY != #{rn_authority}</if>
+			<if test="rl_telno != null and rl_telno != '' ">AND TEL_NO LIKE '%' || #{rl_telno} || '%'</if>
+			<if test="r_agreeyn != null and r_agreeyn != '' ">AND AGREE_YN = #{r_agreeyn}</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND CUST_CD = #{r_custcd}</if>
+			<if test="r_deptcd != null and r_deptcd != '' ">AND DEPT_CD = #{r_deptcd}</if>
+			<if test="r_jdeid != null and r_jdeid != '' ">AND JDEID = #{r_jdeid}</if>
+			<if test="rl_teamnm != null and rl_teamnm != '' ">AND TEAM_NM LIKE '%' || #{rl_teamnm} || '%'</if>
+			<if test="r_teamcd != null and r_teamcd != '' ">AND TEAM_CD = #{r_teamcd}</if>
+			<if test="rl_cellno != null and rl_cellno != '' ">AND CELL_NO LIKE '%' || #{rl_cellno} || '%'</if>
+			<if test="rl_dummy != null and rl_dummy != '' ">AND DUMMY LIKE '%' || #{rl_dummy} || '%'</if>
+			<if test="r_failcnt != null and r_failcnt != '' ">AND FAIL_CNT = #{r_failcnt}</if>
+			<if test="r_userdepth != null and r_userdepth != '' ">AND USER_DEPTH = #{r_userdepth}</if>
+			<if test="r_usercate1 != null and r_usercate1 != '' ">AND USER_CATE1 = #{r_usercate1}</if>
+			<if test="r_usercate2 != null and r_usercate2 != '' ">AND USER_CATE2 = #{r_usercate2}</if>
+			<if test="r_usercate3 != null and r_usercate3 != '' ">AND USER_CATE3 = #{r_usercate3}</if>
+			<if test="r_usercate4 != null and r_usercate4 != '' ">AND USER_CATE4 = #{r_usercate4}</if>
+			<if test="ri_useruse != null">
+				AND USER_USE IN <foreach collection="ri_useruse" item="user_use" separator="," open="(" close=")">#{user_use}</foreach>
+			</if>
+			<if test="ri_authority != null">
+   				AND AUTHORITY IN <foreach collection="ri_authority" item="authority" separator="," open="(" close=")">#{authority}</foreach>
+ 			</if>
+ 			<if test="rni_authority != null">
+   				AND AUTHORITY NOT IN <foreach collection="rni_authority" item="authority" separator="," open="(" close=")">#{authority}</foreach>
+ 			</if>
+ 			
+ 			<if test="r_userposition != null and r_userposition != '' ">AND USER_POSITION = #{r_userposition}</if>
+ 			<if test="rl_userposition != null and rl_userposition != '' ">AND USER_POSITION LIKE '%' || #{rl_userposition} || '%'</if>
+ 			<if test="r_useremail != null and r_useremail != '' ">AND USER_EMAIL = #{r_useremail}</if>
+ 			<if test="rl_useremail != null and rl_useremail != '' ">AND USER_EMAIL LIKE '%' || #{rl_useremail} || '%'</if>
+ 			<if test="r_useruse != null and r_useruse != '' ">AND USER_USE = #{r_useruse}</if>
+			<if test="r_userview != null and r_userview != '' ">AND USER_VIEW = #{r_userview}</if>
+			<if test="r_userdepth != null and r_userdepth != '' ">AND USER_DEPTH = #{r_userdepth}</if>
+			<if test="r_userparent != null and r_userparent != '' ">AND USER_PARENT = #{r_userparent}</if>
+			<if test="r_usercate1 != null and r_usercate1 != '' ">AND USER_CATE1 = #{r_usercate1}</if>
+			<if test="r_usercate2 != null and r_usercate2 != '' ">AND USER_CATE2 = #{r_usercate2}</if>
+			<if test="r_usercate3 != null and r_usercate3 != '' ">AND USER_CATE3 = #{r_usercate3}</if>
+			<if test="r_usercate4 != null and r_usercate4 != '' ">AND USER_CATE4 = #{r_usercate4}</if>
+			<if test="r_usersort1 != null and r_usersort1 != '' ">AND USER_SORT1 = #{r_usersort1}</if>
+			<if test="r_usersort2 != null and r_usersort2 != '' ">AND USER_SORT2 = #{r_usersort2}</if>
+			<if test="r_usersort3 != null and r_usersort3 != '' ">AND USER_SORT3 = #{r_usersort3}</if>
+			<if test="r_usersort4 != null and r_usersort4 != '' ">AND USER_SORT4 = #{r_usersort4}</if>
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		
+		SELECT LIST.* FROM (
+		
+		SELECT US.*, CU.CUST_NM
+			, CASE WHEN (US.AUTHORITY = 'SH' OR US.AUTHORITY = 'SM' OR US.AUTHORITY = 'SR') THEN (SELECT (SELECT USER_NM FROM O_USER WHERE USERID = CSM.CSUSERID)FROM O_CSSALESMAP CSM WHERE CSM.SALESUSERID = US.USERID AND CSM.FIXEDYN = 'Y')
+				ELSE '' END CS_SALESUSER
+			, CASE WHEN (US.AUTHORITY = 'SH' OR US.AUTHORITY = 'SM' OR US.AUTHORITY = 'SR') THEN (SELECT COUNT(*) FROM O_CUSTOMER WHERE SALESREP_CD = US.USERID)
+				ELSE -1 END CUSTOMER_CNT
+			<if test="r_csuserid != null and r_csuserid != '' ">
+				, (SELECT FIXEDYN FROM O_CSSALESMAP WHERE US.AUTHORITY IN ('SH','SM','SR') AND CSUSERID = #{r_csuserid} AND SALESUSERID = US.USERID) AS SALES_FIXEDYN
+			</if>	
+		FROM O_USER US
+		LEFT JOIN O_CUSTOMER CU ON CU.CUST_CD = US.CUST_CD
+		<where>
+			AND USERID NOT IN ('9', '1', '2','3', '4', '5', '6')
+			<if test="r_userid != null and r_userid != '' ">AND US.USERID = #{r_userid}</if>
+			<if test="rl_userid != null and rl_userid != '' ">AND US.USERID LIKE '%' || #{rl_userid} || '%'</if>
+			<if test="r_userpwd != null and r_userpwd != '' ">AND US.USER_PWD = UDF_SETPASSWORD(#{r_userpwd})</if>
+			<!-- <if test="r_userpwd != null and r_userpwd != '' ">AND USER_PWD = '${@com.limenets.eorder.util.PasswordSHA@getShaPasswd(r_userpwd)}'</if> -->
+			<if test="r_passchangeyn != null and r_passchangeyn != '' ">AND US.PASSCHANGE_YN = #{r_passchangeyn}</if>
+			<if test="r_usernm != null and r_usernm != '' ">AND US.USER_NM = #{r_usernm}</if>
+			<if test="rl_usernm != null and rl_usernm != '' ">AND US.USER_NM LIKE '%' || #{rl_usernm} || '%'</if>
+			<if test="r_authority != null and r_authority != '' ">AND US.AUTHORITY = #{r_authority}</if>
+			<if test="rn_authority != null and rn_authority != '' ">AND US.AUTHORITY != #{rn_authority}</if>
+			<if test="rl_telno != null and rl_telno != '' ">AND TEL_NO LIKE '%' || #{rl_telno} || '%'</if>
+			<if test="r_agreeyn != null and r_agreeyn != '' ">AND AGREE_YN = #{r_agreeyn}</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND US.CUST_CD = #{r_custcd}</if>
+			<if test="r_deptcd != null and r_deptcd != '' ">AND US.DEPT_CD = #{r_deptcd}</if>
+			<if test="r_jdeid != null and r_jdeid != '' ">AND JDEID = #{r_jdeid}</if>
+			<if test="rl_teamnm != null and rl_teamnm != '' ">AND TEAM_NM LIKE '%' || #{rl_teamnm} || '%'</if>
+			<if test="r_teamcd != null and r_teamcd != '' ">AND TEAM_CD = #{r_teamcd}</if>
+			<if test="rl_cellno != null and rl_cellno != '' ">AND CELL_NO LIKE '%' || #{rl_cellno} || '%'</if>
+			<if test="rl_dummy != null and rl_dummy != '' ">AND US.DUMMY LIKE '%' || #{rl_dummy} || '%'</if>
+			<if test="r_failcnt != null and r_failcnt != '' ">AND FAIL_CNT = #{r_failcnt}</if>
+			<if test="r_userdepth != null and r_userdepth != '' ">AND USER_DEPTH = #{r_userdepth}</if>
+			<if test="r_usercate1 != null and r_usercate1 != '' ">AND USER_CATE1 = #{r_usercate1}</if>
+			<if test="r_usercate2 != null and r_usercate2 != '' ">AND USER_CATE2 = #{r_usercate2}</if>
+			<if test="r_usercate3 != null and r_usercate3 != '' ">AND USER_CATE3 = #{r_usercate3}</if>
+			<if test="r_usercate4 != null and r_usercate4 != '' ">AND USER_CATE4 = #{r_usercate4}</if>
+			<if test="ri_useruse != null">
+				AND USER_USE IN <foreach collection="ri_useruse" item="user_use" separator="," open="(" close=")">#{user_use}</foreach>
+			</if>
+			<if test="ri_authority != null">
+   				AND AUTHORITY IN <foreach collection="ri_authority" item="authority" separator="," open="(" close=")">#{authority}</foreach>
+ 			</if>
+ 			<if test="rni_authority != null">
+   				AND AUTHORITY NOT IN <foreach collection="rni_authority" item="authority" separator="," open="(" close=")">#{authority}</foreach>
+ 			</if>
+ 			
+ 			<if test="r_userposition != null and r_userposition != '' ">AND USER_POSITION = #{r_userposition}</if>
+ 			<if test="rl_userposition != null and rl_userposition != '' ">AND USER_POSITION LIKE '%' || #{rl_userposition} || '%'</if>
+ 			<if test="r_useremail != null and r_useremail != '' ">AND USER_EMAIL = #{r_useremail}</if>
+ 			<if test="rl_useremail != null and rl_useremail != '' ">AND USER_EMAIL LIKE '%' || #{rl_useremail} || '%'</if>
+ 			<if test="r_useruse != null and r_useruse != '' ">AND USER_USE = #{r_useruse}</if>
+			<if test="r_userview != null and r_userview != '' ">AND USER_VIEW = #{r_userview}</if>
+			<if test="r_userdepth != null and r_userdepth != '' ">AND USER_DEPTH = #{r_userdepth}</if>
+			<if test="r_userparent != null and r_userparent != '' ">AND USER_PARENT = #{r_userparent}</if>
+			<if test="r_usercate1 != null and r_usercate1 != '' ">AND USER_CATE1 = #{r_usercate1}</if>
+			<if test="r_usercate2 != null and r_usercate2 != '' ">AND USER_CATE2 = #{r_usercate2}</if>
+			<if test="r_usercate3 != null and r_usercate3 != '' ">AND USER_CATE3 = #{r_usercate3}</if>
+			<if test="r_usercate4 != null and r_usercate4 != '' ">AND USER_CATE4 = #{r_usercate4}</if>
+			<if test="r_usersort1 != null and r_usersort1 != '' ">AND USER_SORT1 = #{r_usersort1}</if>
+			<if test="r_usersort2 != null and r_usersort2 != '' ">AND USER_SORT2 = #{r_usersort2}</if>
+			<if test="r_usersort3 != null and r_usersort3 != '' ">AND USER_SORT3 = #{r_usersort3}</if>
+			<if test="r_usersort4 != null and r_usersort4 != '' ">AND USER_SORT4 = #{r_usersort4}</if>
+			<if test="r_usereorder != null and r_usereorder != '' ">AND USER_EORDER = #{r_usereorder}</if>
+			<if test="rl_name_code != null and rl_name_code != ''">AND (USERID LIKE '%'|| #{rl_name_code} || '%' OR USER_NM LIKE '%'|| #{rl_name_code} || '%')</if>
+			
+			<if test="rni_userid != null">
+				AND USERID NOT IN <foreach collection="rni_userid" item="userid" separator="," open="(" close=")">#{userid}</foreach>
+			</if>
+			
+			<!-- 영업사원 : 관리자 권한에 따른 조건절 -->
+ 			<if test='page_type != null and "orderlist_salesuser".equals(page_type)'>
+	 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+	 				<if test='"AD".equals(r_adminauthority)'>
+	 				</if>
+	 				<if test='"CS".equals(r_adminauthority)'>
+	 					AND USERID IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+	 				</if>
+	 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+	 					<if test='"SH".equals(r_adminauthority)'>
+	 						AND USERID IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+	 					</if>
+	 					<if test='"SM".equals(r_adminauthority)'>
+	 						AND USERID IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+	 					</if>
+	 					<if test='"SR".equals(r_adminauthority)'>
+	 						AND USERID = #{r_adminuserid}
+	 					</if>
+	 				</if>
+	 				<if test='"MK".equals(r_adminauthority)'>
+	 					
+	 				</if>
+	 			</if>
+ 			</if>
+ 			
+		</where>
+		
+		) LIST
+		
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+	</select>
+	
+	<select id="listForAppPush" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM O_USER
+		<where>
+			AND ( USER_APPPUSHKEY IS NOT NULL AND NVL(USER_APPPUSHKEY, ' ') != ' ' )
+			<if test="r_userid != null and r_userid != '' ">AND USERID = #{r_userid}</if>
+			<if test="r_userapppushyn1 != null and r_userapppushyn1 != '' ">AND USER_APPPUSHYN1 = #{r_userapppushyn1}</if>
+			<if test="r_userapppushyn2 != null and r_userapppushyn2 != '' ">AND USER_APPPUSHYN2 = #{r_userapppushyn2}</if>
+			<if test="r_userapppushyn3 != null and r_userapppushyn3 != '' ">AND USER_APPPUSHYN3 = #{r_userapppushyn3}</if>
+		</where>
+	</select>
+	
+	<select id="getUserAuthorityList" parameterType="hashmap" resultType="hashmap">
+		SELECT US.*
+			, (SELECT COUNT(*) FROM O_USER WHERE USER_PARENT = US.USERID) AS CHILD_COUNT
+			, (SELECT COUNT(*) FROM O_USER WHERE AUTHORITY IN ('AD','SH','SM','SR','CS','MK','QM','CI') AND USERID NOT IN ('1','2','3','4','5')) AS TOTAL_COUNT
+			, CASE US.USER_DEPTH 
+				WHEN 1 THEN (SELECT COUNT(*) FROM O_USER WHERE USER_CATE1 = US.USER_CATE1 AND USERID NOT IN ('1','2','3','4','5') AND USERID != US.USERID)
+    			WHEN 2 THEN (SELECT COUNT(*) FROM O_USER WHERE USER_CATE2 = US.USER_CATE2 AND USERID NOT IN ('1','2','3','4','5') AND USERID != US.USERID)
+    			WHEN 3 THEN (SELECT COUNT(*) FROM O_USER WHERE USER_CATE3 = US.USER_CATE3 AND USERID NOT IN ('1','2','3','4','5') AND USERID != US.USERID)
+			END AUTH_COUNT
+		FROM O_USER US
+		<where>
+			<if test="ri_authority != null">
+   				AND AUTHORITY IN <foreach collection="ri_authority" item="authority" separator="," open="(" close=")">#{authority}</foreach>
+ 			</if>
+		</where>
+		ORDER BY USER_SORT1 ASC, USER_SORT2 ASC, USER_SORT3 ASC, USER_SORT4 ASC
+	</select>
+	
+	<select id="getUserSortMax" parameterType="hashmap" resultType="int">
+		SELECT NVL(MAX(${r_maxcolumn}),0)+1 FROM O_USER
+		<where>
+			AND USERID != '19000101'
+			<if test="r_userparent != null and r_userparent != '' ">AND USER_PARENT = #{r_userparent}</if>
+		</where>
+	</select>
+	
+ 	<update id="inShiptoUserByArr" parameterType="hashmap">
+		<foreach collection="newShiptoList" item="newShipto" index="index" separator=" " open="INSERT ALL" close="SELECT * FROM DUAL">
+		INTO O_USER(
+			USERID
+			, USER_PWD
+			, PASSCHANGE_YN
+			, USER_NM
+			, AUTHORITY
+			, AGREE_YN
+			, CUST_CD
+			, FAIL_CNT
+			, INSERTID
+			, INSERT_DT
+			, INDATE
+			, USER_USE
+			, USER_VIEW
+			, USER_EORDER
+			, USER_SHIPTOCD
+			, USER_APPPUSHYN1
+			, USER_APPPUSHYN2
+			, USER_APPPUSHYN3
+			
+		)VALUES(
+			#{newShipto.SHIPTO_USERID}
+			, UDF_SETPASSWORD(#{newShipto.SHIPTO_USERID})
+			, #{newShipto.PASSCHANGE_YN}
+			, #{newShipto.SHIPTO_NM}
+			, #{newShipto.AUTHORITY}
+			, #{newShipto.AGREE_YN}
+			, #{newShipto.CUST_CD}
+			, #{newShipto.FAIL_CNT}
+			, #{newShipto.INSERTID}
+			, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI') 
+			, SYSDATE
+			, #{newShipto.USER_USE}
+			, #{newShipto.USER_VIEW}
+			, #{newShipto.USER_EORDER}
+			, #{newShipto.SHIPTO_CD}
+			, 'N'
+			, 'N'
+			, 'N'
+		)
+        </foreach>
+    </update>
+
+	<!-- 로그인 이력  -->
+	<insert id="inLoginLog" parameterType="hashmap">
+		INSERT INTO LOGINLOG (
+			LL_SEQ, LL_USERID, LL_TYPE, LL_PSYN, LL_INDATE
+		) 
+		VALUES (
+			USQ_LOGINLOG.NEXTVAL
+			, #{m_lluserid, jdbcType=VARCHAR}
+			, #{m_lltype, jdbcType=VARCHAR}
+			, #{m_llpsyn, jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+	
+	<!-- 로그인 이력  -->
+	<select id="checkForLock" parameterType="hashmap" resultType="hashmap">
+		SELECT COUNT(*) FAIL_CNT, MAX(LL_INDATE) LAST_LOGIN_DATE FROM LOGINLOG
+		<where>
+			AND LL_SEQ <![CDATA[>]]> NVL((SELECT MAX(LL_SEQ) FROM LOGINLOG WHERE LL_USERID = #{r_lluserid} AND LL_PSYN = 'Y'), 0)
+			AND LL_USERID = #{r_lluserid} AND LL_PSYN = 'N'
+			<if test=" r_llindate != null and r_llindate != '' "><![CDATA[AND LL_INDATE >= TO_DATE(#{r_llindate}, 'YYYY-MM-DD HH24:MI:SS')]]></if>
+		</where>
+	</select>
+	
+	<select id="loginCnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM LOGINLOG
+		<where>
+			<if test="r_userid != null and r_userid != '' ">AND LL_USERID = #{r_userid}</if>
+			<if test="r_llpsyn != null and r_llpsyn != '' ">AND LL_PSYN = #{r_llpsyn}</if>
+		</where>
+	</select>
+	
+	<select id="indexCntMap" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+		   CASE
+		      WHEN (US.AUTHORITY = 'SH' OR US.AUTHORITY = 'SM' OR US.AUTHORITY = 'SR') THEN (SELECT COUNT(*) FROM O_CUSTOMER WHERE SALESREP_CD = US.USERID)
+		      WHEN (US.AUTHORITY = 'AD' OR US.AUTHORITY = 'MK') THEN (SELECT COUNT(*) FROM O_CUSTOMER)
+		      WHEN (US.AUTHORITY = 'CS') THEN (SELECT COUNT(*) FROM O_CUSTOMER WHERE SALESREP_CD IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = US.USERID) )
+		    ELSE -1 END CUSTOMER_CNT
+		  , CASE WHEN (US.AUTHORITY = 'SH' OR US.AUTHORITY = 'SM' OR US.AUTHORITY = 'SR') THEN (SELECT (SELECT USER_NM FROM O_USER WHERE USERID = CSM.CSUSERID)FROM O_CSSALESMAP CSM WHERE CSM.SALESUSERID = US.USERID AND CSM.FIXEDYN = 'Y')
+		    ELSE '' END CS_SALESUSER
+		  , CASE WHEN (US.AUTHORITY = 'AD' OR US.AUTHORITY = 'MK') THEN (SELECT COUNT(*) FROM O_ITEM_NEW)
+		    ELSE -1 END ITEM_CNT  
+		  , CASE WHEN (US.AUTHORITY = 'CS') THEN (SELECT COUNT(*) FROM O_CSSALESMAP WHERE CSUSERID = US.USERID)
+		    ELSE -1 END SALES_CNT
+		FROM O_USER US
+		<where>
+			<if test="r_userid != null and r_userid != ''">AND US.USERID = #{r_userid}</if>
+		</where>
+	</select>
+	
+	<select id="listForSalesUserCategory" parameterType="hashmap" resultType="hashmap">
+		SELECT US.AUTHORITY, US.USERID, US.USER_NM
+			, US.USER_CATE2, (SELECT USER_NM FROM O_USER WHERE USERID = US.USER_CATE2) AS USER_CATE2_NAME
+			, US.USER_CATE3, (SELECT USER_NM FROM O_USER WHERE USERID = US.USER_CATE3) AS USER_CATE3_NAME
+			, US.USER_CATE4, (SELECT USER_NM FROM O_USER WHERE USERID = US.USER_CATE4) AS USER_CATE4_NAME
+		FROM O_USER US
+		<where>
+			AND US.USERID NOT IN ('9', '1', '2', '3', '4', '5')
+			AND US.AUTHORITY IN ('SH','SM','SR')
+			AND US.USER_CATE1 = '2'
+		</where>
+		 ORDER BY USER_SORT1 ASC, USER_SORT2 ASC, USER_SORT3 ASC, USER_SORT4 ASC
+	</select>
+	
+	<select id="cntCustomerUser" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM O_USER OU
+		WHERE OU.USERID = #{mCustCd}
+	</select>
+	<insert id="inCustomerUser" parameterType="hashmap">
+		INSERT INTO O_USER(USERID, USER_PWD, PASSCHANGE_YN, USER_NM, AUTHORITY, TEL_NO, AGREE_YN, INSERT_DT, CUST_CD, DEPT_CD, JDEID, INSERTID, UPDATE_DT, UPDATEID, TEAM_NM, TEAM_CD, CELL_NO, DUMMY, FAIL_CNT)
+		SELECT
+	      oc.CUST_CD                          AS USERID,
+	      UDF_SETPASSWORD(oc.CUST_CD)		  AS USER_PWD,
+	      'N'                                 AS PASSCHANGE_YN,
+	      TRIM(oc.CUST_NM)                    AS USER_NM,
+	      'CO'                                AS AUTHORITY,
+	      -- Trim(tel.WPAR1) || '-' || Trim(tel.WPPH1) AS TEL_NO,
+	      ''								  AS TEL_NO,
+	      'N'                                 AS AGREE_YN,
+	      TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS') AS INSERT_DT,
+	      oc.CUST_CD                       	  AS CUST_CD,
+	      ''                                  AS DEPT_CD,
+	      ''                                  AS JDEID,
+	      ''                                  AS INSERTID,
+	      ''                                  AS UPDATE_DT,
+	      ''                                  AS UPDATEID,
+	      ''                                  AS TEAM_NM,
+	      ''                                  AS TEAM_CD,
+	      -- Trim(hptel.WPAR1) || '-' || Trim(hptel.WPPH1) AS CELL_NO,
+	      ''								  AS CELL_NO,
+	      '' DUMMY,
+	      0 FAIL_CNT
+	    FROM O_CUSTOMER oc 
+	    WHERE oc.CUST_CD = #{mCustCd}
+	</insert>
+	
+	<!-- ########## START. O_USER2 ########## -->
+	<select id="checkSalesUser" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM O_USER
+		<where>
+			AND USERID NOT IN ('9', '1', '2', '3', '4', '19000101')
+			AND USER_CATE1 = '2'
+			<if test="rni_userid != null">
+				AND USERID NOT IN <foreach collection="rni_userid" item="userid" separator="," open="(" close=")">#{userid}</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<select id="getUser2ParentSort" parameterType="hashmap" resultType="int">
+		SELECT DISTINCT(${r_sortcolumn}) FROM O_USER2
+		<where>
+			AND USERID != '19000101'
+			<if test="r_userparent != null and r_userparent != '' ">AND HISTORY_SEQ = #{r_historyseq} AND USERID = #{r_userparent}</if>
+		</where>
+	</select>
+	
+	<select id="getUser2SortMax" parameterType="hashmap" resultType="int">
+		SELECT NVL(MAX(${r_maxcolumn}),0)+1 FROM O_USER2
+		<where>
+			AND USERID != '19000101'
+			<if test="r_userparent != null and r_userparent != '' ">AND USER_PARENT = #{r_userparent}</if>
+		</where>
+	</select>
+	
+	<select id="getUser2SeqMax" parameterType="hashmap" resultType="int">
+		SELECT NVL(MAX(HISTORY_SEQ),0)+1 FROM O_USER2
+	</select>
+	
+	<insert id="inUser2" parameterType="hashmap">
+		INSERT INTO O_USER2
+		(
+			HISTORY_SEQ, UPDATE_YN
+			, USERID, USER_PWD, PASSCHANGE_YN, USER_NM
+			, AUTHORITY
+			, TEL_NO, AGREE_YN, INSERT_DT, CUST_CD, DEPT_CD, JDEID, INSERTID, UPDATE_DT
+			, UPDATEID
+			, TEAM_NM, TEAM_CD, CELL_NO, DUMMY, FAIL_CNT, INDATE, MODATE, USER_POSITION, USER_EMAIL, USER_USE, USER_VIEW
+			, USER_DEPTH
+			, USER_PARENT
+			, USER_CATE1
+			, USER_CATE2
+			, USER_CATE3
+			, USER_CATE4
+			, USER_SORT1
+			, USER_SORT2
+			, USER_SORT3
+			, USER_SORT4
+			, USER_FILE, USER_FILETYPE, USER_EORDER, USER_SHIPTOCD, USER_AGREE
+			, USER_APPPUSHKEY, USER_APPPUSHYN1, USER_APPPUSHYN2, USER_APPPUSHYN3
+		)
+		SELECT #{m_historyseq, jdbcType=NUMERIC}, 'N' <!-- HISTORY_SEQ, UPDATE_YN -->
+			, USERID, USER_PWD, PASSCHANGE_YN, USER_NM
+			, #{m_authority, jdbcType=VARCHAR} <!-- AUTHORITY -->
+			, TEL_NO, AGREE_YN, INSERT_DT, CUST_CD, DEPT_CD, JDEID, INSERTID, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI')
+			, #{m_updateid, jdbcType=VARCHAR} <!-- UPDATEID -->
+			, TEAM_NM, TEAM_CD, CELL_NO, DUMMY, FAIL_CNT, INDATE, SYSDATE, USER_POSITION, USER_EMAIL, USER_USE, USER_VIEW
+			, #{m_userdepth, jdbcType=NUMERIC} <!-- USER_DEPTH -->
+			, #{m_userparent, jdbcType=VARCHAR} <!-- USER_PARENT -->
+			, #{m_usercate1, jdbcType=VARCHAR} <!-- USER_CATE1 -->
+			, #{m_usercate2, jdbcType=VARCHAR} <!-- USER_CATE2 -->
+			, #{m_usercate3, jdbcType=VARCHAR} <!-- USER_CATE3 -->
+			, #{m_usercate4, jdbcType=VARCHAR} <!-- USER_CATE4 -->
+			, #{m_usersort1, jdbcType=NUMERIC} <!-- USER_SORT1 -->
+			, #{m_usersort2, jdbcType=NUMERIC} <!-- USER_SORT2 -->
+			, #{m_usersort3, jdbcType=NUMERIC} <!-- USER_SORT3 -->
+			, #{m_usersort4, jdbcType=NUMERIC} <!-- USER_SORT4 -->
+			, USER_FILE, USER_FILETYPE, USER_EORDER, USER_SHIPTOCD, USER_AGREE
+			, USER_APPPUSHKEY, USER_APPPUSHYN1, USER_APPPUSHYN2, USER_APPPUSHYN3
+		FROM O_USER
+		WHERE 
+			USERID NOT IN ('2') 
+			AND USER_CATE1 = '2'
+			AND USERID = #{r_userid}
+		ORDER BY USER_SORT1 ASC, USER_SORT2 ASC, USER_SORT3 ASC, USER_SORT4 ASC
+	</insert>
+	
+	<insert id="inUser2ForDefault" parameterType="hashmap">
+		INSERT INTO O_USER2
+		(
+			HISTORY_SEQ, UPDATE_YN
+			, USERID, USER_PWD, PASSCHANGE_YN, USER_NM
+			, AUTHORITY
+			, TEL_NO, AGREE_YN, INSERT_DT, CUST_CD, DEPT_CD, JDEID, INSERTID, UPDATE_DT
+			, UPDATEID
+			, TEAM_NM, TEAM_CD, CELL_NO, DUMMY, FAIL_CNT, INDATE, MODATE, USER_POSITION, USER_EMAIL, USER_USE, USER_VIEW
+			, USER_DEPTH
+			, USER_PARENT
+			, USER_CATE1
+			, USER_CATE2
+			, USER_CATE3
+			, USER_CATE4
+			, USER_SORT1
+			, USER_SORT2
+			, USER_SORT3
+			, USER_SORT4
+			, USER_FILE, USER_FILETYPE, USER_EORDER, USER_SHIPTOCD, USER_AGREE
+			, USER_APPPUSHKEY, USER_APPPUSHYN1, USER_APPPUSHYN2, USER_APPPUSHYN3
+		)
+		SELECT #{m_historyseq, jdbcType=NUMERIC}, 'N' <!-- HISTORY_SEQ, UPDATE_YN -->
+			, USERID, USER_PWD, PASSCHANGE_YN, USER_NM
+			, AUTHORITY
+			, TEL_NO, AGREE_YN, INSERT_DT, CUST_CD, DEPT_CD, JDEID, INSERTID, UPDATE_DT
+			, UPDATEID
+			, TEAM_NM, TEAM_CD, CELL_NO, DUMMY, FAIL_CNT, INDATE, MODATE, USER_POSITION, USER_EMAIL, USER_USE, USER_VIEW
+			, USER_DEPTH
+			, USER_PARENT
+			, USER_CATE1
+			, USER_CATE2
+			, USER_CATE3
+			, USER_CATE4
+			, USER_SORT1
+			, USER_SORT2
+			, USER_SORT3
+			, USER_SORT4
+			, USER_FILE, USER_FILETYPE, USER_EORDER, USER_SHIPTOCD, USER_AGREE
+			, USER_APPPUSHKEY, USER_APPPUSHYN1, USER_APPPUSHYN2, USER_APPPUSHYN3
+		FROM O_USER
+		WHERE USERID IN ('9','2', '19000101') 	
+	</insert>
+	
+	<select id="getUser2AuthorityList" parameterType="hashmap" resultType="hashmap">
+		SELECT US.*
+			, (SELECT COUNT(*) FROM O_USER2 WHERE USER_PARENT = US.USERID AND HISTORY_SEQ = #{r_historySeq}) AS CHILD_COUNT
+			, (SELECT COUNT(*) FROM O_USER2 WHERE AUTHORITY IN ('SH','SM','SR') AND USERID NOT IN ('1','2','3','4') AND HISTORY_SEQ = #{r_historySeq}) AS TOTAL_COUNT
+			, CASE US.USER_DEPTH 
+				WHEN 1 THEN (SELECT COUNT(*) FROM O_USER2 WHERE USER_CATE1 = US.USER_CATE1 AND USERID NOT IN ('1','2','3','4') AND USERID != US.USERID  AND HISTORY_SEQ = #{r_historySeq})
+    			WHEN 2 THEN (SELECT COUNT(*) FROM O_USER2 WHERE USER_CATE2 = US.USER_CATE2 AND USERID NOT IN ('1','2','3','4') AND USERID != US.USERID  AND HISTORY_SEQ = #{r_historySeq})
+    			WHEN 3 THEN (SELECT COUNT(*) FROM O_USER2 WHERE USER_CATE3 = US.USER_CATE3 AND USERID NOT IN ('1','2','3','4') AND USERID != US.USERID  AND HISTORY_SEQ = #{r_historySeq})
+			END AUTH_COUNT
+		FROM O_USER2 US
+		<where>
+			AND HISTORY_SEQ = #{r_historySeq}
+			<if test="ri_authority != null">
+   				AND AUTHORITY IN <foreach collection="ri_authority" item="authority" separator="," open="(" close=")">#{authority}</foreach>
+ 			</if>
+		</where>
+		ORDER BY USER_SORT1 ASC, USER_SORT2 ASC, USER_SORT3 ASC, USER_SORT4 ASC
+	</select>
+	
+	<delete id="delUser2" parameterType="hashmap">
+		DELETE FROM O_USER2 WHERE HISTORY_SEQ = #{r_historyseq}
+	</delete>
+	
+	<delete id="delForUser2Insert" parameterType="hashmap">
+		DELETE FROM O_USER WHERE AUTHORITY IN ('SH', 'SM', 'SR')
+	</delete>
+	
+	<insert id="inForUser2" parameterType="hashmap">
+		INSERT INTO O_USER(
+			USERID, USER_PWD, PASSCHANGE_YN, USER_NM
+			, AUTHORITY
+			, TEL_NO, AGREE_YN, INSERT_DT, CUST_CD, DEPT_CD, JDEID, INSERTID, UPDATE_DT
+			, UPDATEID
+			, TEAM_NM, TEAM_CD, CELL_NO, DUMMY, FAIL_CNT, INDATE, MODATE, USER_POSITION, USER_EMAIL, USER_USE, USER_VIEW
+			, USER_DEPTH
+			, USER_PARENT
+			, USER_CATE1
+			, USER_CATE2
+			, USER_CATE3
+			, USER_CATE4
+			, USER_SORT1
+			, USER_SORT2
+			, USER_SORT3
+			, USER_SORT4
+			, USER_FILE, USER_FILETYPE, USER_EORDER, USER_SHIPTOCD, USER_AGREE
+			, USER_APPPUSHKEY, USER_APPPUSHYN1, USER_APPPUSHYN2, USER_APPPUSHYN3
+		)
+		SELECT USERID, USER_PWD, PASSCHANGE_YN, USER_NM
+			, AUTHORITY
+			, TEL_NO, AGREE_YN, INSERT_DT, CUST_CD, DEPT_CD, JDEID, INSERTID, UPDATE_DT
+			, UPDATEID
+			, TEAM_NM, TEAM_CD, CELL_NO, DUMMY, FAIL_CNT, INDATE, MODATE, USER_POSITION, USER_EMAIL, USER_USE, USER_VIEW
+			, USER_DEPTH
+			, USER_PARENT
+			, USER_CATE1
+			, USER_CATE2
+			, USER_CATE3
+			, USER_CATE4
+			, USER_SORT1
+			, USER_SORT2
+			, USER_SORT3
+			, USER_SORT4
+			, USER_FILE, USER_FILETYPE, USER_EORDER, USER_SHIPTOCD, USER_AGREE
+			, USER_APPPUSHKEY, USER_APPPUSHYN1, USER_APPPUSHYN2, USER_APPPUSHYN3
+		FROM O_USER2
+		WHERE HISTORY_SEQ = #{r_historyseq} AND USERID NOT IN ('9')
+	</insert>
+	
+	<update id="upUser2" parameterType="hashmap">
+		UPDATE O_USER2 US2
+		<set>
+			UPDATE_YN = 'Y',
+			UPDATE_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI'),
+			MODATE = SYSDATE
+		</set>
+		<where>
+			AND HISTORY_SEQ = #{r_historyseq}
+		</where>
+	</update>
+	
+	<!-- ########## END. O_USER2 ########## -->
+	
+</mapper>

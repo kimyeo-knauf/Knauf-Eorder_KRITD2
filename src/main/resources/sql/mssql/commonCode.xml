@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.commonCode">
+
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO COMMONCODE (
+			CC_CODE, CC_NAME, CC_PARENT
+			, CC_DEPTH, CC_SORT1, CC_SORT2
+			, CC_SORT3, CC_DESC, CC_USE
+		) 
+		VALUES (
+			#{m_cccode}, #{m_ccname}, #{m_ccparent}
+			, #{m_ccdepth}, #{m_ccsort1}, #{m_ccsort2}
+			, #{m_ccsort3}, #{m_ccdesc}, #{m_ccuse}
+		)
+	</insert>
+	
+	<update id="up" parameterType="hashmap">
+		UPDATE COMMONCODE 
+   		<set>
+			<if test="m_ccname != null">CC_NAME = #{m_ccname},</if>
+			<if test="m_ccsort1 != null">CC_SORT1 = #{m_ccsort1},</if>
+			<if test="m_ccsort2 != null">CC_SORT2 = #{m_ccsort2},</if>
+			<if test="m_ccsort3 != null">CC_SORT3 = #{m_ccsort3},</if>
+			<if test="m_ccdesc != null">CC_DESC = #{m_ccdesc},</if>
+			<if test="m_ccuse != null">CC_USE = #{m_ccuse},</if>
+		</set>
+	    <where>
+	    	AND CC_CODE = #{r_cccode}
+	    </where>
+	</update>
+
+	<update id="upArr" parameterType="hashmap">
+		UPDATE COMMONCODE 
+   		<set>
+			<if test="m_ccname != null">CC_NAME = #{m_ccname},</if>
+			<if test="m_ccsort1 != null">CC_SORT1 = #{m_ccsort1},</if>
+			<if test="m_ccsort2 != null">CC_SORT2 = #{m_ccsort2},</if>
+			<if test="m_ccsort3 != null">CC_SORT3 = #{m_ccsort3},</if>
+			<if test="m_ccdesc != null">CC_DESC = #{m_ccdesc},</if>
+			<if test="m_ccuse != null">CC_USE = #{m_ccuse},</if>
+		</set>
+	    <where>
+	    	AND CC_CODE IN <foreach collection="ri_cccode" item="cc_code" separator="," open="(" close=")">#{ cc_code }</foreach>
+	    </where>
+	</update>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT
+			ROW_NUMBER() OVER(ORDER BY CC_SORT1, CC_SORT2, CC_SORT3) AS ROWNUM
+			, XX.* 
+		FROM (
+			SELECT 
+				CC.*
+				, (SELECT COUNT(*) FROM COMMONCODE WHERE CC_PARENT = CC.CC_CODE) CHILD_COUNT
+			FROM COMMONCODE CC
+			<where>
+				<if test="r_ccparent != null">AND ISNULL(CC_PARENT, ' ') =  ISNULL(#{r_ccparent}, ' ')</if>
+				<if test="r_ccuse != null and r_ccuse != ''">AND CC_USE = #{r_ccuse}</if>
+				<if test="rl_name_code != null and rl_name_code != ''">
+					AND (CC_NAME LIKE '%' + #{rl_userid} + '%' OR CC_CODE LIKE '%' + #{rl_userid} + '%')
+				</if>
+			</where> 
+			) XX 
+		) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+	
+	<select id="list2" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT 
+			ROW_NUMBER() OVER(ORDER BY CC_SORT1, CC_SORT2, CC_SORT3) AS ROWNUM
+			, XX.* 
+		FROM (
+			SELECT 
+				CC.*
+			FROM COMMONCODE CC
+			<where>
+				<if test="r_ccparent != null and r_ccparent != ''">AND CC_PARENT = #{r_ccparent}</if>
+				<if test="r_ccuse != null and r_ccuse != ''">AND CC_USE = #{r_ccuse}</if>
+				<if test="rl_name_code != null and rl_name_code != ''">
+					AND (CC_NAME LIKE '%' + #{rl_userid} + '%' OR CC_CODE LIKE '%' + #{rl_userid} + '%')
+				</if>
+			</where> 
+			) XX 
+		) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM COMMONCODE WHERE CC_CODE = #{r_cccode}
+	</select>
+	
+	<select id="maxCode" parameterType="hashmap" resultType="int">
+		SELECT CONVERT(INT, ISNULL(MAX(SUBSTRING(CC_CODE, (3 * #{r_ccdepth})-1, LEN(CC_CODE))), '0')) + 1 
+		FROM COMMONCODE 
+		<where>
+			AND ISNULL(CC_PARENT, ' ') =  ISNULL(#{r_ccparent}, ' ')
+		</where> 
+	</select>
+	
+	<select id="maxCodeForC01" parameterType="hashmap" resultType="int">
+		SELECT CONVERT(INT, (ISNULL(MAX(CC_CODE), '0'))) + 1 
+		FROM COMMONCODE 
+		<where>
+			AND ISNULL(CC_PARENT, ' ') = ISNULL('C01', ' ')
+		</where> 
+	</select>
+	
+	<select id="maxSort" parameterType="hashmap" resultType="int">
+		SELECT 
+			<if test='1 == r_ccdepth'>ISNULL(MAX(CC_SORT1), 0) + 1</if>
+			<if test='2 == r_ccdepth'>ISNULL(MAX(CC_SORT2), 0) + 1</if>
+			<if test='3 == r_ccdepth'>ISNULL(MAX(CC_SORT3), 0) + 1</if>
+		FROM COMMONCODE 
+		<where>
+			AND ISNULL(CC_PARENT, ' ') = ISNULL(#{r_ccparent}, ' ')
+		</where> 
+	</select>
+	
+	<select id="getCategoryListWithDepth" parameterType="hashmap" resultType="hashmap">
+		SELECT c.CC_CODE, c.CC_NAME FROM COMMONCODE c
+		WHERE c.CC_CODE LIKE '' + #{r_cccode} + '%' 
+		AND c.CC_DEPTH = #{r_depth}
+		ORDER BY c.CC_CODE
+	</select>
+	
+</mapper>

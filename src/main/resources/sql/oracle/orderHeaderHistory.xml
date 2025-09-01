@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.orderHeaderHistory">
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO ORDERHEADERHISTORY(
+			OHH_SEQ,
+			OHH_REQNO,
+			OHH_REQNOREF,
+			OHH_STATUSCD,
+			OHH_MEMO,
+			OHH_INID,
+			OHH_INDATE
+		)VALUES(
+			USQ_ORDERHEADERHISTORY.NEXTVAL
+			, #{m_ohhreqno, jdbcType=VARCHAR}
+			, #{m_ohhreqnoref, jdbcType=VARCHAR}
+			, #{m_ohhstatuscd, jdbcType=VARCHAR}
+			, #{m_ohhmemo, jdbcType=VARCHAR}
+			, #{m_ohhinid, jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+	
+	<update id="upForReqNoRef" parameterType="hashmap">
+		UPDATE ORDERHEADERHISTORY
+		<set>
+			OHH_REQNO = #{m_ohhreqno},
+			OHH_REQNOREF = #{m_ohhreqnoref},
+		</set>
+		<where>
+			AND OHH_REQNO = #{r_ohhreqno}
+			<if test="r_ohhseq != null and r_ohhseq != '' ">AND OHH_SEQ = #{r_ohhseq}</if>
+			<if test="r_ohhstatuscd != null and r_ohhstatuscd != '' ">AND OHH_STATUSCD = #{r_ohhstatuscd}</if>
+		</where>
+	</update>
+	
+	<select id="oneByRecentList" parameterType="hashmap" resultType="hashmap">
+		SELECT OHH.*
+		FROM(
+		
+		SELECT * 
+		FROM ORDERHEADERHISTORY
+		<where>
+			AND OHH_REQNO = #{r_ohhreqno}
+		</where>
+		ORDER BY OHH_SEQ DESC
+		
+		) OHH
+		<where>
+			AND ROWNUM = 1
+		</where>
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM ORDERHEADERHISTORY OHH
+		<where>
+			<if test="r_ohhseq != null and r_ohhseq != '' ">AND OHH_SEQ = #{r_ohhseq}</if>
+			<if test="r_ohhreqno != null and r_ohhreqno != '' ">AND OHH_REQNO = #{r_ohhreqno}</if>
+			<if test="rl_ohhreqno != null and rl_ohhreqno != '' ">AND OHH_REQNO LIKE '#{rl_ohhreqno} || '%'</if>
+			<if test="r_ohhstatuscd != null and r_ohhstatuscd != '' ">AND OHH_STATUSCD = #{r_ohhstatuscd}</if>
+			<if test="r_ohhinid != null and r_ohhinid != '' ">AND OHH_INID = #{r_ohhinid}</if>
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		
+		SELECT OHH.* 
+		FROM ORDERHEADERHISTORY OHH
+		<where>
+			<if test="r_ohhseq != null and r_ohhseq != '' ">AND OHH_SEQ = #{r_ohhseq}</if>
+			<if test="r_ohhreqno != null and r_ohhreqno != '' ">AND OHH_REQNO = #{r_ohhreqno}</if>
+			<if test="rl_ohhreqno != null and rl_ohhreqno != '' ">AND OHH_REQNO LIKE '#{rl_ohhreqno} || '%'</if>
+			<if test="r_ohhstatuscd != null and r_ohhstatuscd != '' ">AND OHH_STATUSCD = #{r_ohhstatuscd}</if>
+			<if test="r_ohhinid != null and r_ohhinid != '' ">AND OHH_INID = #{r_ohhinid}</if>
+		</where>
+		
+		
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+	</select>
+	
+</mapper>

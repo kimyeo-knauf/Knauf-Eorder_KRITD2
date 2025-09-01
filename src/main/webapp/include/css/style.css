@@ -1,0 +1,473 @@
+@charset "UTF-8";
+
+/***************************************************************************************************************
+														common
+***************************************************************************************************************/
+html, body {margin: 0; padding: 0; width: 100%; height: auto;
+			font-family: 'KnaufOffice', 'NanumBarunGothic'; font-size: 13px; line-height: 1.4em; letter-spacing: 0px; color: #333;}
+
+body,div,dl,dt,dd,ul,li,ol,h1,h2,h3,h4,h5,h6,pre,form,fieldset,pre,blockquote,em,p,th,td,input {margin: 0; padding: 0;}
+
+ul,ol,li {list-style: none outside;}
+
+address,caption,cite,code,dfn,var,i {font-style: normal; font-weight: normal;}
+
+table {border-collapse: collapse; border-spacing: 0; table-layout: fixed;}
+
+
+/* Define Custom Style ====================================================*/
+.inline {display: inline;}
+.inline_block {display: inline-block;}
+.block {display: block;}
+.fl_none {float: none !important;}
+.fl_lft {float: left;}
+.fl_rgt {float: right !important;}
+.pos_rel {position: relative;}
+.pos_abs {position: absolute;}
+.visi {overflow: visible;}
+.blind {overflow: hidden; text-indent: -20000px; white-space: nowrap;}
+.hidden {display: none; overflow: hidden; width: 0; height: 0; font-size: 0; line-height: 0; color: transparent; white-space: nowrap;}
+.clear {*zoom: 1;}
+.clear:after {content: ""; display: block; clear: both;}
+.clear_lft {clear: left;}
+.clear_rgt {clear: right;}
+.clear_both {clear: both;}
+
+.fontDotum {font-family: 'KnaufOffice', Dotum !important;}
+.fontFamRe {font-family: 'KnaufOffice', 'NanumBarunGothic' !important;}
+.fontFamMe {font-family: 'KnaufOffice', 'NanumBarunGothic' !important;}
+.fontFamMe span.fontFamRe {font-family: 'KnaufOffice','NanumBarunGothic' !important;}
+.ta_lft {text-align: left !important;}
+.ta_rgt {text-align: right !important;}
+.ta_ctr {text-align: center !important;}
+
+.borderNone {border: none !important;}
+.borderNoneT {border-top: none !important;}
+.borderNoneB {border-bottom: none !important;}
+.borderNoneR {border-right: none !important;}
+.borderNoneL {border-left: none !important;}
+.bordeR01d {border-right: 1px solid #ddd;}
+.bordeB013 {border-bottom: 1px solid #333;}
+.bordeB01d {border-bottom: 1px solid #ddd;}
+.bordeB01d9 {border-bottom: 1px solid #D9D9D9;}
+.bordeB01e8 {border-bottom: 1px dashed #d9d9d9;}
+.bordeL01d {border-left: 1px solid #ddd;}
+.bordeTT017b90a1 {border-top: 1px solid #757575 !important;}
+.bordeTB017b90a1 {border-bottom: 1px solid #757575 !important;}
+.bordeTB027b90a1 {border-bottom: 2px solid #757575 !important;}
+
+.p-h-xxs {padding-left: 5px !important; padding-right: 5px !important;}
+
+.wd_auto {width: auto !important;}
+.wd_2 {width: 2% !important;}
+.wd_4 {width: 4% !important;}
+.wd_5 {width: 5% !important;}
+.wd_6 {width: 6% !important;}
+.wd_7 {width: 7% !important;}
+.wd_8 {width: 8% !important;}
+.wd_10 {width: 10% !important;}
+.wd_12 {width: 12% !important;}
+.wd_13 {width: 13% !important;}
+.wd_15 {width: 15% !important;}
+.wd_16 {width: 16% !important;}
+.wd_17 {width: 17% !important;}
+.wd_18 {width: 18% !important;}
+.wd_19 {width: 19% !important;}
+.wd_20 {width: 20% !important;}
+.wd_22 {width: 22% !important;}
+.wd_23 {width: 23% !important;}
+.wd_24 {width: 24% !important;}
+.wd_25 {width: 25% !important;}
+.wd_27 {width: 27% !important;}
+.wd_28 {width: 28% !important;}
+.wd_29 {width: 29% !important;}
+.wd_30 {width: 30% !important;}
+.wd_32 {width: 32% !important;}
+.wd_325 {width: 32.5% !important;}
+.wd_33 {width: 33% !important;}
+.wd_332 {width: 33.2% !important;}
+.wd_35 {width: 35% !important;}
+.wd_38 {width: 38% !important;}
+.wd_40 {width: 40% !important;}
+.wd_42 {width: 42% !important;}
+.wd_43 {width: 43% !important;}
+.wd_44 {width: 44% !important;}
+.wd_45 {width: 45% !important;}
+.wd_46 {width: 46% !important;}
+.wd_48 {width: 48% !important;}
+.wd_50 {width: 50% !important;}
+.wd_52 {width: 52% !important;}
+.wd_53 {width: 53% !important;}
+.wd_54 {width: 54% !important;}
+.wd_55 {width: 55% !important;}
+.wd_573 {width: 57.3% !important;}
+.wd_60 {width: 60% !important;}
+.wd_64 {width: 64% !important;}
+.wd_65 {width: 65% !important;}
+.wd_66 {width: 66% !important;}
+.wd_70 {width: 70% !important;}
+.wd_75 {width: 75% !important;}
+.wd_80 {width: 80% !important;}
+.wd_83 {width: 83% !important;}
+.wd_85 {width: 85% !important;}
+.wd_90 {width: 90% !important;}
+.wd_92 {width: 92% !important;}
+.wd_94 {width: 94% !important;}
+.wd_95 {width: 95% !important;}
+.wd_96 {width: 96% !important;}
+.wd_98 {width: 98% !important;}
+.wd_100 {width: 100% !important;}
+
+
+/* COLOR ================================================================*/
+.fontC333 {color: #333333 !important;}
+.fontC555 {color: #555555 !important;}
+.fontC455869 {color: #455869 !important;}
+.fontCec1b30 {color: #ec1b30 !important;}
+.fontC217fd3 {color: #217fd3 !important;}
+
+.fontC555 th {color: #555555 !important;}
+.fontC455869 th {color: #455869 !important;}
+
+
+/* BACKGROUND COLOR ================================================================*/
+.backE8 {background: #e8e8e8 !important;}
+.backF7 {background: #f7f7f7 !important;}
+.backFb {background: #fbfcfc !important;}
+.backd9dfe3 {background: #d9dfe3 !important;}
+
+
+
+
+/***************************************************************************************************************
+														layout
+***************************************************************************************************************/
+* {margin: 0; padding: 0;}
+body.white {background: #fff;}
+body {width: 100%; overflow-x: hidden; background: #3b3c3e;}
+
+#wrapper {margin: 0 auto; width: 100%; height: 100%;}
+#wrapper:after {content: " "; display: block; clear: both; height: 0; visibility: hidden;}
+#header {position: relative; z-index: 300; width: 100%; height: 110px; background: #fff;}
+#header:after {content: " "; display: block; clear: both; height: 0; visibility: hidden;}
+#body {clear: both; position: relative; width: 100%; height: 100%; background: #fff;}
+#body:after {content: " "; display: block; clear: both; height: 0; visibility: hidden;}
+#bodyP {clear: both; display: inline-block; position: relative; width: 100%; height: 100%; background: #fff;}
+#bodyP:after {content: " "; display: block; clear: both; height: 0; visibility: hidden;}
+#footer {clear: both; margin: 0 auto; width: 100%; height: 180px; background-color: #3b3c3e;}
+
+
+
+/* estimate_pop.jsp
+---------------------------------------------------------- */
+.containerPop {
+	width: 100%;
+}
+.estimatePop .comentPop {
+	height: 153px;
+	padding: 0 34px;
+	text-align: left;
+}
+.estimatePop {
+	float: left;
+	margin: 10px;
+	padding: 0 20px;
+	border: 0px solid #454545;
+}
+.estimatePop h1 {
+	margin: 50px 0 25px;
+	font-family: 'KnaufOffice', 'NanumBarunGothic';
+	font-size: 32px;
+	text-align: center;
+	letter-spacing: 11px;
+	padding-left: 14px;
+}
+.estimatePop div.ptag {
+	margin-bottom: 10px;
+	padding: 15px 0;
+	height: 18px;
+	font-size: 13px;
+	color: #777;
+	border-bottom: 2px solid #757575;
+}
+.estimatePop div.ptag span {
+	float: left;
+	color: #777;
+}
+.estimatePop div.ptag strong {
+	float: left;
+	margin-left: 5px;
+	color: #333;
+	font-weight: normal;
+}
+.estimatePop div.ptag .bar {
+	margin: -1px 5px 0;
+	font-size: 13px;
+}
+.estimatePop .txtArea {
+	height: 183px;
+}
+.estimatePop table {
+	font-size: 12px;
+}
+.estimatePop table tr th {
+	padding: 14px 0 16px 15px;
+	line-height: 1.9em;
+	font-weight: normal;
+	text-align: left;
+	background-color: #f5f5f5;
+}
+.estimatePop div.line2px {
+	border: 2px solid #757575;
+	display: inline-block;
+}
+.estimatePop table tr th.line2px {
+	border: 2px solid #757575;
+}
+.estimatePop table tr th.lineBto1px {
+	border-bottom: 1px solid #757575;
+}
+.estimatePop table tr th span {
+	margin-right: 5px;
+	color: #777;
+	min-width: 60px;
+	display: inline-block;
+	vertical-align: middle;
+}
+.estimatePop table tr th span.rightSpan {
+	color: #333;
+	width: 170px;
+	display: inline-block;
+	margin-top: 1px;
+}
+.estimatePop table tr th span.rightSpanTxt {
+	color: #333;
+	width: 170px;
+	display: inline-block;
+	line-height: 21px;
+	margin-top: 1px;
+}
+.estimatePop table tr td {
+	text-align: center;
+}
+.estimatePop .right {
+	float: right;
+}
+.estimatePop .right tr {
+	border-bottom: 1px solid #ddd;
+}
+.estimatePop .right tr:first-child {
+	border-bottom: 1px solid #757575;
+}
+.estimatePop .right tr:last-child {
+	border-bottom: none;
+}
+.estimatePop .right tr:first-child th {
+	padding: 10px 0;
+	font-size: 12px;
+	color: #555;
+	text-align: center;
+	background-color: #f5f5f5;
+}
+.estimatePop .right tr th {
+	padding: 11px 0 11px 15px;
+	line-height: 1.4em;
+	color: #777;
+	background-color: #fff;
+}
+.estimatePop .right tr td {
+	text-align: left;
+}
+.estimatePop .priceAll {
+	margin-top: 8px;
+}
+.estimatePop .price tr th {
+	padding: 18px 0 13px 15px;
+	line-height: 1.4em;
+	font-size: 16px;
+	color: #555;
+	background-color: #fff;
+}
+.estimatePop .price tr td {
+	padding: 7px 15px 3px;
+	height: 45px;
+	font-size: 16px;
+	text-align: right;
+}
+.estimatePop .proList {
+	margin-top: 10px;
+}
+.estimatePop .proList tr {
+	border-top: 1px solid #ddd;
+}
+.estimatePop .proList tr:first-child {
+	border-top: none;
+}
+.estimatePop .proList tr th {
+	padding: 11px 0;
+	line-height: 1.4em;
+	text-align: center;
+	color: #555;
+}
+.estimatePop .proList tr td {
+	padding: 13px 10px 13px;
+	height: 18px;
+	font-size: 12px;
+	border-left: 1px solid #ddd;
+	word-wrap: break-word;
+}
+.estimatePop .proList tr td:first-child {
+	border-left: none;
+}
+.estimatePop .proList .allPrice td {
+
+}
+.estimatePop .etc {
+	margin-top: 10px;
+}
+.estimatePop .etc tr {
+	border-bottom: 1px solid #ddd;
+}
+.estimatePop .etc tr th {
+	padding: 11px 0;
+	line-height: 1.4em;
+	text-align: center;
+	color: #555;
+}
+.estimatePop .etc tr td {
+	padding: 10px 15px;
+/* 	vertical-align: top; */
+	text-align: left;
+	border-left: 1px solid #ddd;
+	line-height: 22px;
+}
+.estimatePop .etc tr:last-child {
+	border-bottom: none;
+}
+.estimatePop .etc tr td:first-child {
+	border-left: none;
+}
+.estimatePop .etc tr td span {
+	margin-right: 10px;
+	color: #777;
+	min-width: 59px;
+	display: inline-block;
+}
+
+.estimatePop .etc.contract tr th {
+	padding: 11px 15px;
+	text-align: left;
+	background-color: transparent;
+	border-left: 1px solid #ddd;
+}
+.estimatePop .contract tr th:first-child {
+	background-color: #f5f5f5;
+	border-left: none;
+}
+.estimatePop .contract tr td:first-child {
+	border-left: 1px solid #ddd;
+}
+.estimatePop .etc.contract tr span {
+	margin: 0;
+	min-width: auto;
+}
+.estimatePop .contract_txt span {
+	display: block;
+	margin: 20px 0;
+}
+.estimatePop .contract_txt strong {
+	display: inline-block;
+	margin-right: 20px;
+	min-width: 30px;
+}
+
+.estimatePop .date {
+	margin: 10px 0;
+	width: 100%;
+	text-align: right;
+}
+.estimatePop .date em {
+	display: inline-block;
+	min-width: 50px;
+}
+
+.estimatePop .sign {
+	display: table;
+	margin-bottom: 6px;
+}
+.estimatePop .sign h3 {
+	margin-bottom: 10px;
+}
+.estimatePop .sign table {
+	border: 2px solid #757575;
+}
+.estimatePop .sign table tr {
+	border-bottom: 1px solid #ddd;
+}
+.estimatePop .sign table tr th {
+	padding: 11px 15px;
+	line-height: 1.4em;
+}
+.estimatePop .sign table tr td {
+	padding: 11px 15px;
+	border-left: 1px solid #ddd;
+}
+
+.estimatePop .option_apply {
+	float: left;
+	margin: 20px 0 30px;
+	padding: 0;
+	width: 100%;
+	height: auto;
+	border-bottom: none;
+}
+.estimatePop .option_apply a {
+	display: inline-block;
+	padding: 10px 0;
+	width: 150px;
+	font-size: 16px;
+}
+.estimatePop .option_apply2 {
+	float: left;
+	margin: 0 0 30px;
+	padding: 0;
+	width: 100%;
+	height: auto;
+	border-bottom: none;
+}
+.estimatePop .option_apply2 a {
+	display: inline-block;
+	padding: 21px 0;
+	margin: 20px 0 0;
+	width: 200px;
+	font-size: 20px;
+}
+
+.option_apply {
+	width: 150px;
+	height: 20px;
+	text-align: center;
+	padding: 10px 0 10px;
+	margin: 0 auto 35px;
+}
+.option_apply a {
+	width: 150px;
+	font-size: 16px;
+	color: #ffffff;
+	text-decoration: none;
+	background: #454545;
+	padding: 12px 0 10px;
+	display: block;
+}
+.option_apply a:hover {
+	background: #252525;
+}
+
+/* tenderPaperPop.jsp */
+.estimatePop .tender tr th {
+	padding-left: 10px;
+	text-align: left;
+}
+.estimatePop .tender tr:last-child th {
+	border-bottom: none;
+}

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.report">
+	
+	<!-- 거래사실확인서 - 공급자/공급받는자 -->
+	<select id="vSupplier" parameterType="hashmap" resultType="hashmap">
+		<!-- 2024-10-15 HSG 주석 처리 후 아래 코드 삽입SELECT * FROM V_SUPPLIER -->
+		SELECT * FROM dbo.V_SUPPLIER
+		<where> 
+			<if test="r_custcd != null and r_custcd != ''">AND CUST_CD = #{r_custcd}</if> <!-- 거래처코드 -->
+		</where> 
+	</select>
+	
+	<!-- 거래사실확인서 - 거래내역 -->
+	<select id="vClosedSalesOrder" parameterType="hashmap" resultType="hashmap">
+		<!-- 2024-10-15 HSG 주석 처리 후 아래 코드 삽입 SELECT 
+		  VCS.* 
+		  , CASE WHEN SDDCTO IN('CA','CO','CR') AND TO_CHAR(TRIM(SDOORN)) IS NOT NULL THEN VCS.SDOORN
+		         WHEN SDDCTO NOT IN('CA','CO','CR') THEN TO_CHAR(VCS.SDDOCO)
+          ELSE '' END ORDERNUM
+		FROM V_CLOSED_SALESORDER VCS
+		<where>
+		    <if test="r_sdan8 != null and r_sdan8 != ''">AND SDAN8 = #{r_sdan8}</if> < !- - 거래처코드 - - >
+			<if test="r_sdshan != null and r_sdshan != ''">AND SDSHAN = #{r_sdshan}</if> < !- - 납품처 - - >
+			<if test="r_ssdaddj != null and r_ssdaddj != ''">AND SDADDJ <![CDATA[>=]]> TO_CHAR(TO_DATE(#{r_ssdaddj},'YYYYMMDD'),'YYYYMMDD')</if> < !- - 시작일 - - > 
+			<if test="r_esdaddj != null and r_esdaddj != '' ">AND SDADDJ <![CDATA[<]]> TO_CHAR(TO_DATE(#{r_esdaddj}, 'YYYYMMDD')+1,'YYYYMMDD')</if> < !- - 종료일 - - >
+		</where>--> 
+		SELECT 
+		  VCS.* 
+		  , CASE WHEN SDDCTO IN('CA','CO','CR') AND CONVERT(VARCHAR, TRIM(SDOORN)) IS NOT NULL THEN VCS.SDOORN
+		         WHEN SDDCTO NOT IN('CA','CO','CR') THEN VCS.SDDOCO
+          ELSE '' END ORDERNUM
+		FROM dbo.V_CLOSED_SALESORDER VCS
+		<where>
+		    <if test="r_sdan8 != null and r_sdan8 != ''">AND SDAN8 = #{r_sdan8}</if> <!-- 거래처코드 -->
+			<if test="r_sdshan != null and r_sdshan != ''">AND SDSHAN = #{r_sdshan}</if> <!-- 납품처 -->
+			<!-- <if test="r_ssdaddj != null and r_ssdaddj != ''">AND SDADDJ <![CDATA[>=]]> (DATEPART(year, #{r_ssdaddj})*1000 +DATEPART(dy, #{r_ssdaddj})-1900000) </if> 
+			<if test="r_esdaddj != null and r_esdaddj != '' ">AND SDADDJ <![CDATA[<]]> (DATEPART(year, #{r_esdaddj})*1000 +DATEPART(dy, #{r_esdaddj})-1900000) </if>  -->
+			<if test="r_ssdaddj != null and r_ssdaddj != ''">AND SDADDJ <![CDATA[>=]]> #{r_ssdaddj} </if> 
+			<if test="r_esdaddj != null and r_esdaddj != '' ">AND SDADDJ <![CDATA[<=]]> #{r_esdaddj} </if>  
+		</where> 
+		
+		<!-- order by 납품처,원오더,관련오더,상품,관련오더 타입 -->
+<!-- 		ORDER BY SDSHAN, ORDERNUM, SDDSC1, SDADDJ, SDOCTO -->
+		ORDER BY SDSHAN, SDADDJ, SDDOCO ASC, SDDCTO DESC
+	</select>
+	
+	<!-- 거래사실확인서 - 전월채권,당월매출,현금수금,어음수금,당월채권 -->
+	<select id="vSumPrice" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			Z4CFY, Z4PN, Z4AN8,
+			Z4AG_OPEN AS OPEN_AMOUNT, 								 <!-- 전월채권 -->
+			Z4AG_GROSS AS GROSS_AMOUNT, 							 <!-- 당월매출 -->
+			ABS(Z4AG_CHECKAMT_1) AS RECEIVED_CASH, 					 <!-- 현금수금액 -->
+			ABS(Z4AG_CHECKAMT_5 + Z4AG_CHECKAMT_6) AS RECEIVED_NOTE, <!-- 어음수금액 -->
+			Z4AG_CURRENT AS CURRENT_AMOUNT 							 <!-- 당월잔액 -->
+			
+		FROM (
+		SELECT XYZ.Z4CFY                        AS Z4CFY             <!-- 세기년도 --> 
+		     , MAX(XYZ.Z4PN)                    AS Z4PN              <!-- 월 --> 
+		     , XYZ.Z4AN8                        AS Z4AN8             <!-- 거래처(주소번호) --> 
+		     , ISNULL(SUM(XYZ.Z4AG_OPEN), 0)       AS Z4AG_OPEN         <!-- 전기이월 -->
+		     , ISNULL(SUM(XYZ.Z4AG_GROSS     ), 0) AS Z4AG_GROSS        <!-- 판매금액 --> 
+		     , ISNULL(SUM(XYZ.Z4AG_GROSS_1   ), 0) AS Z4AG_GROSS_1      <!-- 서비스매출 --> 
+		     , ISNULL(SUM(XYZ.Z4AG_GROSS_2   ), 0) AS Z4AG_GROSS_2      <!-- 일반매출 --> 
+		     , ISNULL(SUM(XYZ.Z4AG_CHECKAMT_1), 0) AS Z4AG_CHECKAMT_1   <!-- 현금수금 --> 
+		     , ISNULL(SUM(XYZ.Z4AG_CHECKAMT_2), 0) AS Z4AG_CHECKAMT_2   <!-- 부도어음인출 --> 
+		     , ISNULL(SUM(XYZ.Z4AG_CHECKAMT_3), 0) AS Z4AG_CHECKAMT_3   <!-- 어음인출 --> 
+		     , ISNULL(SUM(XYZ.Z4AG_CHECKAMT_4), 0) AS Z4AG_CHECKAMT_4   <!-- 부도어음현금인출 --> 
+		     , ISNULL(SUM(XYZ.Z4AG_CHECKAMT_5), 0) AS Z4AG_CHECKAMT_5   <!-- 자수어음 --> 
+		     , ISNULL(SUM(XYZ.Z4AG_CHECKAMT_6), 0) AS Z4AG_CHECKAMT_6   <!-- 타수어음 --> 
+		     , ISNULL(SUM(XYZ.Z4AG_DISCOUNT  ), 0) AS Z4AG_DISCOUNT     <!-- 매출할인 --> 
+
+		     , ISNULL(SUM(XYZ.Z4AG_OPEN), 0)             <!-- 전기이월 --> 
+		     + ISNULL(SUM(XYZ.Z4AG_GROSS     ), 0)       <!-- 판매금액 --> 
+		     + ISNULL(SUM(XYZ.Z4AG_CHECKAMT_1), 0)       <!-- 현금수금 --> 
+		     + ISNULL(SUM(XYZ.Z4AG_CHECKAMT_2), 0)       <!-- 부도어음인출 --> 
+		     + ISNULL(SUM(XYZ.Z4AG_CHECKAMT_3), 0)       <!-- 어음인출 --> 
+		     + ISNULL(SUM(XYZ.Z4AG_CHECKAMT_4), 0)       <!-- 부도어음현금인출 --> 
+		     + ISNULL(SUM(XYZ.Z4AG_CHECKAMT_5), 0)       <!-- 자수어음 --> 
+		     + ISNULL(SUM(XYZ.Z4AG_CHECKAMT_6), 0)       <!-- 타수어음 --> 
+		     + ISNULL(SUM(XYZ.Z4AG_DISCOUNT  ), 0)       <!-- 매출할인 --> 
+		     AS Z4AG_CURRENT    					  <!-- 당월잔액 -->
+
+		  FROM (
+		        <!-- 전기이월 -->
+		        SELECT MON.Z4KCO AS Z4KCO             		<!-- 회사 -->
+		             , MON.Z4CFY AS Z4CFY             		<!-- 세기년도 --> 
+		             , MON.Z4PN  AS Z4PN              		<!-- 월 --> 
+		             , MON.Z4AN8 AS Z4AN8             		<!-- 거래처(주소번호) --> 
+		             , SUM(MON.Z4ENBL) AS Z4AG_OPEN         <!-- 전기이월 --> 
+		             , 0               AS Z4AG_GROSS        <!-- 판매금액 --> 
+		             , 0               AS Z4AG_GROSS_1      <!-- 일반매출 --> 
+		             , 0               AS Z4AG_GROSS_2      <!-- 서비스매출 --> 
+		             , 0               AS Z4AG_CHECKAMT_1   <!-- 현금수금 --> 
+		             , 0               AS Z4AG_CHECKAMT_2   <!-- 부도어음인출 --> 
+		             , 0               AS Z4AG_CHECKAMT_3   <!-- 어음인출 --> 
+		             , 0               AS Z4AG_CHECKAMT_4   <!-- 부도어음현금인출 --> 
+		             , 0               AS Z4AG_CHECKAMT_5   <!-- 자수어음 --> 
+		             , 0               AS Z4AG_CHECKAMT_6   <!-- 타수어음 --> 
+		             , 0               AS Z4AG_DISCOUNT     <!-- 매출할인 -->
+		          <!-- 2024-10-15 HSG 주석 처리 후 아래 코드 삽입
+		          FROM PRODLGKDTA.F59K3034@LGKEORDER  MON
+		          INNER JOIN PRODLGKDTA.F0901@LGKEORDER ACT ON ACT.GMAID = MON.Z4AID-->
+		          FROM dbo.F59K3034  MON
+		          INNER JOIN dbo.F0901 ACT ON ACT.GMAID = MON.Z4AID
+
+		         <!--  
+		           WHERE 1 = 1 
+		           AND MON.Z4Z5ABCD = 'S'
+		           AND ACT.GMOBJ NOT IN('426010', '000000') 
+		           AND MON.Z4KCO IN('95600', '95601')      
+		           AND MON.Z4CFY = :CFY_YEAR                
+		           AND MON.Z4PN  < :PN_MONTH                
+		           AND MON.Z4AN8 = :CUSTOMER_CD
+		         -->              
+		         <where> 
+					1 = 1
+					AND MON.Z4Z5ABCD = 'S'
+					AND ACT.GMOBJ NOT IN('426010', '000000')  <!-- 426010:운송비관련 미수금  -->
+					AND MON.Z4KCO IN('95600', '95601') <!-- 회사 -->
+					<if test="r_z4cfy != null and r_z4cfy != ''">AND MON.Z4CFY = #{r_z4cfy}</if>  <!-- 세기년도 -->
+					<if test="r_z4pn != null and r_z4pn != ''">AND MON.Z4PN <![CDATA[<]]> #{r_z4pn}</if>  <!-- 월 -->
+					<if test="r_z4an8 != null and r_z4an8 != ''">AND MON.Z4AN8 = #{r_z4an8}</if>  <!-- 거래처(주소번호) -->
+				 </where>
+		         GROUP BY MON.Z4KCO, MON.Z4CFY, MON.Z4PN, MON.Z4AN8
+		      
+		        UNION ALL
+		       
+				<!-- 당월실적  -->
+		        SELECT 
+		        	   DAL.Z3KCO AS Z3KCO  <!-- 회사 -->  
+		             , DAL.Z3CFY AS Z3CFY  <!-- 세기년도 --> 
+		             , DAL.Z3PN AS Z3PN    <!-- 월 --> 
+		             , DAL.Z3AN8 AS Z3AN8  <!-- 거래처(주소번호) --> 
+		             , 0 AS Z3AG_OPEN      <!-- 전기이월 --> 
+		             , ISNULL(SUM(CASE WHEN DAL.Z3URC1 IN('R09', 'R10', 'R11', 'R12') THEN DAL.Z3AG END), 0) AS Z3AG_GROSS  <!-- 판매금액 --> 
+		             , ISNULL(SUM(CASE WHEN DAL.Z3URC1 IN('R09', 'R10') THEN DAL.Z3AG END), 0)  AS Z3AG_GROSS_1      		 <!-- 일반매출 --> 
+		             , ISNULL(SUM(CASE WHEN DAL.Z3URC1 IN('R11', 'R12') THEN DAL.Z3AG END), 0) AS Z3AG_GROSS_2       		 <!-- 서비스매출 --> 
+		             , ISNULL(SUM(CASE WHEN DAL.Z3URC1 = 'R34' THEN DAL.Z3AG*-1 
+		                            WHEN DAL.Z3URC1 IN('R18', 'R21', 'R28', 'R35', 'R36') THEN DAL.Z3AG END), 0
+		               ) AS Z3AG_CHECKAMT_1   																	    <!-- 현금수금 --> 
+		             , ISNULL(SUM(CASE WHEN DAL.Z3URC1 = 'R30' THEN DAL.Z3AG END), 0) AS Z3AG_CHECKAMT_2   			<!-- 부도어음인출 --> 
+		             , ISNULL(SUM(CASE WHEN DAL.Z3URC1 = 'R31' THEN DAL.Z3AG END), 0) AS Z3AG_CHECKAMT_3   			<!-- 어음인출 --> 
+		             , ISNULL(SUM(CASE WHEN DAL.Z3URC1 = 'R22' THEN DAL.Z3AG END), 0) AS Z3AG_CHECKAMT_4   			<!-- 부도어음현금인출 --> 
+		             , ISNULL(SUM(CASE WHEN DAL.Z3URC1 IN('R13', 'R29') THEN DAL.Z3AG*-1 END), 0) AS Z3AG_CHECKAMT_5   <!-- 자수어음 --> 
+		             , ISNULL(SUM(CASE WHEN DAL.Z3URC1 IN('R14', 'R39') THEN DAL.Z3AG*-1 END), 0) AS Z3AG_CHECKAMT_6   <!-- 타수어음 --> 
+		             , ISNULL(SUM(CASE WHEN DAL.Z3URC1 IN('R25', 'R26') THEN DAL.Z3AG END), 0) AS Z3AG_DISCOUNT     	<!-- 매출할인 --> 
+		          FROM      
+				<!-- 2024-10-15 HSG 주석 처리 후 아래 코드 삽입
+		          PRODLGKDTA.F59K3033@LGKEORDER DAL -->
+		         	dbo.F59K3033 DAL
+		         <!-- AND DAL.Z3KCO IN('95600', '95601') AND DAL.Z3CFY = :CFY_YEAR AND DAL.Z3PN = :PN_MONTH AND DAL.Z3AN8 = :CUSTOMER_CD -->
+		           <where> 
+						1 = 1
+						AND DAL.Z3KCO IN('95600', '95601') <!-- 회사 -->
+						<if test="r_z3cfy != null and r_z3cfy != ''">AND DAL.Z3CFY = #{r_z3cfy}</if> <!-- 세기년도 -->
+						<if test="r_z3pn != null and r_z3pn != ''">AND DAL.Z3PN = #{r_z3pn}</if>     <!-- 월 -->
+						<if test="r_z3an8 != null and r_z3an8 != ''">AND DAL.Z3AN8 = #{r_z3an8}</if> <!-- 거래처(주소번호) -->
+				   </where>
+		         GROUP BY DAL.Z3KCO, DAL.Z3CFY, DAL.Z3PN, DAL.Z3AN8
+		       ) XYZ
+		 WHERE 1 = 1
+		 GROUP BY XYZ.Z4CFY   <!-- 세기년도 -->
+		        , XYZ.Z4AN8) K <!-- 거래처(주소번호) -->
+	</select>
+	
+	<!-- 미도래어음 -->
+	<select id="getFailPrice" parameterType="hashmap" resultType="long">
+		<!--  SELECT dbo.SF_GETNOTES(#{r_sdate}, #{r_edate}, #{r_custcd}) FAILPRICE  -->
+		
+		SELECT RYAA_1 - RYAA_2 - RYAA_3
+		FROM (
+			SELECT RYAN8 AS RYAN8   -- 거래처
+				, ISNULL(SUM(RYCKAM), 0) AS RYAA_1  -- 어음금액   
+				, ISNULL(SUM(
+					CASE WHEN RYNFVD = 'N' AND RYVRE = 'RF' 
+						THEN 
+						CASE WHEN RYVDGJ >= (DATEPART(year, #{r_sdate})*1000 +DATEPART(dy, #{r_sdate}))-1900000 
+							THEN RYCKAM 
+						END
+					END)
+				  , 0) AS RYAA_2  -- 부도금액
+	            , ISNULL(SUM(
+	            	CASE WHEN RYNFVD = 'N' AND RYVRE = 'NSF' 
+	            		THEN 
+	            		CASE WHEN RYVDGJ >= (DATEPART(year, #{r_sdate})*1000 +DATEPART(dy, #{r_sdate}))-1900000 
+	            			THEN RYCKAM
+	            		END
+	            	END), 
+	              0) AS RYAA_3  -- 불량금액
+			FROM dbo.F03B13
+			WHERE 1 = 1
+				AND RYAN8   = #{r_custcd}      -- 거래처
+				AND RYDMTJ  <![CDATA[<=]]> (DATEPART(year, #{r_edate})*1000 +DATEPART(dy, #{r_edate}))-1900000   -- 조회월 마지막일(입금일) 
+				AND RYRYIN  <![CDATA[<]]>  'K'       -- 자/타수 
+				AND RYDDST  = '4'       -- 어음상태
+				AND RYNFVD IN(' ', 'N', 'V')
+				AND ((RYNFVD = 'N' AND RYVRE = 'RF'  AND RYVDGJ <![CDATA[>=]]> (DATEPART(year, #{r_sdate})*1000 +DATEPART(dy, #{r_sdate}))-1900000) OR (NOT(RYNFVD = 'N' AND RYVRE = 'RF' ) AND 1 = 1)) -- 조회월 시작일
+				AND ((RYNFVD = 'N' AND RYVRE = 'NSF' AND RYVDGJ <![CDATA[>=]]> (DATEPART(year, #{r_sdate})*1000 +DATEPART(dy, #{r_sdate}))-1900000) OR (NOT(RYNFVD = 'N' AND RYVRE = 'NSF') AND 1 = 1)) -- 조회월 시작일
+				AND ((RYVRE IN('ECK', 'VOD') AND RYVDGJ <![CDATA[>=]]> (DATEPART(year, #{r_sdate})*1000 +DATEPART(dy, #{r_sdate}))-1900000) OR (NOT(RYVRE IN('ECK', 'VOD')) AND 1 = 1))         -- 조회월 시작일
+			GROUP BY RYAN8
+		) X
+	</select>
+	
+	<!-- 거래처입금계좌 -->
+	<select id="getAccount" parameterType="hashmap" resultType="hashmap">
+<!-- 2024-10-15 HSG 주석 처리 후 아래 코드 삽입
+		SELECT * FROM V_ACCOUNT -->
+		SELECT * FROM dbo.V_ACCOUNT
+		<where> 
+			<if test="r_ayan8 != null and r_ayan8 != ''">AND AYAN8 = #{r_ayan8}</if> <!-- 거래처코드 -->
+		</where>
+	</select>
+	
+	<!-- 메일전송이력 저장 -->
+	<insert id="inSendMailHistory" parameterType="hashmap">
+	<!-- 2024-10-15 HSG MSSQL에서는 SEQUENCE를 사용할 수 없어 MAX로 대체 -->
+		<selectKey keyProperty="smhSeq" resultType="long" order="BEFORE">
+    		SELECT MAX(H.SMH_SEQ)+1 FROM SENDMAILHISTORY H;
+    	</selectKey>
+
+		INSERT INTO SENDMAILHISTORY (
+			SMH_SEQ, SMH_REPORT, SMH_SDATE, SMH_EDATE, SMH_CUSTCD, SMH_SHIPTOCD, SMH_TYPE, SMH_EMAIL, SMH_ID, SMH_INDATE		
+		)VALUES (
+<!-- 2024-10-15 HSG MSSQL에서는 SEQUENCE를 사용할 수 없어 MAX로 대체
+            - - USQ_SENDMAILHISTORY.NEXTVAL
+            NEXT VALUE FOR USQ_SENDMAILHISTORY-->
+            #{smhSeq}
+            , #{ m_smhreport }
+            , #{ m_smhsdate }
+            , #{ m_smhedate }
+            , #{ m_smhcustcd }
+            , #{ m_smhshiptocd }
+            , #{ m_smhtype }
+            , #{ m_smhemail }
+            , #{ m_smhid }
+            , GETDATE()
+		)
+	</insert>
+	
+	<select id="sendMailHistoryList" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			SMH.*, CT.CUST_NM SMH_CUSTNM, ST.SHIPTO_NM SMH_SHIPTONM 
+		FROM SENDMAILHISTORY SMH
+		LEFT JOIN O_CUSTOMER CT ON CT.CUST_CD = SMH.SMH_CUSTCD
+		LEFT JOIN O_SHIPTO ST ON ST.SHIPTO_CD = SMH.SMH_SHIPTOCD
+		<where>
+		    <if test="r_smhid != null and r_smhid != ''">AND SMH_ID = #{r_smhid}</if>
+		</where> 
+	</select>
+	
+</mapper>

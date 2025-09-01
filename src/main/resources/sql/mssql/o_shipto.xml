@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.o_shipto">
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT ST.*
+		FROM O_SHIPTO ST
+		<where>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND ST.CUST_CD = #{r_custcd}</if>
+			<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM = #{rl_shiptonm}</if>
+		</where>
+	</select>
+	
+	<select id="cnt_20241125" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM
+		((SELECT ST.* FROM O_SHIPTO ST
+		LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT'
+		<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+			LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+		</if>
+		<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+			INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+		</if>
+		<!-- 2024-10-15 HSG 주석 처리 LEFT OUTER JOIN (SELECT QUOTE_QT, MAX(INSERT_DT) AS DT FROM O_SHIPTO GROUP BY QUOTE_QT) TT ON
+			TT.QUOTE_QT = ST.QUOTE_QT -->
+		<where>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND ST.CUST_CD = #{r_custcd}</if>
+			<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' + #{rl_shiptocd} + '%'</if>
+			<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' + #{rl_shiptonm} + '%'</if>
+			<!-- 2024-10-15 HSG 주석 처리 <if test="rl_quoteqt != null">AND ST.QUOTE_QT LIKE '%' + #{rl_quoteqt} + '%' AND ST.QUOTE_QT IS NOT NULL</if>  -->
+			<if test="rl_insertdt != null">AND ST.ANGDT <![CDATA[<=]]> #{rl_insertdt}</if>
+			<!-- 2024-10-15 HSG 주석 처리 AND TT.DT = ST.INSERT_DT  -->
+		</where>)
+		UNION
+		(SELECT ST.* FROM O_SHIPTO ST
+		LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT'
+		<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+			LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+		</if>
+		<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+			INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+		</if>
+		<!-- 2024-10-15 HSG 주석 처리 LEFT OUTER JOIN (SELECT QUOTE_QT, MAX(INSERT_DT) AS DT FROM O_SHIPTO GROUP BY QUOTE_QT) TT ON
+			TT.QUOTE_QT = ST.QUOTE_QT  -->
+		<where>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND ST.SHIPTO_CD = #{r_custcd}</if>
+			<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' + #{rl_shiptocd} + '%'</if>
+			<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' + #{rl_shiptonm} + '%'</if>
+		</where>)) S
+	</select>
+	
+	<select id="list_20241120" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT 
+				ROW_NUMBER() OVER( ORDER BY (SELECT 1) ) AS ROWNUM
+				, XX.* FROM (		
+			(SELECT ST.*
+			FROM O_SHIPTO ST
+			LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT' 
+			<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+				LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+			</if>
+			<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+				INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+			</if>
+			<!-- 2024-10-15 HSG 주석 처리 LEFT OUTER JOIN (SELECT QUOTE_QT AS QT, MAX(INSERT_DT) AS DT FROM O_SHIPTO GROUP BY QUOTE_QT) TT ON
+				TT.QT = ST.QUOTE_QT  -->
+			<where>
+				<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+				<if test="r_custcd != null and r_custcd != '' ">AND ST.CUST_CD = #{r_custcd}</if>
+				<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' + #{rl_shiptocd} + '%'</if>
+				<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' + #{rl_shiptonm} + '%'</if>
+				<!-- 2024-10-15 HSG 주석 처리 <if test="rl_quoteqt != null">AND ST.QUOTE_QT LIKE '%' + #{rl_quoteqt} + '%' AND ST.QUOTE_QT IS NOT NULL</if>  -->
+				<if test="rl_insertdt != null">AND ST.ANGDT <![CDATA[<=]]> #{rl_insertdt}</if>
+				<!-- 2024-10-15 HSG 주석 처리 AND TT.DT = ST.INSERT_DT  -->
+			</where>)
+			UNION (
+			SELECT ST.*
+			FROM O_SHIPTO ST
+			LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT' 
+			<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+				LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+			</if>
+			<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+				INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+			</if>
+			<!-- 2024-10-15 HSG 주석 처리 LEFT OUTER JOIN (SELECT QUOTE_QT AS QT, MAX(INSERT_DT) AS DT FROM O_SHIPTO GROUP BY QUOTE_QT) TT ON
+				TT.QT = ST.QUOTE_QT -->
+			<where>
+				<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+				<if test="r_custcd != null and r_custcd != '' ">AND ST.SHIPTO_CD = #{r_custcd}</if>
+				<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' + #{rl_shiptocd} + '%'</if>
+				<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' + #{rl_shiptonm} + '%'</if>
+				<!-- 2024-10-15 HSG 주석 처리 <if test="rl_quoteqt != null">AND ST.QUOTE_QT LIKE '%' + #{rl_quoteqt} + '%' AND ST.QUOTE_QT IS NOT NULL</if> -->
+			</where>)
+			
+			<!-- <if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${ r_orderby }</if> -->
+			) XX ) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		WITH XX AS (
+				(SELECT ST.SHIPTO_CD, ST.SHIPTO_NM, ST.ADD1, ST.ADD2, ST.ADD3, ST.ADD4, ST.ZIP_CD, ST.BUILDING_TY, ST.BUILDING_NM
+						, ST.BUSINESS_TY, ST.BUSINESS_NM, ST.INSERT_DT, ST.DUMMY, ST.DIST_CLASS, ST.QUOTE_QT, ST.ANGDT
+						, format(CAST(ST.BNDDT AS date),'yyyy-MM-dd') AS BNDDT, ST.CUST_CD
+						, iif(CAST(ST.BNDDT AS date) > DATEADD(DAY, 1, getDate()), 1, 0) AS PASSYN
+				FROM O_SHIPTO ST
+				LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT' 
+				<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+					LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+				</if>
+				<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+					INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+				</if>
+				<!-- 2024-10-15 HSG 주석 처리 LEFT OUTER JOIN (SELECT QUOTE_QT AS QT, MAX(INSERT_DT) AS DT FROM O_SHIPTO GROUP BY QUOTE_QT) TT ON
+					TT.QT = ST.QUOTE_QT  -->
+				<where>
+					<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+					<if test="r_custcd != null and r_custcd != '' ">AND ST.CUST_CD = #{r_custcd}</if>
+					<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' + #{rl_shiptocd} + '%'</if>
+					<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' + #{rl_shiptonm} + '%'</if>
+					<!-- 2024-10-15 HSG 주석 처리 <if test="rl_quoteqt != null">AND ST.QUOTE_QT LIKE '%' + #{rl_quoteqt} + '%' AND ST.QUOTE_QT IS NOT NULL</if>  -->
+					<if test="rl_insertdt != null">AND ST.ANGDT <![CDATA[<=]]> #{rl_insertdt}</if>
+					<!-- 2024-10-15 HSG 주석 처리 AND TT.DT = ST.INSERT_DT  -->
+					AND	ST.STOCK_NY IS NULL<!-- 2025-04-11 hsg HelloKitty : 납품처(O_SHIPTO)에서 STOCK_NY가 NULL일때만 유저에게 보이도록 수정 -->
+				</where>)
+				UNION (
+				SELECT ST.SHIPTO_CD, ST.SHIPTO_NM, ST.ADD1, ST.ADD2, ST.ADD3, ST.ADD4, ST.ZIP_CD, ST.BUILDING_TY, ST.BUILDING_NM
+						, ST.BUSINESS_TY, ST.BUSINESS_NM, ST.INSERT_DT, ST.DUMMY, ST.DIST_CLASS, ST.QUOTE_QT, ST.ANGDT
+						, format(CAST(ST.BNDDT AS date),'yyyy-MM-dd') AS BNDDT, ST.CUST_CD
+						, iif(CAST(ST.BNDDT AS date) > DATEADD(DAY, 1, getDate()), 1, 0) AS PASSYN
+				FROM O_SHIPTO ST
+				LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT' 
+				<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+					LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+				</if>
+				<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+					INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+				</if>
+				<!-- 2024-10-15 HSG 주석 처리 LEFT OUTER JOIN (SELECT QUOTE_QT AS QT, MAX(INSERT_DT) AS DT FROM O_SHIPTO GROUP BY QUOTE_QT) TT ON
+					TT.QT = ST.QUOTE_QT -->
+				<where>
+					<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+					<if test="r_custcd != null and r_custcd != '' ">AND ST.SHIPTO_CD = #{r_custcd}</if>
+					<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' + #{rl_shiptocd} + '%'</if>
+					<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' + #{rl_shiptonm} + '%'</if>
+					<!-- 2024-10-15 HSG 주석 처리 <if test="rl_quoteqt != null">AND ST.QUOTE_QT LIKE '%' + #{rl_quoteqt} + '%' AND ST.QUOTE_QT IS NOT NULL</if> -->
+					AND	ST.STOCK_NY IS NULL<!-- 2025-04-11 hsg HelloKitty : 납품처(O_SHIPTO)에서 STOCK_NY가 NULL일때만 유저에게 보이도록 수정 -->
+				</where>)
+				)
+		SELECT COUNT(*)
+		FROM XX A
+		WHERE	1 = 1
+			<choose>
+				<when test='page_type != null and "orderadd".equals(page_type)'>
+				AND SHIPTO_CD IN (SELECT max(SHIPTO_CD) AS SHIPTO_CD FROM XX GROUP BY QUOTE_QT)
+				</when>
+				<otherwise>AND SHIPTO_CD IN (SELECT max(SHIPTO_CD) AS SHIPTO_CD FROM XX GROUP BY SHIPTO_NM)</otherwise>
+			</choose>
+	</select>
+
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+	WITH XX AS (
+			(SELECT ST.SHIPTO_CD, ST.SHIPTO_NM, ST.ADD1, ST.ADD2, ST.ADD3, ST.ADD4, ST.ZIP_CD, ST.BUILDING_TY, ST.BUILDING_NM
+					, ST.BUSINESS_TY, ST.BUSINESS_NM, ST.INSERT_DT, ST.DUMMY, ST.DIST_CLASS, ST.QUOTE_QT, ST.ANGDT
+					, format(CAST(ST.BNDDT AS date),'yyyy-MM-dd') AS BNDDT, ST.CUST_CD
+					, iif(CAST(ST.BNDDT AS date) > DATEADD(DAY, 1, getDate()), 1, 0) AS PASSYN, ST.Comment<!-- 2025-02-20 hsg Frog Splash. 웹주문현황에서 거래처 주의사항 추가. SHIP_TO Table에 Comment(VARCHAR(80)) 추가 -->
+			FROM O_SHIPTO ST
+			LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT' 
+			<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+				LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+			</if>
+			<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+				INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+			</if>
+			<!-- 2024-10-15 HSG 주석 처리 LEFT OUTER JOIN (SELECT QUOTE_QT AS QT, MAX(INSERT_DT) AS DT FROM O_SHIPTO GROUP BY QUOTE_QT) TT ON
+				TT.QT = ST.QUOTE_QT  -->
+			<where>
+				<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+				<if test="r_custcd != null and r_custcd != '' ">AND ST.CUST_CD = #{r_custcd}</if>
+				<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' + #{rl_shiptocd} + '%'</if>
+				<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' + #{rl_shiptonm} + '%'</if>
+				<!-- 2024-10-15 HSG 주석 처리 <if test="rl_quoteqt != null">AND ST.QUOTE_QT LIKE '%' + #{rl_quoteqt} + '%' AND ST.QUOTE_QT IS NOT NULL</if>  -->
+				<if test="rl_insertdt != null">AND ST.ANGDT <![CDATA[<=]]> #{rl_insertdt}</if>
+				<!-- 2024-10-15 HSG 주석 처리 AND TT.DT = ST.INSERT_DT  -->
+				AND	ST.STOCK_NY IS NULL<!-- 2025-04-11 hsg HelloKitty : 납품처(O_SHIPTO)에서 STOCK_NY가 NULL일때만 유저에게 보이도록 수정 -->
+			</where>)
+			UNION (
+			SELECT ST.SHIPTO_CD, ST.SHIPTO_NM, ST.ADD1, ST.ADD2, ST.ADD3, ST.ADD4, ST.ZIP_CD, ST.BUILDING_TY, ST.BUILDING_NM
+					, ST.BUSINESS_TY, ST.BUSINESS_NM, ST.INSERT_DT, ST.DUMMY, ST.DIST_CLASS, ST.QUOTE_QT, ST.ANGDT
+					, format(CAST(ST.BNDDT AS date),'yyyy-MM-dd') AS BNDDT, ST.CUST_CD
+					, iif(CAST(ST.BNDDT AS date) > DATEADD(DAY, 1, getDate()), 1, 0) AS PASSYN, ST.Comment<!-- 2025-02-20 hsg Frog Splash. 웹주문현황에서 거래처 주의사항 추가. SHIP_TO Table에 Comment(VARCHAR(80)) 추가 -->
+			FROM O_SHIPTO ST
+			LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT' 
+			<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+				LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+			</if>
+			<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+				INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+			</if>
+			<!-- 2024-10-15 HSG 주석 처리 LEFT OUTER JOIN (SELECT QUOTE_QT AS QT, MAX(INSERT_DT) AS DT FROM O_SHIPTO GROUP BY QUOTE_QT) TT ON
+				TT.QT = ST.QUOTE_QT -->
+			<where>
+				<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+				<if test="r_custcd != null and r_custcd != '' ">AND ST.SHIPTO_CD = #{r_custcd}</if>
+				<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' + #{rl_shiptocd} + '%'</if>
+				<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' + #{rl_shiptonm} + '%'</if>
+				<!-- 2024-10-15 HSG 주석 처리 <if test="rl_quoteqt != null">AND ST.QUOTE_QT LIKE '%' + #{rl_quoteqt} + '%' AND ST.QUOTE_QT IS NOT NULL</if> -->
+				AND	ST.STOCK_NY IS NULL<!-- 2025-04-11 hsg HelloKitty : 납품처(O_SHIPTO)에서 STOCK_NY가 NULL일때만 유저에게 보이도록 수정 -->
+			</where>)
+			
+			<!-- <if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${ r_orderby }</if> -->
+				)
+    <!-- 2024-11-26 hsg Chock Slam 납품처 POP-UP 표시기준에 대하여 변경 요청으로 변경됨 -->
+	SELECT	*
+	FROM	(
+				SELECT
+						ROW_NUMBER() OVER( ORDER BY ISNULL(QUOTE_QT, 9999999999) DESC, SHIPTO_CD DESC, (SELECT 1) ) AS RNUM
+						, S.*
+				FROM	(
+							SELECT
+									ROW_NUMBER() OVER( ORDER BY ISNULL(A.QUOTE_QT, 9999999999) DESC, SHIPTO_CD DESC, (SELECT 1) ) AS ROWNUM
+									, A.*
+							FROM	XX A
+							WHERE	1 = 1
+						) S
+				WHERE	1 = 1
+            <choose>
+                <when test='page_type != null and "orderadd".equals(page_type)'>
+                AND SHIPTO_CD IN (SELECT max(SHIPTO_CD) AS SHIPTO_CD FROM XX GROUP BY QUOTE_QT)
+                </when>
+                <otherwise>AND SHIPTO_CD IN (SELECT max(SHIPTO_CD) AS SHIPTO_CD FROM XX GROUP BY SHIPTO_NM)</otherwise>
+            </choose>
+            ) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				RNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getNewShiptoList" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			SHIPTO_CD, ST.CUST_CD, SHIPTO_NM, CONCAT(SHIPTO_CD, 's') SHIPTO_USERID, COUNT(US.USERID) USER_CNT
+		FROM O_SHIPTO ST
+		LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD
+		<where>
+			<if test="r_custcd != null and r_custcd != '' ">AND ST.CUST_CD = #{r_custcd}</if>
+		</where>
+		GROUP BY SHIPTO_CD, ST.CUST_CD, SHIPTO_NM HAVING COUNT(US.USERID) <![CDATA[<]]> 1
+	</select>
+	
+	<!-- 납품처 즐겨찾기 저장/삭제 -->
+	<insert id="inBookmark" parameterType="hashmap">
+		INSERT INTO SHIPTOBOOKMARK(
+			STB_USERID, STB_SHIPTOCD, STB_INID, STB_INDATE
+			
+		)VALUES(
+			#{m_stbuserid}, #{m_stbshiptocd}
+			<!-- 2024-11-06 hsg PlayStation4 오라클 문법인 SYSDATE에서 mssql 문법인 GETDATE()로 변경 -->
+			, #{m_stbinid}, GETDATE()
+		)
+	</insert>
+	
+	<delete id="delBookmark" parameterType="hashmap">
+		DELETE FROM SHIPTOBOOKMARK
+		<where>
+			AND STB_USERID = #{r_stbuserid} AND STB_SHIPTOCD = #{r_stbshiptocd}
+		</where>
+	</delete>
+	
+	<select id="cntBookmark" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM SHIPTOBOOKMARK
+		<where>
+			AND STB_USERID = #{r_stbuserid} AND STB_SHIPTOCD = #{r_stbshiptocd}
+		</where>
+	</select>
+
+
+	<!-- 2025-02-20 hsg Frog Splash. 거래처관리 > 거래처현환 > 계저오관리에 주의사항 수정/저장을 위한 쿼리 -->
+	<update id="insertUpdateComment" parameterType="hashmap">
+		UPDATE	O_SHIPTO
+		   SET	COMMENT = #{r_comment}
+		 WHERE	SHIPTO_CD = #{r_shiptocd}
+	</update>
+
+</mapper>

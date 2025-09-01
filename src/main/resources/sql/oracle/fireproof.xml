@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.fireproof">
+	
+	<select id="getMaxKeycode" parameterType="hashmap" resultType="String">
+		SELECT 'FW'||LPAD(TO_NUMBER(SUBSTR(NVL(MAX(KEYCODE),0),3))+1,4,'0') FROM O_FIREPROOFMASTER
+	</select>
+	
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO O_FireproofMaster(
+			KEYCODE
+			, FIREPROOFTYPE
+			, ACTIVE
+			, DESC1
+			, DESC2
+			, FIRETIME
+			, DISPLAYORDER
+			, CREATETIME
+			, CREATEUSER
+		)VALUES(
+			#{m_keycode, jdbcType=VARCHAR}
+			, #{m_fireprooftype, jdbcType=VARCHAR}
+			, #{m_active, jdbcType=VARCHAR}
+			, #{m_desc1, jdbcType=VARCHAR}
+			, #{m_desc2, jdbcType=VARCHAR}
+			, #{m_firetime, jdbcType=VARCHAR}
+			<if test="m_displayorder != '' ">
+			, #{m_displayorder, jdbcType=VARCHAR}
+			</if>
+			<if test="m_displayorder == '' ">
+			,(SELECT NVL(MAX(DISPLAYORDER),0)+1 FROM O_FIREPROOFMASTER)
+			</if>
+			, SYSDATE
+			, #{m_inid, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="up" parameterType="hashmap">
+		UPDATE O_FireproofMaster FM
+		<set>
+			<if test="m_fireprooftype != null and m_fireprooftype != ''">FIREPROOFTYPE = #{m_fireprooftype},</if>
+			<if test="m_active != null and m_active != ''">ACTIVE = #{m_active},</if>
+			<if test="m_desc1 != null and m_desc1 != ''">DESC1 = #{m_desc1},</if>
+			<if test="m_desc2 != null and m_desc2 != ''">DESC2 = #{m_desc2},</if>
+			<if test="m_firetime != null and m_firetime != ''">FIRETIME = #{m_firetime},</if>
+			
+			<if test="m_displayorder != null and m_displayorder != ''">DISPLAYORDER = #{m_displayorder},</if>
+			<if test="m_upid != null and m_upid != ''">UPDATEUSER = #{m_upid},</if>
+			UPDATETIME = SYSDATE
+		</set>
+		<where>
+			AND KEYCODE = #{m_keycode}
+		</where>
+	</update>
+	
+	<delete id="del" parameterType="hashmap">
+		DELETE O_FireproofMaster FM
+		 WHERE FM.KEYCODE = #{m_keycode}
+	</delete>
+	
+	<update id="upForFile" parameterType="hashmap">
+		UPDATE O_FireproofMaster FM
+		<set>
+			<if test="m_fileName != null and m_fileName != ''">FILENAME = #{m_fileName},</if>
+			<if test="m_fileType != null and m_fileType != ''">FILETYPE = #{m_fileType},</if>
+			<if test="m_upid != null and m_upid != ''">UPDATEUSER = #{m_upid},</if>
+			UPDATETIME = SYSDATE
+		</set>
+		<where>
+			AND KEYCODE = #{m_keycode}
+		</where>
+	</update> 
+	
+	<update id="upInfoForFile" parameterType="hashmap">
+		UPDATE O_FireproofMaster FM
+		<set>
+			<if test='r_delfile1 != null and "Y".equals(r_delfile1)'>FILENAME = NULL, FILETYPE = NULL,</if>
+			UPDATETIME = SYSDATE
+		</set>
+		<where>
+			AND KEYCODE = #{r_keycode}
+		</where>
+	</update>
+	
+	
+
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		<!-- SELECT FM.*, FM.FILENAME AS ITI_FILE1, TO_CHAR(FM.CREATETIME, 'yyyy-mm-dd') AS CREATEDATE2
+		FROM O_FireproofMaster FM
+		<where>
+			<if test="r_keycode != null and r_keycode != '' ">AND KEYCODE = #{r_keycode}</if>
+		</where>  -->
+		
+		
+		SELECT FM.*, FM.FILENAME AS ITI_FILE1, TO_CHAR(FM.CREATETIME, 'yyyy-mm-dd') AS CREATEDATE2
+		FROM O_FireproofMaster FM
+		WHERE KEYCODE = #{r_keycode}
+	</select>
+	
+	<select id="getFireProofCheck" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*)
+		FROM O_FireproofMaster FM
+		WHERE KEYCODE = #{m_keycode}
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM O_FireproofMaster
+		<where>
+			<if test="rl_fireproof != null and rl_fireproof != '' ">AND fireproofType LIKE '%' || #{rl_fireproof} || '%'</if>
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		SELECT FM.* 
+		FROM O_FireproofMaster FM
+		<where>
+			<if test="rl_fireproof != null and rl_fireproof != '' ">AND fireproofType LIKE '%' || #{rl_fireproof} || '%'</if>
+		</where>
+		
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${ r_orderby }</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+	</select>
+	
+</mapper>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.schedule">
+	<insert id="in" parameterType="hashmap">
+	<!-- 2024-10-15 HSG MSSQL에서는 SEQUENCE를 사용할 수 없어 MAX로 대체 -->
+		<selectKey keyProperty="scdSeq" resultType="long" order="BEFORE">
+    		SELECT MAX(S.SCD_SEQ)+1 FROM SCHEDULE S;
+    	</selectKey>
+    	
+	    INSERT INTO SCHEDULE 
+			(
+			SCD_SEQ 
+			,SCD_DATE 
+			,SCD_TITLE
+			,SCD_INID
+			,SCD_INDATE
+			)
+	    VALUES(
+	    	<!-- 2024-10-15 HSG MSSQL에서는 SEQUENCE를 사용할 수 없어 MAX로 대체 -->
+	    	<!-- - - USQ_SCHEDULE.NEXTVAL
+			NEXT VALUE FOR USQ_SCHEDULE-->
+
+			#{scdSeq} 	
+			, CONVERT(DATE, #{m_scddate}, 102)
+			,#{ m_scdtitle}
+			,#{ m_scdinid}
+			, GETDATE()	
+			)
+		<!-- 2024-10-15 HSG 주석 처리 후 아래 코드 삽입 <selectKey resultType="long" keyProperty="nowSeq" order="AFTER">
+			SELECT USQ_SCHEDULE.CURRVAL FROM DUAL
+		</selectKey>-->
+	</insert>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT SCD.*, US.*		     
+		  FROM SCHEDULE SCD
+		  LEFT OUTER JOIN O_USER US ON SCD.SCD_INID = US.USERID
+		  <where>
+		  		SCD_DATE = CONVERT(DATE, #{r_scddate}, 102)
+	      </where>		
+	</select>	
+	
+	<select id="listGroup" parameterType="hashmap" resultType="hashmap">
+		SELECT *
+		FROM 
+			SCHEDULE
+		<where>
+			<![CDATA[
+			SCD_DATE >= CONVERT(DATE, #{r_start}, 102) AND SCD_DATE < CONVERT(DATE, #{r_end}, 102)
+			]]>
+		</where>
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="long">
+		SELECT COUNT(*) FROM SCHEDULE SCD
+		<where>
+				<if test="r_scdseq != null and r_scdseq != ''">SCD_SEQ = #{ r_scdseq }</if>		
+	    		<!-- <if test="r_scddate != null and r_scddate != ''">AND SCD_DATE = TO_DATE(#{r_scddate}, 'yyyy-MM-dd')</if> -->
+	    		<if test="r_scddate != null and r_scddate != ''">AND SCD_DATE = CONVERT(DATE, #{r_scddate}, 102)</if>
+	    </where>		
+	</select>
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">		
+		SELECT SCD.*, US.*		     
+		  FROM SCHEDULE SCD
+		  LEFT OUTER JOIN O_USER US ON SCD.SCD_INID = US.USERID
+		  <where>
+		  	SCD_SEQ = #{ r_scdseq }	   		
+	      </where>			      	     	     	
+	</select>
+	
+	<update id="up" parameterType="hashmap" >
+    	UPDATE SCHEDULE
+    	<set>
+			<if test=" m_scdtitle != null and m_scdtitle != '' ">SCD_TITLE = #{ m_scdtitle }, </if>
+			<if test=" m_scdmoid != null and m_scdmoid != '' ">SCD_MOID = #{ m_scdmoid }, </if>
+    		SCD_MODATE = GETDATE()
+    	</set>
+    	<where>
+    		AND SCD_SEQ = #{ r_scdseq }
+    	</where>
+    </update>
+	
+	<delete id="del" parameterType="hashmap" >
+		DELETE FROM SCHEDULE
+		<where>
+			 AND SCD_SEQ = #{ r_scdseq }			
+		</where>
+	</delete>
+	
+</mapper>

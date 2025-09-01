@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.loginAuth">
+	<insert id="merge" parameterType="hashmap" >
+		MERGE INTO LOGINAUTH L
+		<!-- 2024-11-06 hsg PlayStation4 mybatis의 sql 파일은 XML로 작성하는데, 흔히 사용하는 SQL의 주석처리 방법 dashdash은 XML에서 사용하는 문법이 아니기 때문에 발생.
+		  USING DUAL ON (LA_USERID = #{r_lauserid}) -->
+		USING (SELECT 1 AS dual) AS D ON (L.LA_USERID = #{r_lauserid})
+		WHEN MATCHED THEN 
+			UPDATE SET 
+				LA_TOKEN = #{m_latoken}
+				<!-- 2024-11-06 hsg PlayStation4 오라클 문법인 SYSDATE에서 mssql 문법인 GETDATE()로 변경 -->
+				,  LA_INDATE = GETDATE()
+		WHEN NOT MATCHED THEN
+			INSERT (
+				LA_USERID
+				, LA_TOKEN
+				, LA_INDATE
+			)VALUES(
+				#{r_lauserid}
+				, #{m_latoken}
+				, GETDATE()
+			) ;
+	</insert>
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM LOGINAUTH
+		<where>
+			<if test="r_lauserid != null and r_lauserid != ''">AND LA_USERID = #{r_lauserid} </if>
+			<if test="r_latoken != null and r_latoken != ''">AND LA_TOKEN = #{r_latoken} </if>
+		</where>
+	</select>
+	
+</mapper>

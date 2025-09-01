@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.o_order_confirm_d">
+
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO O_ORDER_CONFIRM_D(
+			CUST_PO
+			, LINE_NO
+			, ITEM_CD
+			, UNIT
+			, QUANTITY
+			, PRICE
+			, INSERT_DT
+			, INSERTID
+			, DUMMY
+			, WEEK
+			, OCD_RETURNCD
+			, OCD_RETURNMSG
+			, OCD_STATUSCD
+		)VALUES(
+			#{m_custpo, jdbcType=VARCHAR}
+			, #{m_lineno, jdbcType=NUMERIC}
+			, #{m_itemcd, jdbcType=VARCHAR}
+			, #{m_unit, jdbcType=VARCHAR}
+			, #{m_quantity, jdbcType=NUMERIC}
+			, #{m_price, jdbcType=NUMERIC}
+			, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI')
+			, #{m_insertid, jdbcType=VARCHAR}
+			, #{m_dummy, jdbcType=VARCHAR}
+			, #{m_week, jdbcType=VARCHAR}
+			, #{m_ocdreturncd, jdbcType=VARCHAR}
+			, #{m_ocdreturnmsg, jdbcType=VARCHAR}
+			, #{m_ocdstatuscd, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<select id="maxLineNo" parameterType="hashmap" resultType="int">
+		SELECT NVL(MAX(LINE_NO), 0) AS ORDER_CONFIRM_D_SEQ
+		FROM O_ORDER_CONFIRM_D
+		<where>
+			AND CUST_PO = #{r_custpo}
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		
+		SELECT OCD.*
+			, OCH.REQ_NO, OCH.COMPANY_CD, OCH.PICKING_DT, OCH.STATUS_CD, OCH.CUSTOMMATTER, OCH.REQUEST_DT, OCH.REQUEST_TIME, OCH.REMARK, OST.QUOTE_QT
+			, (SELECT PT_NAME FROM PLANT WHERE WERKS = OCH.COMPANY_CD) AS PT_NAME
+			, (SELECT DESC1 FROM O_ITEM_NEW WHERE ITEM_CD = OCD.ITEM_CD) AS ITEM_NAME
+			, (SELECT QUANTITY FROM O_CUST_ORDER_D WHERE REQ_NO = OCH.REQ_NO AND LINE_NO = OCD.LINE_NO) AS COD_QUANTITY
+			, (SELECT CC_NAME FROM COMMONCODE WHERE CC_PARENT='C01' AND CC_CODE = OCD.OCD_RETURNCD) AS ITEM_RETURN_REASON
+			, UDC.DRDL01 AS DRDL01
+			, UDC.DRDL01 AS ROUTE
+			, SUBSTR(UDC.DRSPHD,3,2) AS DRSPHD
+		FROM O_ORDER_CONFIRM_D OCD 
+		LEFT JOIN O_ORDER_CONFIRM_H OCH ON OCD.CUST_PO = OCH.CUST_PO
+		LEFT JOIN O_F0005 UDC ON UDC.DRKY = OCD.WEEK
+		LEFT JOIN O_SHIPTO OST ON OCH.SHIPTO_CD = OST.SHIPTO_CD 
+		<where>
+			<if test="r_reqno != null and r_reqno != ''">AND OCH.REQ_NO = #{r_reqno}</if>
+			<if test="r_custpo != null and r_custpo != ''">AND OCD.CUST_PO = #{r_custpo}</if>
+			<if test="rn_statuscd != null and rn_statuscd != ''">AND NVL(OCD.OCD_STATUSCD, ' ') != #{rn_statuscd}</if>
+		</where>
+		
+		<if test="r_orderby != null and r_orderby != ''">ORDER BY ${r_orderby}</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+	</select>
+	
+	
+</mapper>

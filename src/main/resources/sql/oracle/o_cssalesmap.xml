@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.o_cssalesmap">
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO O_CSSALESMAP(
+			CSUSERID
+			, SALESUSERID
+			, SALESUSERNM
+			, DUMMY
+			, FIXEDYN
+			, INSERTID
+			, INSERT_DT
+		)VALUES(
+			#{m_csuserid, jdbcType=VARCHAR}
+			, #{m_salesuserid, jdbcType=VARCHAR}
+			, (SELECT USER_NM FROM O_USER WHERE USERID = #{m_salesuserid})
+			, #{m_dummy, jdbcType=VARCHAR}
+			, #{m_fixedyn, jdbcType=VARCHAR}
+			, #{m_insertid, jdbcType=VARCHAR}
+			, TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+			<!-- , TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI') -->
+		)
+	</insert>
+	
+	<update id="merge" parameterType="hashmap">
+		MERGE INTO O_CSSALESMAP
+		USING DUAL ON (CSUSERID = #{m_csuserid} AND SALESUSERID = #{m_salesuserid})
+		WHEN MATCHED THEN 
+			UPDATE SET 
+				SALESUSERNM = (SELECT USER_NM FROM O_USER WHERE USERID = #{m_salesuserid})
+				, DUMMY = #{m_dummy, jdbcType=VARCHAR}
+				, FIXEDYN = #{m_fixedyn, jdbcType=VARCHAR}
+				, UPDATE_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+				, UPDATEID = #{m_insertid, jdbcType=VARCHAR}
+		WHEN NOT MATCHED THEN
+			INSERT (
+				CSUSERID
+				, SALESUSERID
+				, SALESUSERNM
+				, DUMMY
+				, FIXEDYN
+				, INSERTID
+				, INSERT_DT
+			)VALUES(
+				#{m_csuserid, jdbcType=VARCHAR}
+				, #{m_salesuserid, jdbcType=VARCHAR}
+				, (SELECT USER_NM FROM O_USER WHERE USERID = #{m_salesuserid})
+				, #{m_dummy, jdbcType=VARCHAR}
+				, #{m_fixedyn, jdbcType=VARCHAR}
+				, #{m_insertid, jdbcType=VARCHAR}
+				, TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+			)
+	</update>
+	
+	<update id="up" parameterType="hashmap">
+		UPDATE O_CSSALESMAP
+		<set>
+			<if test="m_salesuserid != null and m_salesuserid != ''">SALESUSERID = #{m_salesuserid},</if>
+			<if test="m_salesusernm != null and m_salesusernm != ''">SALESUSERNM = #{m_salesusernm},</if>
+			<if test="m_dummy != null and m_dummy != ''">DUMMY = #{m_dummy},</if>
+			<if test="m_fixedyn != null and m_fixedyn != ''">FIXEDYN = #{m_fixedyn},</if>
+			<if test="m_updateid != null and m_updateid != ''">UPDATEID = #{m_updateid},</if>
+			UPDATE_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD'),
+			<!-- UPDATE_DT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI'), -->
+		</set>
+		<where>
+			AND CSUSERID = #{r_csuserid}
+			<if test="r_salesuserid != null and r_salesuserid != '' ">AND SALESUSERID = #{r_salesuserid}</if>
+			<if test="r_fixedyn != null and r_fixedyn != '' ">AND FIXEDYN = #{r_fixedyn}</if>
+		</where>
+	</update>
+	
+	<delete id="del" parameterType="hashmap">
+		DELETE FROM O_CSSALESMAP
+		<where>
+			AND CSUSERID = #{r_csuserid}
+			<if test="r_fixedyn != null and r_fixedyn != '' ">AND FIXEDYN = #{r_fixedyn}</if>
+		</where>
+	</delete>
+	
+	<delete id="del2" parameterType="hashmap">
+		DELETE FROM O_CSSALESMAP
+		<where>
+			AND SALESUSERID = #{r_salesuserid}
+			<if test="r_fixedyn != null and r_fixedyn != '' ">AND FIXEDYN = #{r_fixedyn}</if>
+		</where>
+	</delete>
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT CSM.* 
+			, (SELECT USER_NM FROM O_USER WHERE USERID = CSM.SALESUSERID) AS SALESUSER_NAME
+			, (SELECT USER_NM FROM O_USER WHERE USERID = CSM.CSUSERID) AS CSUSER_NAME
+		FROM O_CSSALESMAP CSM
+		<where>
+			<if test="r_csuserid != null and r_csuserid != '' ">AND CSUSERID = #{r_csuserid}</if>
+			<if test="r_salesuserid != null and r_salesuserid != '' ">AND SALESUSERID = #{r_salesuserid}</if>
+			<if test="r_salesusernm != null and r_salesusernm != '' ">AND SALESUSERNM = #{r_salesusernm}</if>
+			<if test="rl_salesusernm != null and rl_salesusernm != '' ">AND SALESUSERNM LIKE '%' || #{rl_salesusernm} || '%'</if>
+			<if test="r_fixedyn != null and r_fixedyn != '' ">AND FIXEDYN = #{r_fixedyn}</if>
+		</where>
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM O_CSSALESMAP CSM
+		<where>
+			<if test="r_csuserid != null and r_csuserid != '' ">AND CSUSERID = #{r_csuserid}</if>
+			<if test="r_salesuserid != null and r_salesuserid != '' ">AND SALESUSERID = #{r_salesuserid}</if>
+			<if test="r_salesusernm != null and r_salesusernm != '' ">AND SALESUSERNM = #{r_salesusernm}</if>
+			<if test="rl_salesusernm != null and rl_salesusernm != '' ">AND SALESUSERNM LIKE '%' || #{rl_salesusernm} || '%'</if>
+			<if test="r_fixedyn != null and r_fixedyn != '' ">AND FIXEDYN = #{r_fixedyn}</if>
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		
+		SELECT CSM.*
+			, (SELECT USER_NM FROM O_USER WHERE USERID = CSM.SALESUSERID) AS SALESUSER_NAME
+			, (SELECT USER_NM FROM O_USER WHERE USERID = CSM.CSUSERID) AS CSUSER_NAME
+		FROM O_CSSALESMAP CSM
+		<where>
+			<if test="r_csuserid != null and r_csuserid != '' ">AND CSUSERID = #{r_csuserid}</if>
+			<if test="r_salesuserid != null and r_salesuserid != '' ">AND SALESUSERID = #{r_salesuserid}</if>
+			<if test="r_salesusernm != null and r_salesusernm != '' ">AND SALESUSERNM = #{r_salesusernm}</if>
+			<if test="rl_salesusernm != null and rl_salesusernm != '' ">AND SALESUSERNM LIKE '%' || #{rl_salesusernm} || '%'</if>
+			<if test="r_fixedyn != null and r_fixedyn != '' ">AND FIXEDYN = #{r_fixedyn}</if>
+		</where>
+		
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+	</select>
+	
+</mapper>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.plant">
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO PLANT(
+			PT_CODE
+			, PT_NAME
+			, PT_TEL
+			, PT_ZONECODE
+			, PT_ZIPCODE
+			, PT_ADDR1
+			, PT_ADDR2
+			, PT_SORT
+			, PT_USE
+			, PT_INID
+			, PT_INDATE
+		)VALUES(
+			#{m_ptcode, jdbcType=VARCHAR}
+			, #{m_ptname, jdbcType=VARCHAR}
+			, #{m_pttel, jdbcType=VARCHAR}
+			, #{m_ptzonecode, jdbcType=VARCHAR}
+			, #{m_ptzipcode, jdbcType=VARCHAR}
+			, #{m_ptaddr1, jdbcType=VARCHAR}
+			, #{m_ptaddr2, jdbcType=VARCHAR}
+			, #{m_ptsort, jdbcType=NUMERIC}
+			, #{m_ptuse, jdbcType=VARCHAR}
+			, #{m_ptinid, jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+	
+	<update id="up" parameterType="hashmap">
+		UPDATE PLANT PT
+		<set>
+			<if test="m_ptname != null and m_ptname != ''">PT_NAME = #{m_ptname},</if>
+			<if test="m_pttel != null">PT_TEL = #{m_pttel},</if>
+			<if test="m_ptzonecode != null and m_ptzonecode != ''">PT_ZONECODE = #{m_ptzonecode},</if>
+			<if test="m_ptzipcode != null and m_ptzipcode != ''">PT_ZIPCODE = #{m_ptzipcode},</if>
+			<if test="m_ptaddr1 != null and m_ptaddr1 != ''">PT_ADDR1 = #{m_ptaddr1},</if>
+			<if test="m_ptaddr2 != null and m_ptaddr2 != ''">PT_ADDR2 = #{m_ptaddr2},</if>
+			<if test="m_ptsort != null and m_ptsort != ''">PT_SORT = #{m_ptsort},</if>
+			<if test="m_ptuse != null and m_ptuse != ''">PT_USE = #{m_ptuse},</if>
+			<if test="m_ptmoid != null and m_ptmoid != ''">PT_MOID = #{m_ptmoid},</if>
+			PT_MODATE = SYSDATE
+		</set>
+		<where>
+			AND PT_CODE = #{r_ptcode}
+		</where>
+	</update>
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT PT.* 
+		FROM PLANT PT
+		<where>
+			<if test="r_ptcode != null and r_ptcode != '' ">AND PT_CODE = #{r_ptcode}</if>
+			<if test="rl_ptcode != null and rl_ptcode != '' ">AND PT_CODE LIKE '%' || #{rl_ptcode} || '%'</if>
+			<if test="r_ptname != null and r_ptname != '' ">AND PT_NAME = #{r_ptname}</if>
+			<if test="rl_ptname != null and rl_ptname != '' ">AND PT_NAME LIKE '%' || #{rl_ptname} || '%'</if>
+		</where>
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM PLANT
+		<where>
+			<if test="r_ptcode != null and r_ptcode != '' ">AND PT_CODE = #{r_ptcode}</if>
+			<if test="rl_ptcode != null and rl_ptcode != '' ">AND PT_CODE LIKE '%' || #{rl_ptcode} || '%'</if>
+			<if test="r_ptname != null and r_ptname != '' ">AND PT_NAME = #{r_ptname}</if>
+			<if test="rl_ptname != null and rl_ptname != '' ">AND PT_NAME LIKE '%' || #{rl_ptname} || '%'</if>
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">		
+		SELECT p.WERKS AS PT_CODE
+			, p.PT_NAME || '(' || p.WERKS || ')' AS PT_NAME
+		FROM PLANT p 
+		WHERE p.PT_USE = 'Y'
+		ORDER BY p.PT_SORT
+		
+		<!--  SELECT T.WERKS AS PT_CODE
+			, T.PT_NAME || '(' || T.WERKS || ')' AS PT_NAME
+		FROM (
+			SELECT p.WERKS
+				, (CASE 
+					WHEN INSTR(p.PT_NAME, ' ') <![CDATA[ > ]]> 0 THEN REGEXP_SUBSTR(p.PT_NAME, '[^ ]+', 1 , 2)
+					ELSE REGEXP_SUBSTR(p.PT_NAME, '[^ ]+', 1 , 1)
+					END		
+				) AS PT_NAME
+			FROM PLANT p 
+			WHERE p.PT_USE = 'Y'
+		) T
+		GROUP BY T.WERKS, T.PT_NAME
+		ORDER BY T.WERKS
+		-->
+	
+		<!-- SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		SELECT PT.* 
+		FROM PLANT PT
+		WHERE PT.PT_USE = 'Y'
+		<where>
+			<if test="r_ptcode != null and r_ptcode != '' ">AND PT_CODE = #{r_ptcode}</if>
+			<if test="rl_ptcode != null and rl_ptcode != '' ">AND PT_CODE LIKE '%' || #{rl_ptcode} || '%'</if>
+			<if test="r_ptname != null and r_ptname != '' ">AND PT_NAME = #{r_ptname}</if>
+			<if test="rl_ptname != null and rl_ptname != '' ">AND PT_NAME LIKE '%' || #{rl_ptname} || '%'</if>
+		</where>
+		
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${ r_orderby }</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where> -->
+	</select>
+	
+</mapper>

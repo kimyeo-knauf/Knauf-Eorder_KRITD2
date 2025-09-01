@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.promotion">
+	<insert id="in" parameterType="hashmap">
+	    insert into PROMOTION
+						  (PRM_SEQ,
+						   PRM_CODE,
+						   PRM_TYPE,
+						   PRM_TITLE,
+						   PRM_SDATE,
+						   PRM_EDATE,
+						   PRM_IMAGE1,
+						   PRM_IMAGE1TYPE,
+						   PRM_IMAGE2,
+						   PRM_IMAGE2TYPE,
+						   PRM_USEYN,
+						   PRM_INID,
+						   PRM_INDATE
+						  )
+				   values (
+						   USQ_PROMOTION.NEXTVAL
+						   ,#{ m_prmcode }
+						   ,#{ m_prmtype }
+						   ,#{ m_prmtitle }
+						   ,TO_DATE(#{ m_prmsdate },'YYYY-MM-DD')
+						   ,TO_DATE(#{ m_prmedate },'YYYY-MM-DD')
+						   ,#{ m_prmimage1 }
+						   ,#{ m_prmimage1type }
+						   ,#{ m_prmimage2 }
+						   ,#{ m_prmimage2type }
+						   ,'Y'
+						   ,#{ m_prminid }
+						   ,SYSDATE
+						  )
+		<selectKey resultType="long" keyProperty="nowSeq" order="AFTER">
+			SELECT USQ_PROMOTION.CURRVAL FROM DUAL
+		</selectKey>
+	</insert>
+
+	<update id="up" parameterType="hashmap" >
+		UPDATE PROMOTION
+		<set>
+			<if test=" m_prmtype != null and m_prmtype != '' ">PRM_TYPE = #{ m_prmtype }, </if>
+			<if test=" m_prmtitle != null and m_prmtitle != '' ">PRM_TITLE = #{ m_prmtitle }, </if>
+			<if test=" m_prmsdate != null and m_prmsdate != '' ">PRM_SDATE = TO_DATE(#{ m_prmsdate },'YYYY-MM-DD'), </if>
+			<if test=" m_prmedate != null and m_prmedate != '' ">PRM_EDATE = TO_DATE(#{ m_prmedate },'YYYY-MM-DD'), </if>
+			<if test=" m_prmimage1 != null and m_prmimage1 != '' ">PRM_IMAGE1 = #{ m_prmimage1 }, </if>
+			<if test=" m_prmimage1type != null and m_prmimage1type != '' ">PRM_IMAGE1TYPE = #{ m_prmimage1type }, </if>
+			<if test=" m_prmimage2 != null and m_prmimage2 != '' ">PRM_IMAGE2 = #{ m_prmimage2 }, </if>
+			<if test=" m_prmimage2type != null and m_prmimage2type != '' ">PRM_IMAGE2TYPE = #{ m_prmimage2type }, </if>
+			<if test=" m_prmmoid != null and m_prmmoid != '' ">PRM_MOID = #{ m_prmmoid }, </if>
+			PRM_MODATE = SYSDATE
+		</set>
+		<where>
+			AND PRM_SEQ = #{ r_prmseq }
+		</where>
+	</update>
+
+	<delete id="del" parameterType="hashmap" >
+		DELETE FROM PROMOTION
+		<where>
+			AND PRM_SEQ = #{ r_prmseq }
+		</where>
+	</delete>
+
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+			SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+
+			SELECT PRM.*,US.*,
+				   CASE WHEN <![CDATA[PRM_SDATE <= SYSDATE AND PRM_EDATE >= SYSDATE-1]]> THEN '진행중'
+				   	    WHEN PRM_EDATE <![CDATA[<]]> SYSDATE-1 THEN '진행완료'
+				   ELSE '진행대기'
+				   END AS PRMONGOINGYN
+			FROM PROMOTION PRM
+			LEFT OUTER JOIN O_USER US ON PRM.PRM_INID = US.USERID
+			<where>
+				<if test=" r_prmtype != null and r_prmtype != '' ">AND PRM_TYPE = #{ r_prmtype }</if>
+				<if test=" r_prmongoing != null and r_prmongoing != ''">
+					<if test='r_prmongoing.equals("W") '>AND PRM_SDATE <![CDATA[>]]> SYSDATE</if>
+					<if test='r_prmongoing.equals("Y") '>AND <![CDATA[PRM_SDATE <= SYSDATE AND PRM_EDATE >= SYSDATE-1]]></if>
+					<if test='r_prmongoing.equals("N") '>AND PRM_EDATE <![CDATA[<]]> SYSDATE-1</if>
+					<if test='r_prmongoing.equals("WY") or r_prmongoing.equals("YW") '>AND PRM_EDATE <![CDATA[>=]]> SYSDATE-1</if>
+					<if test='r_prmongoing.equals("WN") or r_prmongoing.equals("NW") '>AND <![CDATA[ PRM_SDATE > SYSDATE OR PRM_EDATE < SYSDATE-1]]></if>
+					<if test='r_prmongoing.equals("YN") or r_prmongoing.equals("NY") '>AND PRM_SDATE <![CDATA[<=]]> SYSDATE</if>
+				</if>
+				<if test="rl_prmtitle != null and rl_prmtitle != '' ">AND PRM_TITLE LIKE '%' || #{rl_prmtitle} || '%'</if>
+			</where>
+
+			<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${ r_orderby }</if>
+
+			) XX
+			<where>
+				<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{ r_endrow }]]></if>
+			</where>
+			)
+			<where>
+				<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{ r_startrow }]]></if>
+			</where>
+	</select>
+
+	<select id="cnt" parameterType="hashmap" resultType="long">
+		SELECT COUNT(*) FROM PROMOTION
+		<where>
+			<if test=" r_prmtype != null and r_prmtype != '' ">AND PRM_TYPE = #{ r_prmtype }</if>
+			<if test=" r_prmongoing != null and r_prmongoing != ''">
+				<if test='r_prmongoing.equals("W") '>AND PRM_SDATE <![CDATA[>]]> SYSDATE</if>
+				<if test='r_prmongoing.equals("Y") '>AND <![CDATA[PRM_SDATE <= SYSDATE AND PRM_EDATE >= SYSDATE-1]]></if>
+				<if test='r_prmongoing.equals("N") '>AND PRM_EDATE <![CDATA[<]]> SYSDATE-1</if>
+				<if test='r_prmongoing.equals("WY") or r_prmongoing.equals("YW") '>AND PRM_EDATE <![CDATA[>=]]> SYSDATE-1</if>
+				<if test='r_prmongoing.equals("WN") or r_prmongoing.equals("NW") '>AND <![CDATA[ PRM_SDATE > SYSDATE OR PRM_EDATE < SYSDATE-1]]></if>
+				<if test='r_prmongoing.equals("YN") or r_prmongoing.equals("NY") '>AND PRM_SDATE <![CDATA[<=]]> SYSDATE</if>
+			</if>
+			<if test="rl_prmtitle != null and rl_prmtitle != '' ">AND PRM_TITLE LIKE '%' || #{rl_prmtitle} || '%'</if>
+	    </where>
+	</select>
+
+	<select id="listForFront" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		SELECT PRM.*
+		FROM PROMOTION PRM
+		<where>
+			<if test=" r_prmtype != null and r_prmtype != '' ">AND PRM_TYPE = #{ r_prmtype }</if>
+			<if test=" r_prmongoing != null and r_prmongoing != ''">
+				<if test='r_prmongoing.equals("Y") '>AND <![CDATA[PRM_SDATE <= SYSDATE AND PRM_EDATE >= SYSDATE-1]]></if>   <!-- 진행중-->
+				<if test='r_prmongoing.equals("N") '>AND PRM_EDATE <![CDATA[<]]> SYSDATE-1</if> <!-- 진행완료-->
+			</if>
+			<if test="rl_prmtitle != null and rl_prmtitle != '' ">AND PRM_TITLE LIKE '%' || #{rl_prmtitle} || '%'</if>
+		</where>
+
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${ r_orderby }</if>
+
+		) XX
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{ r_endrow }]]></if>
+		</where>
+		)
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{ r_startrow }]]></if>
+		</where>
+	</select>
+
+	<select id="one" parameterType="hashmap" resultType="hashmap">		
+		SELECT PRM.*, US.*
+		  FROM PROMOTION PRM
+		  LEFT OUTER JOIN O_USER US ON PRM.PRM_INID = US.USERID
+		  <where>
+		  	PRM_SEQ = #{ r_prmseq }
+	      </where>			      	     	     	
+	</select>
+
+	<select id="maxCode" parameterType="hashmap" resultType="string">
+		SELECT 'PROMOTION' || LPAD(MAX(TO_NUMBER(substr(PRM_CODE, 10)) + 1), 3, '0')
+		FROM PROMOTION
+-- 		SELECT LPAD(NVL(MAX(PRM_CODE),0)+1,3,'0') FROM PROMOTION
+	</select>
+	
+</mapper>

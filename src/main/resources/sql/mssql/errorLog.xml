@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.errorLog">
+	<insert id="in" parameterType="hashmap">
+	<!--  2024-10-17 hsg MS-SQL에서는 시퀀스 사용할 수 없어 시퀀스 대신 max값으로 대체 -->
+		<selectKey keyProperty="maxElSeq" resultType="long" order="BEFORE">
+    		SELECT MAX(P.EL_SEQ)+1 FROM ERRORLOG P;
+    	</selectKey>
+		INSERT INTO ERRORLOG (
+			EL_SEQ, EL_URL, EL_PARAM, EL_MESSAGE, EL_CONTENT, EL_SESSION, EL_IP, EL_INDATE
+		) 
+		VALUES (
+	<!--  2024-10-17 hsg MS-SQL에서는 시퀀스 사용할 수 없어 시퀀스 대신 max값으로 대체 -->
+			#{maxElSeq}
+			, #{m_elurl}
+			, #{m_elparam}
+			, #{m_elmessage}
+			, #{m_elcontent}
+			, #{m_elsession}
+			, #{m_elip}
+			, GETDATE()
+		)
+	</insert>
+</mapper>

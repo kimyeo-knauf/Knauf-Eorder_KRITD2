@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.errorLog">
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO ERRORLOG (
+			EL_SEQ, EL_URL, EL_PARAM, EL_MESSAGE, EL_CONTENT, EL_SESSION, EL_IP, EL_INDATE
+		) 
+		VALUES (
+			USQ_ERRORLOG.NEXTVAL
+			, #{m_elurl, jdbcType=VARCHAR}
+			, #{m_elparam, jdbcType=VARCHAR}
+			, #{m_elmessage, jdbcType=VARCHAR}
+			, #{m_elcontent, jdbcType=VARCHAR}
+			, #{m_elsession, jdbcType=VARCHAR}
+			, #{m_elip, jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+</mapper>

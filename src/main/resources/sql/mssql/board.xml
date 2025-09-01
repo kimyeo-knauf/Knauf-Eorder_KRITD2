@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.board">
+	<insert id="in" parameterType="hashmap">
+		<!-- 2024-10-15 HSG 시퀀스 대신 MAX값으로 대체  -->
+		<selectKey keyProperty="bdSeq" resultType="long" order="BEFORE">
+    		SELECT MAX(B.BD_SEQ)+1 FROM BOARD B;
+    	</selectKey>
+    	
+	    INSERT INTO BOARD (
+			BD_SEQ, 
+			BD_ID, 
+			BD_TYPE,
+			BD_TYPE2, 
+			BD_TYPE3,  
+			BD_DISPLAYTYPE, 
+			BD_TITLE,
+			BD_CONTENT, 
+			BD_FILE, 
+			BD_FILETYPE,
+			BD_IMAGE, 
+			BD_IMAGETYPE, 
+			BD_FILEYN, 
+			BD_NOTICEYN,
+			BD_USEYN,
+			BD_INID, 
+			BD_INDATE,
+			BD_REPLY,
+			BD_REPLYYN,
+			BD_LINK,
+			BD_LINKUSE
+        ) VALUES (
+        	<!-- 2024-10-15 HSG 시퀀스 대신 MAX값으로 대체  -->
+	    	 #{ bdSeq }
+	 		 ,#{ m_bdid }
+	 		 ,#{ m_bdtype }
+	 		 ,#{ m_bdtype2 }			 
+	 		 ,#{ m_bdtype3 }			 
+			 ,#{ m_bddisplaytype }
+			 ,#{ m_bdtitle }
+			 ,#{ m_bdcontent }			
+			 ,#{ m_bdfile }
+			 ,#{ m_bdfiletype }
+			 ,#{ m_bdimage }								
+			 ,#{ m_bdimagetype }											 
+			 ,<if test="m_bdfile == null or m_bdfile == ''">'N'</if><if test="m_bdfile != null and m_bdfile != ''">'Y'</if>							
+			 ,<if test="m_bdnoticeyn == null or m_bdnoticeyn == ''">'N'</if><if test="m_bdnoticeyn != null and m_bdnoticeyn != ''">#{ m_bdnoticeyn }</if>
+			 ,'Y'
+			 ,#{ m_bdinid }								
+			 , GETDATE()
+			 ,#{ m_bdreply }
+			 ,<if test="m_bdreply == null or m_bdreply == ''">'N'</if><if test="m_bdreply != null and m_bdreply != ''">BD_REPLYYN = #{ m_bdreplyyn }</if>
+			 <!-- 2025-05-14 정보공유 자료실 링크여부 추가 ijy -->
+			 ,<if test=" m_bdlink == null or m_bdlink == ''">''</if><if test=" m_bdlink != null and m_bdlink != '' ">#{ m_bdlink }</if>
+			 ,<if test=" m_bdlinkuse == null or m_bdlinkuse == ''">'N'</if><if test=" m_bdlinkuse != null and m_bdlinkuse != '' ">'Y'</if>
+		)
+	</insert>
+	
+	<select id="list" parameterType="hashmap" resultType="com.limenets.eorder.dto.BoardDto">
+		SELECT * FROM ( 
+			SELECT ROW_NUMBER() OVER(
+				<choose>
+					<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+					<otherwise>ORDER BY (SELECT 1)</otherwise>
+				</choose>
+			) AS ROWNUM
+			, XX.* FROM (
+				SELECT BD.*, US.*		     
+				, (SELECT CC_NAME FROM COMMONCODE WHERE CC_CODE = BD_TYPE) BD_TYPENM
+				FROM BOARD BD
+				LEFT OUTER JOIN O_USER US ON BD.BD_INID = US.USERID
+				<where>
+					<if test="r_bdid != null and r_bdid != ''">BD_ID = #{ r_bdid }</if>
+					<if test="r_bdtype != null and r_bdtype != ''">AND BD_TYPE = #{ r_bdtype }</if>
+					<if test="r_bdtype2 != null and r_bdtype2 != ''">AND BD_TYPE2 = #{ r_bdtype2 }</if>
+					<if test="r_bdtype3 != null and r_bdtype3 != ''">AND BD_TYPE3 = #{ r_bdtype3 }</if>
+					<if test="rl_bdtitle != null and rl_bdtitle != '' ">AND BD_TITLE LIKE '%' + #{rl_bdtitle} + '%'</if>
+					<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' + #{rl_usernm} + '%'</if>
+					<if test="r_bdnoticeyn != null and r_bdnoticeyn != ''">AND BD_NOTICEYN = #{ r_bdnoticeyn }</if>
+					<if test="r_bdfileyn != null and r_bdfileyn != ''">AND BD_FILEYN = #{ r_bdfileyn }</if>	    		    	
+					<if test="r_bddisplaytype != null and r_bddisplaytype != ''">AND BD_DISPLAYTYPE = #{ r_bddisplaytype }</if>
+					<if test="r_bdsdate != null and r_bdsdate != '' "><![CDATA[AND BD_INDATE >= CONVERT(DATE, #{r_bdsdate})]]></if>
+					<if test="r_bdedate != null and r_bdedate != '' "><![CDATA[AND BD_INDATE < DATEADD(DAY, 1, #{r_bdedate})]]></if>	    		
+				</where>		
+	      	) XX 
+		) S
+	    <where>
+	    	<!-- 2025-03-24 hsg armbar : 페이징 처리가 되지 않아서 주석 처리 후 아래 코드 추가 -->
+        	<!-- <if test="r_limitrow != null and r_limitrow != ''">ROWNUM <![CDATA[<=]]> #{ r_limitrow }</if> -->
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+        </where>
+	</select>	
+	
+	<select id="cnt" parameterType="hashmap" resultType="long">
+		SELECT COUNT(*) FROM BOARD BD
+		LEFT OUTER JOIN O_USER US ON BD.BD_INID = US.USERID
+		<where>
+				<if test="r_bdseq != null and r_bdseq != ''">BD_SEQ = #{ r_bdseq }</if>
+	    		<if test="r_bdid != null and r_bdid != ''">AND BD_ID = #{ r_bdid }</if>
+	    		<if test="r_bdtype != null and r_bdtype != ''">AND BD_TYPE = #{ r_bdtype }</if>
+	    		<if test="r_bdtype2 != null and r_bdtype2 != ''">AND BD_TYPE2 = #{ r_bdtype2 }</if>
+	    		<if test="r_bdtype3 != null and r_bdtype3 != ''">AND BD_TYPE3 = #{ r_bdtype3 }</if>
+	    		<if test="rl_bdtitle != null and rl_bdtitle != '' ">AND BD_TITLE LIKE '%' + #{rl_bdtitle} + '%'</if>
+	    		<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' + #{rl_usernm} + '%'</if>
+	    		<if test="r_bdnoticeyn != null and r_bdnoticeyn != ''">AND BD_NOTICEYN = #{ r_bdnoticeyn }</if>
+	    		<if test="r_bdfileyn != null and r_bdfileyn != ''">AND BD_FILEYN = #{ r_bdfileyn }</if>	    		    	
+	    		<if test="r_bddisplaytype != null and r_bddisplaytype != ''">AND BD_DISPLAYTYPE = #{ r_bddisplaytype }</if>
+	    		<if test="r_bdsdate != null and r_bdsdate != '' "><![CDATA[AND BD_INDATE >= CONVERT(DATE, #{r_bdsdate})]]></if>
+				<if test="r_bdedate != null and r_bdedate != '' "><![CDATA[AND BD_INDATE < DATEADD(DAY, 1, #{r_bdedate})]]></if>	    	
+	    </where>		
+	</select>
+
+	<select id="listForIndex" parameterType="hashmap" resultType="com.limenets.eorder.dto.BoardDto">
+		SELECT * FROM (
+			SELECT
+				ROW_NUMBER() OVER(
+				<choose>
+					<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+					<otherwise>ORDER BY (SELECT 1)</otherwise>
+				</choose>
+				) AS ROWNUM
+				, XX.* 
+			FROM (
+				SELECT BD.BD_TITLE
+						, BD.BD_CONTENT
+						, BD.BD_REPLY
+						, BD.BD_INDATE
+						, US.USER_NM
+						, (SELECT CC_NAME FROM COMMONCODE WHERE CC_CODE = BD_TYPE) BD_TYPENM
+				FROM BOARD BD
+				LEFT OUTER JOIN O_USER US ON BD.BD_INID = US.USERID
+				<where>
+					<if test="r_bdid != null and r_bdid != ''">BD_ID = #{ r_bdid }</if>
+				</where>
+			) XX 
+		) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+
+	<select id="listForLogin" parameterType="hashmap" resultType="com.limenets.eorder.dto.BoardDto">
+		SELECT * FROM (
+			SELECT ROW_NUMBER() OVER(
+				<choose>
+					<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+					<otherwise>ORDER BY (SELECT 1)</otherwise>
+				</choose>
+			) AS ROWNUM
+			, XX.* FROM (
+			SELECT BD.BD_TITLE
+			, BD.BD_IMAGE
+			, BD.BD_INDATE
+			FROM BOARD BD
+			<where>
+				<if test="r_bdid != null and r_bdid != ''">BD_ID = #{ r_bdid }</if>
+				<if test="r_bddisplaytype != null and r_bddisplaytype != ''">AND BD_DISPLAYTYPE = #{ r_bddisplaytype }</if>
+			</where>
+			) XX 
+		) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+
+	<select id="one_20250401" parameterType="hashmap" resultType="com.limenets.eorder.dto.BoardDto">		
+		SELECT BD.*	     
+			, (SELECT CC_NAME FROM COMMONCODE WHERE CC_CODE = 
+			(CASE WHEN LEN(BD.BD_TYPE3)=10 THEN BD.BD_TYPE3 ELSE BD.BD_TYPE END)
+			) BD_TYPENM
+		FROM BOARD BD
+		LEFT OUTER JOIN O_USER US ON BD.BD_INID = US.USERID
+		<where>
+			<if test="r_bdseq != null and r_bdseq != ''">BD_SEQ = #{ r_bdseq }</if>
+			<if test="r_bdid != null and r_bdid != ''">AND BD_ID = #{ r_bdid }</if>
+			<if test="r_bdtype != null and r_bdtype != ''">AND BD_TYPE = #{ r_bdtype }</if>
+			<if test="r_bdtype2 != null and r_bdtype2 != ''">AND BD_TYPE2 = #{ r_bdtype2 }</if>
+			<if test="r_bdtype3 != null and r_bdtype3 != ''">AND BD_TYPE3 = #{ r_bdtype3 }</if>
+			<if test="rl_bdtitle != null and rl_bdtitle != '' ">AND BD_TITLE LIKE '%' + #{ rl_bdtitle } + '%'</if>
+			<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' + #{ rl_usernm } + '%'</if>
+			<if test="r_bdnoticeyn != null and r_bdnoticeyn != ''">AND BD_NOTICEYN = #{ r_bdnoticeyn }</if>
+			<if test="r_bdfileyn != null and r_bdfileyn != ''">AND BD_FILEYN = #{ r_bdfileyn }</if>	    		    	
+			<if test="r_bddisplaytype != null and r_bddisplaytype != ''">AND BD_DISPLAYTYPE = #{ r_bddisplaytype }</if>
+			<if test="r_bdsdate != null and r_bdsdate != '' "><![CDATA[AND BD_INDATE >= CONVERT(DATE, #{r_bdsdate})]]></if>
+			<if test="r_bdedate != null and r_bdedate != '' "><![CDATA[AND BD_INDATE < DATEADD(DAY, 1, #{r_bdedate})]]></if>	    		
+		</where>	       	     	     	
+	</select>
+
+	<select id="one" parameterType="hashmap" resultType="com.limenets.eorder.dto.BoardDto">		
+		SELECT BD.*
+		  , (SELECT CC_NAME FROM COMMONCODE WHERE CC_CODE =  (CASE WHEN LEN(BD.BD_TYPE)=6 THEN BD.BD_TYPE ELSE BD.BD_TYPE END) ) BD_TYPENM
+		  , (SELECT CC_NAME FROM COMMONCODE WHERE CC_CODE =  (CASE WHEN LEN(BD.BD_TYPE2)=8 THEN BD.BD_TYPE2 ELSE BD.BD_TYPE END) ) BD_TYPENM2
+		  , (SELECT CC_NAME FROM COMMONCODE WHERE CC_CODE =  (CASE WHEN LEN(BD.BD_TYPE3)=10 THEN BD.BD_TYPE3 ELSE BD.BD_TYPE END) ) BD_TYPENM3
+		FROM BOARD BD
+		LEFT OUTER JOIN O_USER US ON BD.BD_INID = US.USERID
+		<where>
+			<if test="r_bdseq != null and r_bdseq != ''">BD_SEQ = #{ r_bdseq }</if>
+			<if test="r_bdid != null and r_bdid != ''">AND BD_ID = #{ r_bdid }</if>
+			<if test="r_bdtype != null and r_bdtype != ''">AND BD_TYPE = #{ r_bdtype }</if>
+			<if test="r_bdtype2 != null and r_bdtype2 != ''">AND BD_TYPE2 = #{ r_bdtype2 }</if>
+			<if test="r_bdtype3 != null and r_bdtype3 != ''">AND BD_TYPE3 = #{ r_bdtype3 }</if>
+			<if test="rl_bdtitle != null and rl_bdtitle != '' ">AND BD_TITLE LIKE '%' + #{ rl_bdtitle } + '%'</if>
+			<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' + #{ rl_usernm } + '%'</if>
+			<if test="r_bdnoticeyn != null and r_bdnoticeyn != ''">AND BD_NOTICEYN = #{ r_bdnoticeyn }</if>
+			<if test="r_bdfileyn != null and r_bdfileyn != ''">AND BD_FILEYN = #{ r_bdfileyn }</if>	    		    	
+			<if test="r_bddisplaytype != null and r_bddisplaytype != ''">AND BD_DISPLAYTYPE = #{ r_bddisplaytype }</if>
+			<if test="r_bdsdate != null and r_bdsdate != '' "><![CDATA[AND BD_INDATE >= CONVERT(DATE, #{r_bdsdate})]]></if>
+			<if test="r_bdedate != null and r_bdedate != '' "><![CDATA[AND BD_INDATE < DATEADD(DAY, 1, #{r_bdedate})]]></if>	    		
+		</where>	       	     	     	
+	</select>
+	
+	
+	<select id="one2" parameterType="hashmap" resultType="com.limenets.eorder.dto.BoardDto">		
+		SELECT BD.*
+			, (SELECT CC_NAME FROM COMMONCODE WHERE CC_CODE = BD_TYPE) BD_TYPENM
+		FROM BOARD BD
+		LEFT OUTER JOIN O_USER US ON BD.BD_MOID = US.USERID
+		<where>
+			<if test="r_bdseq != null and r_bdseq != ''">BD_SEQ = #{ r_bdseq }</if>
+			<if test="r_bdid != null and r_bdid != ''">AND BD_ID = #{ r_bdid }</if>
+			<if test="r_bdtype != null and r_bdtype != ''">AND BD_TYPE = #{ r_bdtype }</if>
+			<if test="r_bdtype2 != null and r_bdtype2 != ''">AND BD_TYPE2 = #{ r_bdtype2 }</if>
+			<if test="r_bdtype3 != null and r_bdtype3 != ''">AND BD_TYPE3 = #{ r_bdtype3 }</if>
+			<if test="rl_bdtitle != null and rl_bdtitle != '' ">AND BD_TITLE LIKE '%' + #{ rl_bdtitle } + '%'</if>
+			<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' + #{ rl_usernm } + '%'</if>
+			<if test="r_bdnoticeyn != null and r_bdnoticeyn != ''">AND BD_NOTICEYN = #{ r_bdnoticeyn }</if>
+			<if test="r_bdfileyn != null and r_bdfileyn != ''">AND BD_FILEYN = #{ r_bdfileyn }</if>	    		    	
+			<if test="r_bddisplaytype != null and r_bddisplaytype != ''">AND BD_DISPLAYTYPE = #{ r_bddisplaytype }</if>
+			<if test="r_bdsdate != null and r_bdsdate != '' "><![CDATA[AND BD_INDATE >= CONVERT(DATE, #{r_bdsdate})]]></if>
+			<if test="r_bdedate != null and r_bdedate != '' "><![CDATA[AND BD_INDATE < DATEADD(DAY, 1, #{r_bdedate})]]></if>	    		
+		</where>			      	     	     	
+	</select>
+	
+	<update id="reply" parameterType="hashmap" >
+    	UPDATE BOARD
+    	<set>
+	    	<if test=" m_bdtype != null and m_bdtype != '' ">BD_TYPE = #{ m_bdtype }, </if>
+	    	<if test=" m_bdtype2 != null and m_bdtype2 != '' ">BD_TYPE = #{ m_bdtype2 }, </if>
+	    	<if test=" m_bdtype3 != null and m_bdtype3 != '' ">BD_TYPE = #{ m_bdtype3 }, </if>
+			<if test=" m_bdtitle != null and m_bdtitle != '' ">BD_TITLE = #{ m_bdtitle }, </if>
+			<if test=" m_bdcontent != null and m_bdcontent != '' ">BD_CONTENT = #{ m_bdcontent }, </if>
+			<if test=" m_bdfile != null and m_bdfile != '' ">BD_FILE = #{ m_bdfile }, </if>																					
+			<if test=" m_bdfiletype != null and m_bdfiletype != '' ">BD_FILETYPE = #{ m_bdfiletype }, </if>																					
+			<if test=" m_bdimage != null and m_bdimage != '' ">BD_IMAGE = #{ m_bdimage }, </if>																					
+			<if test=" m_bdimagetype != null and m_bdimagetype != '' ">BD_IMAGETYPE = #{ m_bdimagetype }, </if>
+			<if test=" m_bddisplaytype != null and m_bddisplaytype != '' ">BD_DISPLAYTYPE = #{ m_bddisplaytype }, </if>						
+			<if test=" m_bdnoticeyn != null and m_bdnoticeyn != '' ">BD_NOTICEYN = #{ m_bdnoticeyn }, </if>
+			<if test=" m_bdmoid != null and m_bdmoid != '' ">BD_MOID = #{ m_bdmoid }, </if>
+			<!-- 2025-05-14 정보공유 자료실 링크여부 추가 ijy -->
+			<if test=" m_bdlink == null or m_bdlink == ''">BD_LINK = '',</if><if test=" m_bdlink != null and m_bdlink != '' ">BD_LINK = #{ m_bdlink }, </if>
+			<if test=" m_bdlinkuse == null or m_bdlinkuse == ''">BD_LINKUSE = 'N',</if><if test=" m_bdlinkuse != null and m_bdlinkuse != '' ">BD_LINKUSE = 'Y', </if>
+    		BD_MODATE = GETDATE(),
+    		<if test=" m_bdreply != null and m_bdreply != '' ">BD_REPLY = #{ m_bdreply }, </if>
+			<if test="m_bdreply == null or m_bdreply == ''">BD_REPLYYN = 'N',</if><if test="m_bdreply != null and m_bdreply != ''">BD_REPLYYN = #{ m_bdreplyyn }</if>	
+    	</set>
+    	<where>
+    		BD_SEQ = #{ r_bdseq }
+    	</where>
+    </update>
+	
+	<update id="up" parameterType="hashmap" >
+    	UPDATE BOARD
+		<set>
+			<if test=" m_bdtype != null and m_bdtype != '' ">BD_TYPE = #{ m_bdtype }, </if>
+			<if test=" m_bdtype2 != null and m_bdtype2 != '' ">BD_TYPE2 = #{ m_bdtype2 }, </if>
+			<if test=" m_bdtype3 != null and m_bdtype3 != '' ">BD_TYPE3 = #{ m_bdtype3 }, </if>
+			<if test=" m_bdtitle != null and m_bdtitle != '' ">BD_TITLE = #{ m_bdtitle }, </if>
+			<if test=" m_bdcontent != null and m_bdcontent != '' ">BD_CONTENT = #{ m_bdcontent }, </if>
+			<if test=" m_bdfile != null and m_bdfile != '' ">BD_FILE = #{ m_bdfile }, </if>																					
+			<if test=" m_bdfiletype != null and m_bdfiletype != '' ">BD_FILETYPE = #{ m_bdfiletype }, </if>																					
+			<if test=" m_bdimage != null and m_bdimage != '' ">BD_IMAGE = #{ m_bdimage }, </if>																					
+			<if test=" m_bdimagetype != null and m_bdimagetype != '' ">BD_IMAGETYPE = #{ m_bdimagetype }, </if>
+			<if test=" m_bddisplaytype != null and m_bddisplaytype != '' ">BD_DISPLAYTYPE = #{ m_bddisplaytype }, </if>						
+			<if test=" m_bdnoticeyn != null and m_bdnoticeyn != '' ">BD_NOTICEYN = #{ m_bdnoticeyn }, </if>
+			<if test="m_bdfile == null or m_bdfile == ''">BD_FILEYN = 'N',</if><if test="m_bdfile != null and m_bdfile != ''">BD_FILEYN = 'Y',</if>								
+			<if test=" m_bdmoid != null and m_bdmoid != '' ">BD_MOID = #{ m_bdmoid }, </if>
+			<!-- 2025-05-14 정보공유 자료실 링크여부 추가 ijy -->
+			<if test=" m_bdlink == null or m_bdlink == ''">BD_LINK = '',</if><if test=" m_bdlink != null and m_bdlink != '' ">BD_LINK = #{ m_bdlink }, </if>
+			<if test=" m_bdlinkuse == null or m_bdlinkuse == ''">BD_LINKUSE = 'N',</if><if test=" m_bdlinkuse != null and m_bdlinkuse != '' ">BD_LINKUSE = 'Y', </if>
+			BD_MODATE = GETDATE()
+		</set>
+		<where>
+			BD_SEQ = #{ r_bdseq }
+		</where>
+    </update>
+	
+	
+	<update id="sampleFrontUp" parameterType="hashmap" >
+    	UPDATE BOARD
+    	<set>
+			<if test=" m_bdtype != null and m_bdtype != '' ">BD_TYPE = #{ m_bdtype }, </if>
+			<if test=" m_bdtitle != null and m_bdtitle != '' ">BD_TITLE = #{ m_bdtitle }, </if>
+			<if test=" m_bdcontent != null and m_bdcontent != '' ">BD_CONTENT = #{ m_bdcontent }, </if>
+			<if test=" m_bdfile != null and m_bdfile != '' ">BD_FILE = #{ m_bdfile }, </if>																					
+			<if test=" m_bdfiletype != null and m_bdfiletype != '' ">BD_FILETYPE = #{ m_bdfiletype }, </if>																					
+			<if test=" m_bdimage != null and m_bdimage != '' ">BD_IMAGE = #{ m_bdimage }, </if>																					
+			<if test=" m_bdimagetype != null and m_bdimagetype != '' ">BD_IMAGETYPE = #{ m_bdimagetype }, </if>
+			<if test=" m_bddisplaytype != null and m_bddisplaytype != '' ">BD_DISPLAYTYPE = #{ m_bddisplaytype }, </if>						
+			<if test=" m_bdnoticeyn != null and m_bdnoticeyn != '' ">BD_NOTICEYN = #{ m_bdnoticeyn }, </if>
+			<if test="m_bdfile == null or m_bdfile == ''">BD_FILEYN = 'N',</if><if test="m_bdfile != null and m_bdfile != ''">BD_FILEYN = 'Y',</if>
+    	</set>
+    	<where>
+    		BD_SEQ = #{ r_bdseq }
+    	</where>
+    </update>
+	
+	<update id="status" parameterType="hashmap" >
+    	UPDATE BOARD
+    	<set>
+			<if test=" m_bdreply != null and m_bdreply != '' ">BD_REPLY = #{ m_bdreply }, </if>
+			<if test="m_bdreply == null or m_bdreply == ''">BD_REPLYYN = 'N'</if>
+			<if test="m_bdreply != null and m_bdreply != ''">BD_REPLYYN = #{ m_bdreplyyn}</if>	
+    	</set>
+    	<where>
+    		BD_SEQ = #{ r_bdseq }
+    	</where>
+    </update>
+	
+	<update id="addViewCnt" parameterType="hashmap" >
+    	UPDATE BOARD
+    		SET VIEW_CNT  = VIEW_CNT + 1
+		WHERE
+    		BD_SEQ = #{ r_bdseq }
+    </update>
+	
+	<delete id="del" parameterType="hashmap" >
+		DELETE FROM BOARD
+		<where>
+			 BD_SEQ = #{ r_bdseq }			
+		</where>
+	</delete>
+	
+</mapper>

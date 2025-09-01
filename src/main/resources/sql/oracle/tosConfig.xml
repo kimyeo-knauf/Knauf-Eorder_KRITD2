@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.tosConfig">
+	<insert id="in" parameterType="hashmap">
+	    INSERT INTO TOSCONFIG 
+   				(
+	    		TSC_SEQ, 
+	    		TSC_TITLE, 
+	    		TSC_CONTENT, 
+                TSC_INID, 
+                TSC_INDATE,           
+                TSC_USEYN
+                )
+	    VALUES(
+	    	 USQ_TOSCONFIG.NEXTVAL
+			 ,#{ m_tsctitle, jdbcType=VARCHAR }	
+			 ,#{ m_tsccontent, jdbcType=VARCHAR }			
+			 ,#{ m_tscinid, jdbcType=VARCHAR }								
+			 , SYSDATE	
+			 ,'Y'									 							
+			 )
+	</insert>
+	
+	<select id="list" parameterType="hashmap" resultType="com.limenets.eorder.dto.TosConfigDto">
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		SELECT TSC.*, US.*		     
+<!-- 			 , (SELECT CC_NAME FROM COMMONCODE WHERE CC_CODE = BD_TYPE) BD_TYPENM -->
+		  FROM TOSCONFIG TSC
+		  LEFT OUTER JOIN O_USER US ON TSC.TSC_INID = US.USERID
+		  <where>
+	    		<if test="rl_tsctitle != null and rl_tsctitle != '' ">AND TSC_TITLE LIKE '%' || #{rl_tsctitle} || '%'</if>
+	    		<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' || #{rl_usernm} || '%'</if>
+	    		<if test="r_tscsdate != null and r_tscsdate != '' "><![CDATA[AND TSC_INDATE >= TO_DATE(#{r_tscsdate}, 'YYYY-MM-DD')]]></if>
+				<if test="r_tscedate != null and r_tscedate != '' "><![CDATA[AND TSC_INDATE < TO_DATE(#{r_tscedate}, 'YYYY-MM-DD') +1]]></if>	    		
+	      </where>		
+	      
+	      <if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>		
+	      ) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+	</select>	
+	
+	<select id="cnt" parameterType="hashmap" resultType="long">
+		SELECT COUNT(*) FROM TOSCONFIG TSC
+		LEFT OUTER JOIN O_USER US ON TSC.TSC_INID = US.USERID
+		<where>
+	    		<if test="rl_tsctitle != null and rl_tsctitle != '' ">AND TSC_TITLE LIKE '%' || #{rl_tsctitle} || '%'</if>
+	    		<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' || #{rl_usernm} || '%'</if>
+	    		<if test="r_tscsdate != null and r_tscsdate != '' "><![CDATA[AND TSC_INDATE >= TO_DATE(#{r_tscsdate}, 'YYYY-MM-DD')]]></if>
+				<if test="r_tscedate != null and r_tscedate != '' "><![CDATA[AND TSC_INDATE < TO_DATE(#{r_tscedate}, 'YYYY-MM-DD') +1]]></if>	    	
+	    </where>		
+	</select>
+	
+	<select id="one" parameterType="hashmap" resultType="com.limenets.eorder.dto.TosConfigDto">		
+		SELECT TSC.*, US.*		     
+<!-- 			 , (SELECT CC_NAME FROM COMMONCODE WHERE CC_CODE = BD_TYPE) BD_TYPENM -->
+		  FROM TOSCONFIG TSC
+		  LEFT OUTER JOIN O_USER US ON TSC.TSC_INID = US.USERID
+		  <where>
+		  		<if test="r_tscseq != null and r_tscseq != ''">TSC_SEQ = #{ r_tscseq }</if>
+	    		<if test="rl_tsctitle != null and rl_tsctitle != '' ">AND TSC_TITLE LIKE CONCAT('%', #{ rl_tsctitle } '%')</if>
+	    		<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE CONCAT('%', #{ rl_usernm } '%')</if>
+	    		<if test="r_tscsdate != null and r_tscsdate != '' "><![CDATA[AND TSC_INDATE >= TO_DATE(#{r_tscsdate}, 'YYYY-MM-DD')]]></if>
+				<if test="r_tscedate != null and r_tscedate != '' "><![CDATA[AND TSC_INDATE < TO_DATE(#{r_tscedate}, 'YYYY-MM-DD') +1]]></if>	    		
+	      </where>			      	     	     	
+	</select>
+
+	<select id="oneForIndex" parameterType="hashmap" resultType="com.limenets.eorder.dto.TosConfigDto">
+		SELECT ROWNUM AS RR, TSC.*
+		FROM (SELECT *
+			  FROM TOSCONFIG
+			  ORDER BY TSC_INDATE DESC) TSC
+		<where>
+			  ROWNUM = 1
+		</where>
+	</select>
+
+	<update id="up" parameterType="hashmap" >
+    	UPDATE TOSCONFIG
+    	<set>
+			<if test=" m_tsctitle != null and m_tsctitle != '' ">TSC_TITLE = #{ m_tsctitle }, </if>
+			<if test=" m_tsccontent != null and m_tsccontent != '' ">TSC_CONTENT = #{ m_tsccontent }, </if>
+			<if test=" m_tscmoid != null and m_tscmoid != '' ">TSC_MOID = #{ m_tscmoid }, </if>
+    		TSC_MODATE = SYSDATE
+    	</set>
+    	<where>
+    		TSC_SEQ = #{ r_tscseq }
+    	</where>
+    </update>
+	
+	<delete id="del" parameterType="hashmap" >
+		DELETE FROM TOSCONFIG
+		<where>
+			 TSC_SEQ = #{ r_tscseq }			
+		</where>
+	</delete>
+	
+</mapper>

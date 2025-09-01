@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="filterMultipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="UTF-8" />
+		<property name="maxUploadSize" value="#{50 * 1024 * 1024 * 10}" />
+		<!-- <property name="maxUploadSizePerFile" value="#{50 * 1024 * 1024}" /> -->
+		<property name="maxUploadSizePerFile" value="#{50 * 1024 * 1024 * 4}" /><!-- 2025-03-26 hsg Diving body press : maxUploadSizePerFile값을 50 -> 200 으로 변경 -->
+		<property name="maxInMemorySize" value="#{10 * 1024 * 1024}" />
+	</bean>
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<bean id="fileUpload" class="com.limenets.common.util.FileUpload">
+		<property name="docFiles">
+			<map>
+				<entry key="jpg">
+					<list value-type="java.lang.String">
+						<value>image/jpeg</value>
+					</list>
+				</entry>
+				<entry key="jpeg">
+					<list value-type="java.lang.String">
+						<value>image/jpeg</value>
+					</list>
+				</entry>
+				<entry key="png">
+					<list value-type="java.lang.String">
+						<value>image/png</value>
+					</list>
+				</entry>
+				<entry key="gif">
+					<list value-type="java.lang.String">
+						<value>image/gif</value>
+					</list>
+				</entry>
+				
+				<entry key="ppt">
+					<list value-type="java.lang.String">
+						<value>application/vnd.ms-powerpoint</value>
+						<value>application/vnd.openxmlformats-officedocument.presentationml.presentation</value>
+					</list>
+				</entry>
+				<entry key="pptx">
+					<list value-type="java.lang.String">
+						<value>application/vnd.ms-powerpoint</value>
+						<value>application/vnd.openxmlformats-officedocument.presentationml.presentation</value>
+					</list>
+				</entry>
+				<entry key="xls">
+					<list value-type="java.lang.String">
+						<value>application/vnd.ms-excel</value>
+						<value>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</value>
+					</list>
+				</entry>
+				<entry key="xlsx">
+					<list value-type="java.lang.String">
+						<value>application/vnd.ms-excel</value>
+						<value>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</value>
+					</list>
+				</entry>
+				<entry key="doc">
+					<list value-type="java.lang.String">
+						<value>application/msword</value>
+						<value>application/vnd.openxmlformats-officedocument.wordprocessingml.document</value>
+						<value>application/rtf</value>
+					</list>
+				</entry>
+				<entry key="docx">
+					<list value-type="java.lang.String">
+						<value>application/msword</value>
+						<value>application/vnd.openxmlformats-officedocument.wordprocessingml.document</value>
+					</list>
+				</entry>
+				<entry key="pdf">
+					<list value-type="java.lang.String">
+						<value>application/pdf</value>						
+					</list>
+				</entry>
+			</map>
+		</property>
+		<property name="imageFiles">
+			<map>
+				<entry key="jpg">
+					<list value-type="java.lang.String">
+						<value>image/jpeg</value>
+					</list>
+				</entry>
+				<entry key="jpeg">
+					<list value-type="java.lang.String">
+						<value>image/jpeg</value>
+					</list>
+				</entry>
+				<entry key="png">
+					<list value-type="java.lang.String">
+						<value>image/png</value>
+					</list>
+				</entry>
+				<entry key="gif">
+					<list value-type="java.lang.String">
+						<value>image/gif</value>
+					</list>
+				</entry>
+				<entry key="ico">
+					<list value-type="java.lang.String">
+						<value>image/vnd.microsoft.icon</value>
+					</list>
+				</entry>
+			</map>
+		</property>
+	</bean>
+	
+</beans>

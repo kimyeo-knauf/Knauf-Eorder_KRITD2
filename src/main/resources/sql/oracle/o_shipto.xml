@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.o_shipto">
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT ST.*
+		FROM O_SHIPTO ST
+		<where>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND ST.CUST_CD = #{r_custcd}</if>
+			<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' || #{rl_shiptocd} || '%'</if>
+			<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' || #{rl_shiptonm} || '%'</if>
+		</where>
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM
+		((SELECT ST.* FROM O_SHIPTO ST
+		LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT'
+		<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+			LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+		</if>
+		<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+			INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+		</if>
+		LEFT OUTER JOIN (SELECT QUOTE_QT, MAX(INSERT_DT) AS DT FROM O_SHIPTO GROUP BY QUOTE_QT) TT ON
+			TT.QUOTE_QT = ST.QUOTE_QT
+		<where>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND ST.CUST_CD = #{r_custcd}</if>
+			<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' || #{rl_shiptocd} || '%'</if>
+			<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' || #{rl_shiptonm} || '%'</if>
+			<if test="rl_quoteqt != null">AND ST.QUOTE_QT LIKE '%' || #{rl_quoteqt} || '%' AND ST.QUOTE_QT IS NOT NULL</if>
+			<if test="rl_insertdt != null">AND ST.ANGDT <![CDATA[<=]]> #{rl_insertdt}</if>
+			AND TT.DT = ST.INSERT_DT
+		</where>)
+		UNION
+		(SELECT ST.* FROM O_SHIPTO ST
+		LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT'
+		<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+			LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+		</if>
+		<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+			INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+		</if>
+		LEFT OUTER JOIN (SELECT QUOTE_QT, MAX(INSERT_DT) AS DT FROM O_SHIPTO GROUP BY QUOTE_QT) TT ON
+			TT.QUOTE_QT = ST.QUOTE_QT
+		<where>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND ST.SHIPTO_CD = #{r_custcd}</if>
+			<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' || #{rl_shiptocd} || '%'</if>
+			<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' || #{rl_shiptonm} || '%'</if>
+		</where>))
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		<!-- SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		
+		SELECT *
+		FROM O_SHIPTO ST
+		LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT' 
+		<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+			LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+		</if>
+		<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+			INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+		</if>
+		<where>
+			<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+			<if test="r_custcd != null and r_custcd != '' ">AND ST.CUST_CD = #{r_custcd}</if>
+			<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' || #{rl_shiptocd} || '%'</if>
+			<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' || #{rl_shiptonm} || '%'</if>
+			<if test="rl_quoteqt != null">AND ST.QUOTE_QT LIKE '%' || #{rl_quoteqt} || '%' AND ST.QUOTE_QT IS NOT NULL</if>
+		</where>
+		
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${ r_orderby }</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where> -->
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (		
+			(SELECT ST.*
+			FROM O_SHIPTO ST
+			LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT' 
+			<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+				LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+			</if>
+			<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+				INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+			</if>
+			LEFT OUTER JOIN (SELECT QUOTE_QT AS QT, MAX(INSERT_DT) AS DT FROM O_SHIPTO GROUP BY QUOTE_QT) TT ON
+				TT.QT = ST.QUOTE_QT
+			<where>
+				<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+				<if test="r_custcd != null and r_custcd != '' ">AND ST.CUST_CD = #{r_custcd}</if>
+				<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' || #{rl_shiptocd} || '%'</if>
+				<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' || #{rl_shiptonm} || '%'</if>
+				<if test="rl_quoteqt != null">AND ST.QUOTE_QT LIKE '%' || #{rl_quoteqt} || '%' AND ST.QUOTE_QT IS NOT NULL</if>
+				<if test="rl_insertdt != null">AND ST.ANGDT <![CDATA[<=]]> #{rl_insertdt}</if>
+				AND TT.DT = ST.INSERT_DT
+			</where>)
+			UNION (
+			SELECT ST.*
+			FROM O_SHIPTO ST
+			LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD AND US.AUTHORITY = 'CT' 
+			<if test='where != null and ("front".equals(where) or "frontexcel".equals(where)) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+				LEFT JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+			</if>
+			<if test='where != null and "pop".equals(where) and r_stbuserid != null and !"".equals(r_stbuserid)'>
+				INNER JOIN SHIPTOBOOKMARK STB ON ST.SHIPTO_CD = STB.STB_SHIPTOCD AND STB.STB_USERID = #{r_stbuserid}
+			</if>
+			LEFT OUTER JOIN (SELECT QUOTE_QT AS QT, MAX(INSERT_DT) AS DT FROM O_SHIPTO GROUP BY QUOTE_QT) TT ON
+				TT.QT = ST.QUOTE_QT
+			<where>
+				<if test="r_shiptocd != null and r_shiptocd != '' ">AND ST.SHIPTO_CD = #{r_shiptocd}</if>
+				<if test="r_custcd != null and r_custcd != '' ">AND ST.SHIPTO_CD = #{r_custcd}</if>
+				<if test="rl_shiptocd != null and rl_shiptocd != '' ">AND ST.SHIPTO_CD LIKE '%' || #{rl_shiptocd} || '%'</if>
+				<if test="rl_shiptonm != null and rl_shiptonm != '' ">AND ST.SHIPTO_NM LIKE '%' || #{rl_shiptonm} || '%'</if>
+				<if test="rl_quoteqt != null">AND ST.QUOTE_QT LIKE '%' || #{rl_quoteqt} || '%' AND ST.QUOTE_QT IS NOT NULL</if>
+			</where>)
+			
+			<!-- <if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${ r_orderby }</if> -->
+			) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+	</select>
+	
+	<select id="getNewShiptoList" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			SHIPTO_CD, ST.CUST_CD, SHIPTO_NM, CONCAT(SHIPTO_CD, 's') SHIPTO_USERID, COUNT(US.USERID) USER_CNT
+		FROM O_SHIPTO ST
+		LEFT JOIN O_USER US ON US.CUST_CD = ST.CUST_CD AND US.USER_SHIPTOCD = ST.SHIPTO_CD
+		<where>
+			<if test="r_custcd != null and r_custcd != '' ">AND ST.CUST_CD = #{r_custcd}</if>
+		</where>
+		GROUP BY SHIPTO_CD, ST.CUST_CD, SHIPTO_NM HAVING COUNT(US.USERID) <![CDATA[<]]> 1
+	</select>
+	
+	<!-- 납품처 즐겨찾기 저장/삭제 -->
+	<insert id="inBookmark" parameterType="hashmap">
+		INSERT INTO SHIPTOBOOKMARK(
+			STB_USERID, STB_SHIPTOCD, STB_INID, STB_INDATE
+			
+		)VALUES(
+			#{m_stbuserid, jdbcType=VARCHAR}, #{m_stbshiptocd, jdbcType=VARCHAR}
+			, #{m_stbinid, jdbcType=VARCHAR}, SYSDATE
+		)
+	</insert>
+	
+	<delete id="delBookmark" parameterType="hashmap">
+		DELETE FROM SHIPTOBOOKMARK
+		<where>
+			AND STB_USERID = #{r_stbuserid} AND STB_SHIPTOCD = #{r_stbshiptocd}
+		</where>
+	</delete>
+	
+	<select id="cntBookmark" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM SHIPTOBOOKMARK
+		<where>
+			AND STB_USERID = #{r_stbuserid} AND STB_SHIPTOCD = #{r_stbshiptocd}
+		</where>
+	</select>
+	
+</mapper>

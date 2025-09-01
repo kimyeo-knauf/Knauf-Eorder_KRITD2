@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>e-Ordering System</title>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta name="title" content="">
+<meta name="keywords" content="">
+<meta name="description" content="">
+
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+
+<link rel="shortcut icon" href="images/common/favicon.ico" />
+
+<!-- css -->
+<link rel="stylesheet" href="js/bootstrap/css/bootstrap.css" />
+<link rel="stylesheet" href="css/style.css" />
+
+<!-- jQuery -->
+<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="js/jquery.sweet-dropdown.min.js"></script> <!-- HEADER MYPAGE -->
+<script type="text/javascript" src="js/lightslider.js"></script> <!-- BANNER -->
+<script type="text/javascript" src="js/tabcontent.js"></script> <!-- TAB -->
+
+<!--[if lt IE 9]>
+<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+<![endif]-->
+<!--[if lt IE 8]>
+<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE8.js"></script>
+<![endif]-->
+<!--[if lt IE 7]>
+<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE7.js"></script>
+<![endif]-->
+
+<script type="text/javascript">
+$(document).ready(function() {
+	
+});
+</script>
+</head>
+
+<body class="popup-wrapper"> <!-- 팝업사이즈 955 * 655 -->
+
+	<!-- Wrap -->
+	<div id="wrap">
+	
+		<!-- Container Fluid -->
+		<div class="container-fluid product-search">
+		
+			<div class="panel-title">
+				<h2>
+					품목선택
+					<div class="searchBtn">
+						<button type="button">Search</button>
+					</div>
+				</h2>
+			</div>
+			
+			<div class="boardView marB30">
+				<ul>
+					<li>
+						<label class="view-h">품목분류</label>
+						<div class="view-b">
+							<select class="form-control form-sm">
+								<option></option>
+							</select>
+							<select class="form-control form-sm">
+								<option></option>
+							</select>
+							<select class="form-control form-sm">
+								<option></option>
+							</select>
+						</div>
+					</li>
+					<li class="half">
+						<label class="view-h">품목명</label>
+						<div class="view-b">
+							<input type="text" class="form-control" name="" value="" />
+						</div>
+					</li>
+					<li class="half">
+						<label class="view-h">즐겨찾기 품목</label>
+						<div class="view-b">
+							<div class="table-radio">
+								<label class="lol-label-radio" for="radio1">
+									<input type="radio" id="radio1" name="" checked="" />
+									<span class="lol-text-radio">즐겨찾기</span>
+								</label>
+							</div>
+						</div>
+					</li>
+					<li class="half">
+						<label class="view-h">SEARCH_TEXT</label>
+						<div class="view-b">
+							<input type="text" class="form-control" name="" value="" />
+						</div>
+					</li>
+					<li class="half">
+						<label class="view-h">품목코드</label>
+						<div class="view-b">
+							<input type="text" class="form-control" name="" value="" />
+						</div>
+					</li>
+				</ul>
+			</div> <!-- boardView -->
+			
+			<div class="boardListArea">
+				<h2>
+					Total <strong>3</strong>EA
+					<div class="title-right">
+						<button type="button" class="btn btn-green">선택 후 계속</button>
+						<button type="button" class="btn btn-gray">선택 후 닫기</button>
+					</div>
+				</h2>
+				
+				<div class="boardList">
+					<table width="100%" cellpadding="0" cellspacing="0" border="0">
+						<colgroup>
+							<col width="7%" />
+							<col width="10%" />
+							<col width="17%" />
+							<col width="28%" />
+							<col width="19%" />
+							<col width="19%" />
+						</colgroup>
+						<thead>
+							<tr>
+								<th>선택</th>
+								<th>이미지</th>
+								<th>품목코드</th>
+								<th>품목명</th>
+								<th>구매단위</th>
+								<th>SEARCH_TEXT</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>
+									<div class="basic-checkbox">
+										<input type="checkbox" class="lol-checkbox" id="checkbox1" />
+										<label class="lol-label-checkbox" for="checkbox1"></label>
+									</div>
+								</td>
+								<td><img src="images/common/icon_img@2x.png" onerror="this.src='../images/common/icon_img@2x.png'" width="30" height="30" alt="img" /></td>
+								<td>105135</td>
+								<td class="text-left"><p class="nowrap">12.5*900*2510 일반 평보드</p></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<div class="basic-checkbox">
+										<input type="checkbox" class="lol-checkbox" id="checkbox2" />
+										<label class="lol-label-checkbox" for="checkbox2"></label>
+									</div>
+								</td>
+								<td><img src="images/common/icon_img@2x.png" onerror="this.src='../images/common/icon_img@2x.png'" width="30" height="30" alt="img" /></td>
+								<td>105135</td>
+								<td class="text-left"><p class="nowrap">9.5*900*2510 일반 평보드</p></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<div class="basic-checkbox">
+										<input type="checkbox" class="lol-checkbox" id="checkbox3" />
+										<label class="lol-label-checkbox" for="checkbox3"></label>
+									</div>
+								</td>
+								<td><img src="images/common/icon_img@2x.png" onerror="this.src='../images/common/icon_img@2x.png'" width="30" height="30" alt="img" /></td>
+								<td>105135</td>
+								<td class="text-left"><p class="nowrap"></p></td>
+								<td></td>
+								<td></td>
+							</tr>
+						</tbody>
+					</table>
+					
+				</div> <!-- boardList -->
+				
+				<!-- BEGIN paginate -->
+				<div class="paginate">
+					<a class="pre_end">맨앞</a>
+					<a class="pre">이전</a>
+					<strong>1</strong>
+					<a href="javascript:pager('', '', 2);"><span>2</span></a>
+					<a href="javascript:pager('', '', 3);"><span>3</span></a>
+					<a href="javascript:pager('', '', 4);"><span>4</span></a>
+					<a href="javascript:pager('', '', 5);"><span>5</span></a>
+					<a class="next" href="javascript:pager('', '', 2);">다음</a>
+					<a class="next_end" href="javascript:pager('', '', 3);">맨뒤</a>
+				</div>
+				<!-- END paginate -->
+				
+			</div> <!-- boardListArea -->
+			
+		</div> <!-- Container Fluid -->
+		
+	</div> <!-- Wrap -->
+
+</body>
+</html>

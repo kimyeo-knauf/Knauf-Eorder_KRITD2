@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.orderHeaderHistory">
+	<insert id="in" parameterType="hashmap">
+		<!-- 2024-10-15 HSG 시퀀스 대신 MAX값으로 대체  -->
+		<selectKey keyProperty="ohhSeq" resultType="long" order="BEFORE">
+    		SELECT MAX(OHH_SEQ)+1 FROM ORDERHEADERHISTORY;
+    	</selectKey>
+	
+		INSERT INTO ORDERHEADERHISTORY(
+			OHH_SEQ,
+			OHH_REQNO,
+			OHH_REQNOREF,
+			OHH_STATUSCD,
+			OHH_MEMO,
+			OHH_INID,
+			OHH_INDATE
+		)VALUES(
+		<!-- 2024-10-18 HSG 시퀀스 대신 MAX값으로 대체  -->
+<!-- 			USQ_ORDERHEADERHISTORY.NEXTVAL -->
+			#{ohhSeq}
+			, #{m_ohhreqno}
+			, #{m_ohhreqnoref}
+			, #{m_ohhstatuscd}
+			, #{m_ohhmemo}
+			, #{m_ohhinid}
+			, GETDATE()
+		)
+	</insert>
+	
+	<update id="upForReqNoRef" parameterType="hashmap">
+		UPDATE ORDERHEADERHISTORY
+		<set>
+			OHH_REQNO = #{m_ohhreqno},
+			OHH_REQNOREF = #{m_ohhreqnoref},
+		</set>
+		<where>
+			AND OHH_REQNO = #{r_ohhreqno}
+			<if test="r_ohhseq != null and r_ohhseq != '' ">AND OHH_SEQ = #{r_ohhseq}</if>
+			<if test="r_ohhstatuscd != null and r_ohhstatuscd != '' ">AND OHH_STATUSCD = #{r_ohhstatuscd}</if>
+		</where>
+	</update>
+	
+	<select id="oneByRecentList" parameterType="hashmap" resultType="hashmap">
+		SELECT TOP 1 * 
+		FROM ORDERHEADERHISTORY
+		<where>
+			AND OHH_REQNO = #{r_ohhreqno}
+		</where>
+		ORDER BY OHH_SEQ DESC
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM ORDERHEADERHISTORY OHH
+		<where>
+			<if test="r_ohhseq != null and r_ohhseq != '' ">AND OHH_SEQ = #{r_ohhseq}</if>
+			<if test="r_ohhreqno != null and r_ohhreqno != '' ">AND OHH_REQNO = #{r_ohhreqno}</if>
+			<if test="rl_ohhreqno != null and rl_ohhreqno != '' ">AND OHH_REQNO LIKE '%' + #{rl_ohhreqno} + '%'</if>
+			<if test="r_ohhstatuscd != null and r_ohhstatuscd != '' ">AND OHH_STATUSCD = #{r_ohhstatuscd}</if>
+			<if test="r_ohhinid != null and r_ohhinid != '' ">AND OHH_INID = #{r_ohhinid}</if>
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT 
+			ROW_NUMBER() OVER(
+			<choose>
+				<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+				<otherwise>ORDER BY (SELECT 1)</otherwise>
+			</choose>
+			) AS ROWNUM
+			, XX.* FROM (
+			SELECT OHH.* 
+			FROM ORDERHEADERHISTORY OHH
+			<where>
+				<if test="r_ohhseq != null and r_ohhseq != '' ">AND OHH_SEQ = #{r_ohhseq}</if>
+				<if test="r_ohhreqno != null and r_ohhreqno != '' ">AND OHH_REQNO = #{r_ohhreqno}</if>
+				<if test="rl_ohhreqno != null and rl_ohhreqno != '' ">AND OHH_REQNO LIKE '%' + #{rl_ohhreqno} + '%'</if>
+				<if test="r_ohhstatuscd != null and r_ohhstatuscd != '' ">AND OHH_STATUSCD = #{r_ohhstatuscd}</if>
+				<if test="r_ohhinid != null and r_ohhinid != '' ">AND OHH_INID = #{r_ohhinid}</if>
+			</where>
+			) XX 
+		) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+	
+</mapper>

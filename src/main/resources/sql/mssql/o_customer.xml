@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.o_customer">
+	
+	<update id="up" parameterType="hashmap">
+		UPDATE O_CUSTOMER CU
+		<set>
+			<if test="m_custcd != null and m_custcd != ''">CUST_CD = #{m_custcd},</if>
+			<if test="m_custnm != null and m_custnm != ''">CUST_NM = #{m_custnm},</if>
+			<if test="m_salesrepcd != null and m_salesrepcd != ''">SALESREP_CD = #{m_salesrepcd},</if>
+			<if test="m_salesrepnm != null and m_salesrepnm != ''">SALESREP_NM = #{m_salesrepnm},</if>
+			<if test="m_teamcd != null and m_teamcd != ''">TEAM_CD = #{m_teamcd},</if>
+			<if test="m_teamnm != null and m_teamnm != ''">TEAM_NM = #{m_teamnm},</if>
+			<if test="m_taxid != null and m_taxid != ''">TAX_ID = #{m_taxid},</if>
+			<if test="m_mailingnm != null and m_mailingnm != ''">MAILING_NM = #{m_mailingnm},</if>
+			<if test="m_add1 != null and m_add1 != ''">ADD1 = #{m_add1},</if>
+			<if test="m_add2 != null and m_add2 != ''">ADD2 = #{m_add2},</if>
+			<if test="m_add3 != null and m_add3 != ''">ADD3 = #{m_add3},</if>
+			<if test="m_add4 != null and m_add4 != ''">ADD4 = #{m_add4},</if>
+			<if test="m_zipcd != null and m_zipcd != ''">ZIP_CD = #{m_zipcd},</if>
+			<if test="m_buildingty != null and m_buildingty != ''">BUILDING_TY = #{m_buildingty},</if>
+			<if test="m_buildingnm != null and m_buildingnm != ''">BUILDING_NM = #{m_buildingnm},</if>
+			<if test="m_businessty != null and m_businessty != ''">BUSINESS_TY = #{m_businessty},</if>
+			<if test="m_businessnm != null and m_businessnm != ''">BUSINESS_NM = #{m_businessnm},</if>
+			<if test="m_dummy != null and m_dummy != ''">DUMMY = #{m_dummy},</if>
+			<if test="m_moid != null and m_moid != ''">MOID = #{m_moid},</if>
+			MODATE = GETDATE()
+		</set>
+		<where>
+			AND CUST_CD = #{r_custcd}
+		</where>
+	</update>
+	
+	<update id="upByArr" parameterType="hashmap">
+		UPDATE O_CUSTOMER CU
+		<set>
+			<if test="m_custcd != null and m_custcd != ''">CUST_CD = #{m_custcd},</if>
+			<if test="m_custnm != null and m_custnm != ''">CUST_NM = #{m_custnm},</if>
+			<if test="m_salesrepcd != null and m_salesrepcd != ''">SALESREP_CD = #{m_salesrepcd},</if>
+			<if test="m_salesrepnm != null and m_salesrepnm != ''">SALESREP_NM = #{m_salesrepnm},</if>
+			<if test="m_teamcd != null and m_teamcd != ''">TEAM_CD = #{m_teamcd},</if>
+			<if test="m_teamnm != null and m_teamnm != ''">TEAM_NM = #{m_teamnm},</if>
+			<if test="m_taxid != null and m_taxid != ''">TAX_ID = #{m_taxid},</if>
+			<if test="m_mailingnm != null and m_mailingnm != ''">MAILING_NM = #{m_mailingnm},</if>
+			<if test="m_add1 != null and m_add1 != ''">ADD1 = #{m_add1},</if>
+			<if test="m_add2 != null and m_add2 != ''">ADD2 = #{m_add2},</if>
+			<if test="m_add3 != null and m_add3 != ''">ADD3 = #{m_add3},</if>
+			<if test="m_add4 != null and m_add4 != ''">ADD4 = #{m_add4},</if>
+			<if test="m_zipcd != null and m_zipcd != ''">ZIP_CD = #{m_zipcd},</if>
+			<if test="m_buildingty != null and m_buildingty != ''">BUILDING_TY = #{m_buildingty},</if>
+			<if test="m_buildingnm != null and m_buildingnm != ''">BUILDING_NM = #{m_buildingnm},</if>
+			<if test="m_businessty != null and m_businessty != ''">BUSINESS_TY = #{m_businessty},</if>
+			<if test="m_businessnm != null and m_businessnm != ''">BUSINESS_NM = #{m_businessnm},</if>
+			<if test="m_dummy != null and m_dummy != ''">DUMMY = #{m_dummy},</if>
+			<if test="m_moid != null and m_moid != ''">MOID = #{m_moid},</if>
+			MODATE = GETDATE()
+		</set>
+		<where>
+			AND CUST_CD IN <foreach collection="ri_custcd" item="custcd" separator="," open="(" close=")">#{custcd}</foreach>
+		</where>
+	</update>
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			CU.*, US.USER_NM, US.AUTHORITY, US.USER_FILE, US.CELL_NO, US.USER_POSITION
+			, (SELECT COUNT(*) FROM O_USER WHERE CUST_CD = CU.CUST_CD AND AUTHORITY = 'CO') AS CUSTOMER_USER_CNT
+ 			, (SELECT COUNT(*) FROM O_USER WHERE CUST_CD = CU.CUST_CD AND AUTHORITY = 'CT') AS SHIPTO_USER_CNT
+			, (SELECT COUNT(*) FROM O_SHIPTO WHERE CUST_CD = CU.CUST_CD) AS SHIPTO_CNT
+			, US2.USER_NM AS CSUSER_NM
+			, US2.TEL_NO AS CSUSER_TEL
+			, US2.CELL_NO AS CSUSER_CELL
+			, US2.USER_FILE AS CSUSER_FILE
+			, US2.USER_POSITION AS CSUSER_POSITION
+		FROM O_CUSTOMER CU
+			LEFT JOIN O_USER US ON CU.SALESREP_CD = US.USERID
+			LEFT JOIN O_CSSALESMAP CSM ON CU.SALESREP_CD = CSM.SALESUSERID AND CSM.FIXEDYN='Y' <!-- CS USER를 가져오기 위한 -->
+    		LEFT JOIN O_USER US2 ON CSM.CSUSERID = US2.USERID
+		<where>
+			<if test="r_custcd != null and r_custcd != ''">AND CU.CUST_CD = #{r_custcd}</if>
+			<if test="rl_custcd != null and rl_custcd != '' ">AND CU.CUST_CD LIKE '%' + #{rl_custcd} + '%'</if>
+			<if test="r_custnm != null and r_custnm != ''">AND CU.CUST_NM = #{r_custnm}</if>
+			<if test="rl_custnm != null and rl_custnm != '' ">AND CU.CUST_NM LIKE '%' + #{rl_custnm} + '%'</if>
+			<if test="r_salesrepcd != null and r_salesrepcd != ''">AND SALESREP_CD = #{r_salesrepcd}</if>
+			<if test="rl_salesrepcd != null and rl_salesrepcd != '' ">AND SALESREP_CD LIKE '%' + #{rl_salesrepcd} + '%'</if>
+			<if test="r_salesrepnm != null and r_salesrepnm != ''">AND SALESREP_NM = #{r_salesrepnm}</if>
+			<if test="rl_salesrepnm != null and rl_salesrepnm != '' ">AND SALESREP_NM LIKE '%' + #{rl_salesrepnm} + '%'</if>
+			<if test="r_teamcd != null and r_teamcd != ''">AND TEAM_CD = #{r_teamcd}</if>
+			<if test="rl_teamcd != null and rl_teamcd != '' ">AND TEAM_CD LIKE '%' + #{rl_teamcd} + '%'</if>
+			<if test="r_teamnm != null and r_teamnm != ''">AND TEAM_NM = #{r_teamnm}</if>
+			<if test="rl_teamnm != null and rl_teamnm != '' ">AND TEAM_NM LIKE '%' + #{rl_teamnm} + '%'</if>
+			<if test="r_taxid != null and r_taxid != ''">AND TAX_ID = #{r_taxid}</if>
+			<if test="rl_taxid != null and rl_taxid != '' ">AND TAX_ID LIKE '%' + #{rl_taxid} + '%'</if>
+			<if test="r_mailingnm != null and r_mailingnm != ''">AND MAILING_NM = #{r_mailingnm}</if>
+			<if test="rl_mailingnm != null and rl_mailingnm != '' ">AND MAILING_NM LIKE '%' + #{rl_mailingnm} + '%'</if>
+			<if test="r_add1 != null and r_add1 != ''">AND ADD1 = #{r_add1}</if>
+			<if test="rl_add1 != null and rl_add1 != '' ">AND ADD1 LIKE '%' + #{rl_add1} + '%'</if>
+			<if test="r_add2 != null and r_add2 != ''">AND ADD2 = #{r_add2}</if>
+			<if test="rl_add2 != null and rl_add2 != '' ">AND ADD2 LIKE '%' + #{rl_add2} + '%'</if>
+			<if test="r_add3 != null and r_add3 != ''">AND ADD3 = #{r_add3}</if>
+			<if test="rl_add3 != null and rl_add3 != '' ">AND ADD3 LIKE '%' + #{rl_add3} + '%'</if>
+			<if test="r_add4 != null and r_add4 != ''">AND ADD4 = #{r_add4}</if>
+			<if test="rl_add4 != null and rl_add4 != '' ">AND ADD4 LIKE '%' + #{rl_add4} + '%'</if>
+			<if test="r_zipcd != null and r_zipcd != ''">AND ZIP_CD = #{r_zipcd}</if>
+			<if test="rl_zipcd != null and rl_zipcd != '' ">AND ZIP_CD LIKE '%' + #{rl_zipcd} + '%'</if>
+			<if test="r_buildingty != null and r_buildingty != ''">AND BUILDING_TY = #{r_buildingty}</if>
+			<if test="rl_buildingty != null and rl_buildingty != '' ">AND BUILDING_TY LIKE '%' + #{rl_buildingty} + '%'</if>
+			<if test="r_buildingnm != null and r_buildingnm != ''">AND BUILDING_NM = #{r_buildingnm}</if>
+			<if test="rl_buildingnm != null and rl_buildingnm != '' ">AND BUILDING_NM LIKE '%' + #{rl_buildingnm} + '%'</if>
+			<if test="r_businessty != null and r_businessty != ''">AND BUSINESS_TY = #{r_businessty}</if>
+			<if test="rl_businessty != null and rl_businessty != '' ">AND BUSINESS_TY LIKE '%' + #{rl_businessty} + '%'</if>
+			<if test="r_businessnm != null and r_businessnm != ''">AND BUSINESS_NM = #{r_businessnm}</if>
+			<if test="rl_businessnm != null and rl_businessnm != '' ">AND BUSINESS_NM LIKE '%' + #{rl_businessnm} + '%'</if>
+			<if test="r_dummy != null and r_dummy != ''">AND DUMMY = #{r_dummy}</if>
+			<if test="rl_dummy != null and rl_dummy != '' ">AND DUMMY LIKE '%' + #{rl_dummy} + '%'</if>
+			<if test="ri_custcd != null">
+				AND CUST_CD IN <foreach collection="ri_custcd" item="custcd" separator="," open="(" close=")">#{custcd}</foreach>
+			</if>
+			
+			<!-- 관리자 권한에 따른 조건절 -->
+ 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+ 				<if test='"AD".equals(r_adminauthority)'>
+ 				</if>
+ 				<if test='"CS".equals(r_adminauthority)'>
+ 					AND CU.SALESREP_CD IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+ 				</if>
+ 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+ 					<if test='"SH".equals(r_adminauthority)'>
+ 						AND CU.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SM".equals(r_adminauthority)'>
+ 						AND CU.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SR".equals(r_adminauthority)'>
+ 						AND CU.SALESREP_CD = #{r_adminuserid}
+ 					</if>
+ 				</if>
+ 				<if test='"MK".equals(r_adminauthority)'>
+ 				</if>
+ 			</if>
+			
+		</where>
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) 
+		FROM O_CUSTOMER CU
+			LEFT JOIN O_USER US ON CU.SALESREP_CD = US.USERID
+		<where>
+			<if test="r_custcd != null and r_custcd != ''">AND CUST_CD = #{r_custcd}</if>
+			<if test="rl_custcd != null and rl_custcd != '' ">AND CU.CUST_CD LIKE '%' + #{rl_custcd} + '%'</if>
+			<if test="r_custnm != null and r_custnm != ''">AND CUST_NM = #{r_custnm}</if>
+			<if test="rl_custnm != null and rl_custnm != '' ">AND CUST_NM LIKE '%' + #{rl_custnm} + '%'</if>
+			<if test="r_salesrepcd != null and r_salesrepcd != ''">AND SALESREP_CD = #{r_salesrepcd}</if>
+			<if test="rl_salesrepcd != null and rl_salesrepcd != '' ">AND SALESREP_CD LIKE '%' + #{rl_salesrepcd} + '%'</if>
+			<if test="r_salesrepnm != null and r_salesrepnm != ''">AND SALESREP_NM = #{r_salesrepnm}</if>
+			<if test="rl_salesrepnm != null and rl_salesrepnm != '' ">AND SALESREP_NM LIKE '%' + #{rl_salesrepnm} + '%'</if>
+			<if test="rl_salesrepnm2 != null and rl_salesrepnm2 != '' ">AND US.USER_NM LIKE '%' + #{rl_salesrepnm2} + '%'</if>
+			<if test="r_teamcd != null and r_teamcd != ''">AND TEAM_CD = #{r_teamcd}</if>
+			<if test="rl_teamcd != null and rl_teamcd != '' ">AND TEAM_CD LIKE '%' + #{rl_teamcd} + '%'</if>
+			<if test="r_teamnm != null and r_teamnm != ''">AND TEAM_NM = #{r_teamnm}</if>
+			<if test="rl_teamnm != null and rl_teamnm != '' ">AND TEAM_NM LIKE '%' + #{rl_teamnm} + '%'</if>
+			<if test="r_taxid != null and r_taxid != ''">AND TAX_ID = #{r_taxid}</if>
+			<if test="rl_taxid != null and rl_taxid != '' ">AND TAX_ID LIKE '%' + #{rl_taxid} + '%'</if>
+			<if test="r_mailingnm != null and r_mailingnm != ''">AND MAILING_NM = #{r_mailingnm}</if>
+			<if test="rl_mailingnm != null and rl_mailingnm != '' ">AND MAILING_NM LIKE '%' + #{rl_mailingnm} + '%'</if>
+			<if test="r_add1 != null and r_add1 != ''">AND ADD1 = #{r_add1}</if>
+			<if test="rl_add1 != null and rl_add1 != '' ">AND ADD1 LIKE '%' + #{rl_add1} + '%'</if>
+			<if test="r_add2 != null and r_add2 != ''">AND ADD2 = #{r_add2}</if>
+			<if test="rl_add2 != null and rl_add2 != '' ">AND ADD2 LIKE '%' + #{rl_add2} + '%'</if>
+			<if test="r_add3 != null and r_add3 != ''">AND ADD3 = #{r_add3}</if>
+			<if test="rl_add3 != null and rl_add3 != '' ">AND ADD3 LIKE '%' + #{rl_add3} + '%'</if>
+			<if test="r_add4 != null and r_add4 != ''">AND ADD4 = #{r_add4}</if>
+			<if test="rl_add4 != null and rl_add4 != '' ">AND ADD4 LIKE '%' + #{rl_add4} + '%'</if>
+			<if test="r_zipcd != null and r_zipcd != ''">AND ZIP_CD = #{r_zipcd}</if>
+			<if test="rl_zipcd != null and rl_zipcd != '' ">AND ZIP_CD LIKE '%' + #{rl_zipcd} + '%'</if>
+			<if test="r_buildingty != null and r_buildingty != ''">AND BUILDING_TY = #{r_buildingty}</if>
+			<if test="rl_buildingty != null and rl_buildingty != '' ">AND BUILDING_TY LIKE '%' + #{rl_buildingty} + '%'</if>
+			<if test="r_buildingnm != null and r_buildingnm != ''">AND BUILDING_NM = #{r_buildingnm}</if>
+			<if test="rl_buildingnm != null and rl_buildingnm != '' ">AND BUILDING_NM LIKE '%' + #{rl_buildingnm} + '%'</if>
+			<if test="r_businessty != null and r_businessty != ''">AND BUSINESS_TY = #{r_businessty}</if>
+			<if test="rl_businessty != null and rl_businessty != '' ">AND BUSINESS_TY LIKE '%' + #{rl_businessty} + '%'</if>
+			<if test="r_businessnm != null and r_businessnm != ''">AND BUSINESS_NM = #{r_businessnm}</if>
+			<if test="rl_businessnm != null and rl_businessnm != '' ">AND BUSINESS_NM LIKE '%' + #{rl_businessnm} + '%'</if>
+			<if test="r_dummy != null and r_dummy != ''">AND DUMMY = #{r_dummy}</if>
+			<if test="rl_dummy != null and rl_dummy != '' ">AND DUMMY LIKE '%' + #{rl_dummy} + '%'</if>
+			<if test="ri_custcd != null">
+				AND CUST_CD IN <foreach collection="ri_custcd" item="custcd" separator="," open="(" close=")">#{custcd}</foreach>
+			</if>
+			<if test="r_salesrepcdyn != null and r_salesrepcdyn != '' ">AND SALESREP_CD = #{r_salesrepcdyn}</if>
+			<if test="rn_salesrepcdyn != null and rn_salesrepcdyn != '' ">AND SALESREP_CD != #{rn_salesrepcdyn}</if>
+			
+			<!-- 관리자 권한에 따른 조건절 -->
+ 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+ 				<if test='"AD".equals(r_adminauthority)'>
+ 				</if>
+ 				<if test='"CS".equals(r_adminauthority)'>
+ 					AND CU.SALESREP_CD IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+ 				</if>
+ 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+ 					<if test='"SH".equals(r_adminauthority)'>
+ 						AND CU.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SM".equals(r_adminauthority)'>
+ 						AND CU.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+ 					</if>
+ 					<if test='"SR".equals(r_adminauthority)'>
+ 						AND CU.SALESREP_CD = #{r_adminuserid}
+ 					</if>
+ 				</if>
+ 				<if test='"MK".equals(r_adminauthority)'>
+ 				</if>
+ 			</if>
+ 			
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT 
+			ROW_NUMBER() OVER(
+			<choose>
+				<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+				<otherwise>ORDER BY (SELECT 1)</otherwise>
+			</choose>
+			) AS ROWNUM
+			, XX.* FROM (
+			SELECT CU.*, SUS.USER_NM AS SALESREP_NM2, SUS.AUTHORITY
+				, (SELECT COUNT(*) FROM O_USER WHERE CUST_CD = CU.CUST_CD AND AUTHORITY = 'CO') AS CUSTOMER_USER_CNT
+	 			, (SELECT COUNT(*) FROM O_USER WHERE CUST_CD = CU.CUST_CD AND AUTHORITY = 'CT') AS SHIPTO_USER_CNT
+				, (SELECT COUNT(*) FROM O_SHIPTO WHERE CUST_CD = CU.CUST_CD) AS SHIPTO_CNT
+				, (SELECT USER_EMAIL FROM O_USER WHERE USERID = CU.CUST_CD) AS CUST_MAIN_EMAIL
+			FROM O_CUSTOMER CU
+				LEFT JOIN O_USER SUS ON CU.SALESREP_CD = SUS.USERID
+			<where>
+				<if test="r_custcd != null and r_custcd != ''">AND CUST_CD = #{r_custcd}</if>
+				<if test="rl_custcd != null and rl_custcd != '' ">AND CU.CUST_CD LIKE '%' + #{rl_custcd} + '%'</if>
+				<if test="r_custnm != null and r_custnm != ''">AND CUST_NM = #{r_custnm}</if>
+				<if test="rl_custnm != null and rl_custnm != '' ">AND CUST_NM LIKE '%' + #{rl_custnm} + '%'</if>
+				<if test="r_salesrepcd != null and r_salesrepcd != ''">AND SALESREP_CD = #{r_salesrepcd}</if>
+				<if test="rl_salesrepcd != null and rl_salesrepcd != '' ">AND SALESREP_CD LIKE '%' + #{rl_salesrepcd} + '%'</if>
+				<if test="r_salesrepnm != null and r_salesrepnm != ''">AND SALESREP_NM = #{r_salesrepnm}</if>
+				<if test="rl_salesrepnm != null and rl_salesrepnm != '' ">AND SALESREP_NM LIKE '%' + #{rl_salesrepnm} + '%'</if>
+				<if test="rl_salesrepnm2 != null and rl_salesrepnm2 != '' ">AND SUS.USER_NM LIKE '%' + #{rl_salesrepnm2} + '%'</if>
+				<if test="r_teamcd != null and r_teamcd != ''">AND TEAM_CD = #{r_teamcd}</if>
+				<if test="rl_teamcd != null and rl_teamcd != '' ">AND TEAM_CD LIKE '%' + #{rl_teamcd} + '%'</if>
+				<if test="r_teamnm != null and r_teamnm != ''">AND TEAM_NM = #{r_teamnm}</if>
+				<if test="rl_teamnm != null and rl_teamnm != '' ">AND TEAM_NM LIKE '%' + #{rl_teamnm} + '%'</if>
+				<if test="r_taxid != null and r_taxid != ''">AND TAX_ID = #{r_taxid}</if>
+				<if test="rl_taxid != null and rl_taxid != '' ">AND TAX_ID LIKE '%' + #{rl_taxid} + '%'</if>
+				<if test="r_mailingnm != null and r_mailingnm != ''">AND MAILING_NM = #{r_mailingnm}</if>
+				<if test="rl_mailingnm != null and rl_mailingnm != '' ">AND MAILING_NM LIKE '%' + #{rl_mailingnm} + '%'</if>
+				<if test="r_add1 != null and r_add1 != ''">AND ADD1 = #{r_add1}</if>
+				<if test="rl_add1 != null and rl_add1 != '' ">AND ADD1 LIKE '%' + #{rl_add1} + '%'</if>
+				<if test="r_add2 != null and r_add2 != ''">AND ADD2 = #{r_add2}</if>
+				<if test="rl_add2 != null and rl_add2 != '' ">AND ADD2 LIKE '%' + #{rl_add2} + '%'</if>
+				<if test="r_add3 != null and r_add3 != ''">AND ADD3 = #{r_add3}</if>
+				<if test="rl_add3 != null and rl_add3 != '' ">AND ADD3 LIKE '%' + #{rl_add3} + '%'</if>
+				<if test="r_add4 != null and r_add4 != ''">AND ADD4 = #{r_add4}</if>
+				<if test="rl_add4 != null and rl_add4 != '' ">AND ADD4 LIKE '%' + #{rl_add4} + '%'</if>
+				<if test="r_zipcd != null and r_zipcd != ''">AND ZIP_CD = #{r_zipcd}</if>
+				<if test="rl_zipcd != null and rl_zipcd != '' ">AND ZIP_CD LIKE '%' + #{rl_zipcd} + '%'</if>
+				<if test="r_buildingty != null and r_buildingty != ''">AND BUILDING_TY = #{r_buildingty}</if>
+				<if test="rl_buildingty != null and rl_buildingty != '' ">AND BUILDING_TY LIKE '%' + #{rl_buildingty} + '%'</if>
+				<if test="r_buildingnm != null and r_buildingnm != ''">AND BUILDING_NM = #{r_buildingnm}</if>
+				<if test="rl_buildingnm != null and rl_buildingnm != '' ">AND BUILDING_NM LIKE '%' + #{rl_buildingnm} + '%'</if>
+				<if test="r_businessty != null and r_businessty != ''">AND BUSINESS_TY = #{r_businessty}</if>
+				<if test="rl_businessty != null and rl_businessty != '' ">AND BUSINESS_TY LIKE '%' + #{rl_businessty} + '%'</if>
+				<if test="r_businessnm != null and r_businessnm != ''">AND BUSINESS_NM = #{r_businessnm}</if>
+				<if test="rl_businessnm != null and rl_businessnm != '' ">AND BUSINESS_NM LIKE '%' + #{rl_businessnm} + '%'</if>
+				<if test="r_dummy != null and r_dummy != ''">AND DUMMY = #{r_dummy}</if>
+				<if test="rl_dummy != null and rl_dummy != '' ">AND DUMMY LIKE '%' + #{rl_dummy} + '%'</if>
+				<if test="ri_custcd != null">
+					AND CUST_CD IN <foreach collection="ri_custcd" item="custcd" separator="," open="(" close=")">#{custcd}</foreach>
+				</if>
+				<if test="r_salesrepcdyn != null and r_salesrepcdyn != '' ">AND SALESREP_CD = #{r_salesrepcdyn}</if>
+				<if test="rn_salesrepcdyn != null and rn_salesrepcdyn != '' ">AND SALESREP_CD != #{rn_salesrepcdyn}</if>
+				
+				<!-- 관리자 권한에 따른 조건절 -->
+	 			<if test="r_adminauthority != null and r_adminauthority != '' ">
+	 				<if test='"AD".equals(r_adminauthority)'>
+	 				</if>
+	 				<if test='"CS".equals(r_adminauthority)'>
+	 					AND CU.SALESREP_CD IN (SELECT SALESUSERID FROM O_CSSALESMAP WHERE CSUSERID = #{r_adminuserid})
+	 				</if>
+	 				<if test='"SH".equals(r_adminauthority) or "SM".equals(r_adminauthority) or "SR".equals(r_adminauthority)'>
+	 					<if test='"SH".equals(r_adminauthority)'>
+	 						AND CU.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE2 = #{r_adminuserid})
+	 					</if>
+	 					<if test='"SM".equals(r_adminauthority)'>
+	 						AND CU.SALESREP_CD IN (SELECT USERID FROM O_USER WHERE USER_CATE3 = #{r_adminuserid})
+	 					</if>
+	 					<if test='"SR".equals(r_adminauthority)'>
+	 						AND CU.SALESREP_CD = #{r_adminuserid}
+	 					</if>
+	 				</if>
+	 				<if test='"MK".equals(r_adminauthority)'>
+	 				</if>
+	 			</if>
+			</where>
+			) XX 
+		) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 2024-10-15 HSG 주석 해제 -->
+	<select id="getOneViewSupplier" parameterType="hashmap" resultType="hashmap">
+		SELECT VS.* 
+		FROM V_SUPPLIER VS
+		<where>
+			<if test="r_custcd != null and r_custcd != ''">AND VS.CUST_CD = #{r_custcd}</if>
+		</where>
+	</select>
+
+	
+
+	<!-- ★★ 2025-06-05 hsg 주문 메일 알람 ★★ 2025-07-30 XML : 주문 메일 알람 목록 전체 개수 => orderEmailAlarmCnt -->
+	<select id="orderEmailAlarmCnt" parameterType="hashmap" resultType="int">
+        WITH CUST AS (
+                        SELECT
+                               CU.CUST_CD                             <!-- 거래처 코드 (PK) -->
+                             , CU.CUST_NM
+                             , U2.USER_EMAIL AS CUST_MAIN_EMAIL       <!-- 담당자 이메일 -->
+                             , SUS.USER_EMAIL AS SALESREP_EMAIL       <!-- 영업 담당자 이메일 -->
+                          FROM O_CUSTOMER CU
+                               LEFT JOIN O_USER SUS                   <!-- CU.SALESREP_CD ↔ SUS.USERID (영업사원 정보) -->
+                                      ON CU.SALESREP_CD = SUS.USERID
+                               LEFT JOIN O_USER U2                    <!-- CU.CUST_CD ↔ U2.USERID (대표 담당자 정보) -->
+                                      ON CU.CUST_CD = U2.USERID
+                        <where>
+                            <if test="r_custcd != null and r_custcd != ''">AND CU.CUST_CD = #{r_custcd}</if>
+                            <if test="r_custnm != null and r_custnm != ''">AND CU.CUST_NM LIKE '%' + #{r_custnm} + '%'</if>
+                        </where>
+                     )
+        SELECT COUNT(*)
+          FROM CUST CU
+               LEFT OUTER JOIN O_CUSTOMER_MAILINFO CM
+                            ON CU.CUST_CD = CM.CUST_CD
+	</select>
+
+
+
+	<!-- ★★ 2025-06-05 hsg 주문 메일 알람 ★★ 2025-07-30 XML : 주문 메일 알람 목록 => orderEmailAlarmList -->
+	<select id="orderEmailAlarmList" parameterType="hashmap" resultType="hashmap">
+        WITH CUST AS (
+                        SELECT
+                               CU.CUST_CD                             <!-- 거래처 코드 (PK) -->
+                             , CU.CUST_NM
+                             , U2.USER_EMAIL AS CUST_MAIN_EMAIL       <!-- 담당자 이메일 -->
+                             , SUS.USER_NM AS SALESREP_NM             <!-- 영업 담당자 -->
+                             , SUS.USER_EMAIL AS SALESREP_EMAIL       <!-- 영업 담당자 이메일 -->
+                          FROM O_CUSTOMER CU
+                               LEFT JOIN O_USER SUS                   <!-- CU.SALESREP_CD ↔ SUS.USERID (영업사원 정보) -->
+                                      ON CU.SALESREP_CD = SUS.USERID
+                               LEFT JOIN O_USER U2                    <!-- CU.CUST_CD ↔ U2.USERID (대표 담당자 정보) -->
+                                      ON CU.CUST_CD = U2.USERID
+                        <where>
+                            <if test="rl_custcd != null and rl_custcd != ''">AND CU.CUST_CD = #{rl_custcd}</if>
+                            <if test="rl_custnm != null and rl_custnm != ''">AND CU.CUST_NM LIKE '%' + #{rl_custnm} + '%'</if>
+                        </where>
+                      )
+        SELECT *
+          FROM (
+                  SELECT
+                         ROW_NUMBER() OVER(
+                                <choose>
+                                    <when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+                                    <otherwise>ORDER BY (SELECT 1)</otherwise>
+                                </choose>
+                                            ) AS ROWNUM
+                       , XX.*
+                    FROM (
+                            SELECT CU.CUST_CD
+                                 , CU.CUST_NM
+                                 , ISNULL(CM.CUST_MAIN_EMAIL, CU.CUST_MAIN_EMAIL) AS CUST_MAIN_EMAIL
+                                 , ISNULL(CM.CUST_SENDMAIL_YN, 'N') AS CUST_SENDMAIL_YN
+                                 , CU.SALESREP_NM AS SALESREP_NM
+                                 , ISNULL(CM.SALESREP_EMAIL, CU.SALESREP_EMAIL) AS SALESREP_EMAIL
+                                 , ISNULL(CM.SALESREP_SENDMAIL_YN, 'N') AS SALESREP_SENDMAIL_YN
+                                 , CM.COMMENTS
+                              FROM CUST CU
+                                   LEFT OUTER JOIN O_CUSTOMER_MAILINFO CM
+                                                ON CU.CUST_CD = CM.CUST_CD
+                        <where>
+                            <if test="rl_salesrepnm != null and rl_salesrepnm != '' ">AND SALESREP_NM LIKE '%' + #{rl_salesrepnm} + '%'</if>
+                        </where>
+                          ) XX
+                ) S
+        <where>
+            <if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >
+                ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+            </if>
+        </where>
+	</select>
+
+
+
+
+
+
+    <!--
+      파라미터 설명 (parameterType은 VO/DTO로 대체 권장):
+        custCd                : String (PK)
+        custMainEmail         : String
+        custSendmailYn        : String ('Y'/'N')
+        salesrepEmail         : String
+        salesrepSendmailYn    : String ('Y'/'N')
+        comments              : String
+        inid                  : String
+        moid                  : String
+      날짜(INDATE/MODATE)는 서버시간(GETDATE)로 처리
+    -->
+    <update id="insertUpdateOrderEmailAlarm" parameterType="map">
+        <![CDATA[
+        MERGE dbo.O_CUSTOMER_MAILINFO AS T
+        USING (
+                 SELECT
+                        #{m_custCd}               AS CUST_CD
+                      , #{m_custMainEmail}        AS CUST_MAIN_EMAIL
+                      , #{m_custSendmailYn}       AS CUST_SENDMAIL_YN
+                      , #{m_salesrepEmail}        AS SALESREP_EMAIL
+                      , #{m_salesrepSendmailYn}   AS SALESREP_SENDMAIL_YN
+                      , #{m_comments}             AS COMMENTS
+                      , #{m_inid}                 AS INID
+                      , GETDATE()                 AS INDATE
+                      , #{m_moid}                 AS MOID
+                      , GETDATE()                 AS MODATE
+              ) AS S
+           ON T.CUST_CD = S.CUST_CD
+
+         WHEN MATCHED THEN
+              UPDATE SET
+                     CUST_MAIN_EMAIL       = S.CUST_MAIN_EMAIL
+                   , CUST_SENDMAIL_YN      = S.CUST_SENDMAIL_YN
+                   , SALESREP_EMAIL        = S.SALESREP_EMAIL
+                   , SALESREP_SENDMAIL_YN  = S.SALESREP_SENDMAIL_YN
+                   , COMMENTS              = S.COMMENTS
+                   , INID                  = S.MOID
+                   , INDATE                = S.MODATE
+
+         WHEN NOT MATCHED THEN
+              INSERT (
+                        CUST_CD
+                      , CUST_MAIN_EMAIL
+                      , CUST_SENDMAIL_YN
+                      , SALESREP_EMAIL
+                      , SALESREP_SENDMAIL_YN
+                      , COMMENTS
+                      , INID
+                      , INDATE
+                     )
+              VALUES (
+                        S.CUST_CD
+                      , S.CUST_MAIN_EMAIL
+                      , S.CUST_SENDMAIL_YN
+                      , S.SALESREP_EMAIL
+                      , S.SALESREP_SENDMAIL_YN
+                      , S.COMMENTS
+                      , S.INID
+                      , S.INDATE
+                     );
+        ]]>
+    </update>
+
+
+
+
+
+	
+</mapper>

@@ -1,0 +1,122 @@
+@charset "utf-8";
+
+input {
+	line-height: 1.4285;
+}
+select,
+select.form-control {
+	padding: 3px 5px 3px 15px !important;
+}
+
+.ui-jqgrid td input,
+.ui-jqgrid td select,
+.ui-jqgrid td textarea {
+	padding-top: 3px;
+}
+
+
+
+/**** Dropzone ****/
+
+.dropzone {
+	padding-bottom: 50px !important;
+}
+.dropzone .dz-message {
+	margin: 50px auto 40px !important;
+	width: 141px;
+	height: 82px;
+	background: url(../images/admin/upload-ie9.png) no-repeat;
+}
+.dropzone .dz-message span {
+	display: none;
+}
+.dropzone .dz-fallback {
+	float: left;
+	padding: 3px 50px 113px;
+	width: 100%;
+	background: #f1f3f7;
+}
+.dropzone .dz-fallback input {
+	float: left;
+	height: 25px;
+}
+.dropzone .dz-fallback input[type="file"] {
+	width: 77%;
+}
+.dropzone .dz-fallback input[type="submit"] {
+	margin-left: 6px;
+	width: 67px;
+}
+.dropzone .fallback {
+	text-align: center;
+}
+.dropzone .fallback .dropify,
+.dropzone .fallback .dropify-btn {
+	display: inline-block;
+}
+.dropzone .fallback .dropify-btn {
+	display: inline-block !important;
+	padding: 2px 10px;
+	height: 25px;
+}
+
+@media all and (min-width: 1280px){
+	.dropzone .dz-fallback input[type="file"] {
+		width: 77%;
+	}
+}
+@media all and (min-width: 1440px){
+	.dropzone .dz-fallback input[type="file"] {
+		width: 83%;
+	}
+}
+@media all and (min-width: 1680px){
+	.dropzone .dz-fallback {
+		padding-right: 100px;
+		padding-left: 100px;
+	}
+	.dropzone .dz-fallback input[type="file"] {
+		width: 84%;
+	}
+}
+@media all and (min-width: 1920px){
+	.dropzone .dz-fallback input[type="file"] {
+		width: 87%;
+	}
+}
+
+
+
+/**** Dropify ****/
+
+input[type='file'].dropify {
+	display: inline-block;
+/* 	width: 99.8%; */
+	height: 25px;
+	vertical-align: top;
+	float: left;
+}
+.dropify-file {
+	display: none !important;
+}
+.dropify-file.hide {
+	display: inline-block !important;
+}
+.search-c .dropify-file.hide {
+	width: 30%;
+	height: 25px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.btnList input[type='file'].dropify {
+	float: left;
+	height: 34px;
+}
+
+@media all and (max-width: 1280px) {
+	input[type='file'].dropify {
+/* 		width: 99.6% !important; */
+	}
+}

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.menu">
+	<insert id="inRoleMenu" parameterType="hashmap">
+		INSERT INTO ROLEMENU (
+			RM_RLSEQ, RM_MNSEQ, RM_AUTH
+		)
+		VALUES (
+			#{m_rmrlseq, jdbcType=NUMERIC}, #{m_rmmnseq, jdbcType=NUMERIC}, #{m_rmauth, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<insert id="inRoleMenuBase" parameterType="hashmap">
+		INSERT INTO ROLEMENU (
+			RM_RLSEQ, RM_MNSEQ, RM_AUTH
+		)
+		SELECT #{m_rmrlseq}, MN_SEQ, 'W' 
+		FROM MENU 
+		WHERE MN_USE = 'Y' AND MN_BASE = 'Y' AND MN_LINK != '#'
+	</insert>
+	
+	<delete id="delRoleMenu" parameterType="hashmap">
+		DELETE FROM ROLEMENU 
+		<where>
+			AND RM_RLSEQ = #{r_rmrlseq}
+		</where>
+	</delete>
+	
+	<select id="getRoleOne" parameterType="hashmap" resultType="hashmap">
+		SELECT RL.*, DP.DP_NAME, DP.DP_CPCODE 
+		FROM ROLE RL
+			LEFT JOIN DEPARTMENT DP ON RL.RL_CODE = DP.DP_CODE
+		<where>
+			AND RL_CODE = #{r_rlcode}
+		</where>
+	</select>
+	
+	<select id="getMenuListForAuthority" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			MN.*, RM.RM_AUTH
+			, (
+				SELECT COUNT(*) FROM MENU
+				<where>
+					AND MN_PARENT = MN.MN_SEQ
+					<if test="r_mnuse != null and r_mnuse != '' ">AND MN_USE = #{r_mnuse}</if>
+				</where> 
+			) CHILD_COUNT
+		FROM 
+			MENU MN 
+			LEFT JOIN ROLEMENU RM ON MN.MN_SEQ = RM.RM_MNSEQ AND RM.RM_RLSEQ = #{r_rmrlseq} 
+		<where>
+			<if test="r_mnuse != null and r_mnuse != '' ">AND MN_USE = #{r_mnuse}</if>
+			<if test="r_mnbase != null and r_mnbase != '' ">AND MN_BASE = #{r_mnbase}</if>
+		</where>
+		ORDER BY MN_SORT1, MN_DEPTH, MN_SORT2, MN_SORT3 ASC
+	</select>
+	
+	<select id="roleList" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM ROLE
+		<where>
+			<if test="r_rlviewyn != null and r_rlviewyn != '' ">AND RL_VIEWYN = #{r_rlviewyn}</if>
+		</where>
+		ORDER BY RL_SEQ ASC
+	</select>
+
+	<select id="roleMenuListForLogin" parameterType="hashmap" resultType="hashmap">
+		SELECT RM.RM_AUTH, RM.RM_MNSEQ 
+		FROM ROLE RL 
+			INNER JOIN ROLEMENU RM ON RL.RL_SEQ = RM.RM_RLSEQ 
+		<where>
+			AND RL_CODE = #{r_rlcode}
+		</where>
+		
+		UNION
+		
+		SELECT 'W', MN.MN_SEQ 
+		FROM MENU MN
+		<where>
+			AND MN_BASE = 'Y'
+		</where>
+	</select>
+	
+	<select id="roleMenuListForLoginBySystemAdmin" parameterType="hashmap" resultType="hashmap">
+		SELECT MN_SEQ AS RM_MNSEQ, 'W' AS RM_AUTH
+		FROM MENU  
+		<where>
+			MN_LINK != '#' AND NVL(MN_LINK, ' ') != ' '
+		</where>
+	</select>
+	
+	<select id="menuUrl" parameterType="hashmap" resultType="hashmap">
+		SELECT * 
+		FROM MENUURL
+		<where>
+			AND MU_URL = #{r_muurl}
+		</where>
+	</select>
+</mapper>
+

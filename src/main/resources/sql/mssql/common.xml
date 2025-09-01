@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.common">
+	
+	<select id="getHolyDayList" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT 
+			ROW_NUMBER() OVER(
+				<choose>
+					<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+					<otherwise>ORDER BY (SELECT 1)</otherwise>
+				</choose>
+				) AS ROWNUM
+			, XX.* 
+		FROM (
+			SELECT YYYYMMDD
+			FROM O_DATE
+			<where>
+				AND HOLIDAY_YN = 'Y'
+				<if test="r_yyyymmdd != null and r_yyyymmdd != '' ">AND YYYYMMDD <![CDATA[>=]]> #{r_yyyymmdd}</if>
+			</where>
+			) XX 
+		) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getOrderWeekList" parameterType="hashmap" resultType="hashmap">
+		SELECT UDC.DRKY, UDC.DRDL01
+		FROM O_F0005 UDC
+		ORDER BY UDC.DRKY	
+	</select>
+</mapper>

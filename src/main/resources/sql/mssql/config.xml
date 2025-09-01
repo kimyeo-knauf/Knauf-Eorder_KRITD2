@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.config">
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (
+			SELECT ROW_NUMBER() OVER(
+			<choose>
+				<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+				<otherwise>ORDER BY (SELECT 1)</otherwise>
+			</choose>
+			) AS ROWNUM
+			, XX.* 
+		FROM (
+			SELECT * FROM CONFIG 
+			<where>
+				<if test="r_cfid != null and r_cfid != ''">AND CF_ID = #{r_cfid}</if>
+				<if test="ri_cfid != null and ri_cfid != ''">
+					AND CF_ID IN <foreach collection="ri_cfid" item="cf_id" separator="," open="(" close=")">#{cf_id}</foreach>
+				</if>
+			</where>
+			) XX  
+		) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>	
+	</select>
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM CONFIG 
+		<where>
+			CF_ID = #{r_cfid}
+		</where>	
+	</select>
+	
+	<update id="up" parameterType="hashmap">
+   		UPDATE CONFIG
+	   	<set>
+	   		CF_VALUE= #{m_cfvalue}
+	   	</set>
+	   	<where>
+	   		AND CF_id= #{r_cfid}
+	   	</where>
+	</update>
+	
+</mapper>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.o_weather_forecast">
+
+	
+	<select id="getWeatherMidLandAreaList" parameterType="hashmap" resultType="com.limenets.eorder.dto.WeatherDto">
+        <!-- SELECT A.AREA_NM, A.AREA_CD FROM O_WEATHER_MIDLAND A WHERE CHARINDEX(A.AREA_NM, #{addr}) > 0 -->
+        SELECT	TOP 1
+				A.AREA_NM, A.AREA_CD
+		  FROM	O_WEATHER_MIDLAND A
+		 WHERE	AREA_CD IN	(
+								SELECT
+										CASE
+											WHEN A.AREA_CD LIKE '%B%' THEN CONCAT(SUBSTRING(A.AREA_CD, 1, 3), '00000')
+											ELSE CONCAT(SUBSTRING(A.AREA_CD, 1, 4), '0000')
+										END AS AREA_CD
+								  FROM	O_WEATHER_MIDTA A
+								 WHERE	CHARINDEX(A.AREA_NM, #{addr}) > 0
+							)
+	</select>
+	
+	<select id="getWeatherMidTaAreaList" parameterType="hashmap" resultType="com.limenets.eorder.dto.WeatherDto">
+        SELECT A.AREA_NM, A.AREA_CD FROM O_WEATHER_MIDTA A WHERE CHARINDEX(A.AREA_NM, #{addr}) > 0
+	</select>
+
+
+	<select id="getWeatherMidAreaList" parameterType="hashmap" resultType="com.limenets.eorder.dto.WeatherDto">
+		SELECT	A.AREA_CD	AS MIDLAND_AREA_CD
+			  ,	A.AREA_NM	AS MIDLAND_AREA_NM
+			  ,	B.AREA_CD	AS MIDTA_AREA_CD
+			  ,	B.AREA_NM	AS MIDTA_AREA_NM
+		  FROM	(
+					SELECT	TOP 1
+							AREA_CD, AREA_NM
+					  FROM	O_WEATHER_MIDLAND
+					 WHERE	CHARINDEX(AREA_NM, #{addr}) > 0
+				) A
+				CROSS JOIN (
+								SELECT	TOP 1
+										AREA_CD, AREA_NM
+								  FROM	O_WEATHER_MIDTA
+								 WHERE	CHARINDEX(AREA_NM, #{addr}) > 0
+							) B
+	</select>
+
+
+
+    <!-- 주요도시 목록 조회 -->
+    <select id="selectAllCities" resultType="com.limenets.eorder.dto.WeatherForecastDto">
+<!-- 
+        SELECT
+                CID,
+                CITY,
+                NX,
+                NY
+          FROM  O_WEATHER_FORECAST_CITY
+         WHERE  USE_YN = 'Y'
+	 -->
+		SELECT
+	            A.CID,
+	            A.CITY,
+	            A.NX,
+	            A.NY,
+	            B.AREA_CD AS MIL_CD,
+	            C.AREA_CD AS MIT_CD
+		  FROM	O_WEATHER_FORECAST_CITY A
+				LEFT OUTER JOIN	O_WEATHER_MIDLAND B
+								ON	CHARINDEX(
+												B.AREA_NM
+											 ,	CASE WHEN A.CITY = '강원' THEN '강원 영동' ELSE A.CITY END
+											 ) > 0
+				LEFT OUTER JOIN	O_WEATHER_MIDTA C
+								ON	CHARINDEX(
+												C.AREA_NM
+											 ,	CASE WHEN A.CITY = '경기' THEN '수원' WHEN A.CITY = '강원' THEN '강릉' ELSE A.CITY END
+											 ) > 0
+		 WHERE	1 = 1
+		   AND	A.USE_YN = 'Y'
+ 		
+    </select>
+
+    <!-- 좌표 업데이트 (CID 기준) -->
+    <update id="updateCityCoords"  parameterType="com.limenets.eorder.dto.WeatherForecastDto">
+        UPDATE  O_WEATHER_FORECAST_CITY
+           SET  NX        = #{nx}
+              , NY        = #{ny}
+              , UPDATEID  = 'admin'
+              , UPDATE_DT = GETDATE()
+         WHERE  CID = #{cid}
+    </update>
+
+
+    <update id="mergeWeatherForecast" parameterType="com.limenets.eorder.dto.WeatherForecastDto">
+        MERGE INTO O_WEATHER_FORECAST_CITY_DETL AS target
+        USING (SELECT 
+                #{cid} AS CID,
+                #{weather_date} AS WEATHER_DATE
+              ) AS src
+        ON (target.CID = src.CID AND target.WEATHER_DATE = src.WEATHER_DATE)
+        WHEN MATCHED THEN 
+            UPDATE SET
+                DAY_OF_WEEK  = #{day_of_week},
+                AM_WEATHER   = #{am_weather},
+                PM_WEATHER   = #{pm_weather},
+                AM_TEMP      = #{am_temp},
+                PM_TEMP      = #{pm_temp},
+                AM_POP       = #{am_pop},
+                PM_POP       = #{pm_pop},
+                UPDATEID     = #{updateid},
+                UPDATE_DT    = GETDATE()
+        WHEN NOT MATCHED THEN
+            INSERT (CID, WEATHER_DATE, DAY_OF_WEEK, AM_WEATHER, PM_WEATHER, AM_TEMP, PM_TEMP, AM_POP, PM_POP, INSERTID, INSERT_DT)
+            VALUES (#{cid}, #{weather_date}, #{day_of_week}, #{am_weather}, #{pm_weather}, #{am_temp}, #{pm_temp}, #{am_pop}, #{pm_pop}, #{insertid}, GETDATE());
+    </update>
+
+
+    <select id="selectWeeklyForecasts" resultType="com.limenets.eorder.dto.WeatherForecastDto">
+		SELECT	A.CID
+			 ,	A.CITY
+			 ,	B.WEATHER_DATE
+			 ,	B.DAY_OF_WEEK
+			 ,	B.AM_WEATHER
+			 ,	B.PM_WEATHER
+			 ,	B.AM_TEMP
+			 ,	B.PM_TEMP
+			 ,	B.AM_POP
+			 ,	B.PM_POP
+		  FROM	O_WEATHER_FORECAST_CITY A
+				LEFT OUTER JOIN O_WEATHER_FORECAST_CITY_DETL B
+								ON A.CID = B.CID
+								AND	WEATHER_DATE BETWEEN CONVERT(date, GETDATE()) AND DATEADD(DAY, 6, CONVERT(date, GETDATE()))
+		 WHERE	A.USE_YN = 'Y'
+		   
+		 ORDER	BY
+				CID
+			,	WEATHER_DATE
+    </select>
+
+</mapper>

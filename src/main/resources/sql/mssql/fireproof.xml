@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.fireproof">
+	
+	<select id="getMaxKeycode" parameterType="hashmap" resultType="String">
+		SELECT 'FW'+ISNULL(FORMAT(CAST(SUBSTRING(ISNULL(MAX(KEYCODE),0),3, LEN(ISNULL(MAX(KEYCODE),0))) AS FLOAT)+1,'0000'), '') FROM O_FIREPROOFMASTER
+	</select>
+	
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO O_FireproofMaster (
+			KEYCODE
+			, FIREPROOFTYPE
+			, ACTIVE
+			, DESC1
+			, DESC2
+			, FIRETIME
+			, DISPLAYORDER
+			, CREATETIME
+			, CREATEUSER
+		) VALUES (
+			#{m_keycode}
+			, #{m_fireprooftype}
+			, #{m_active}
+			, #{m_desc1}
+			, #{m_desc2}
+			, #{m_firetime}
+			<if test="m_displayorder != '' ">
+			, #{m_displayorder}
+			</if>
+			<if test="m_displayorder == '' ">
+			<!-- 2024-11-06 hsg PlayStation4 오라클 문법인 nvl에서 mssql 문법인 isnull로 변경 -->
+			,(SELECT ISNULL(MAX(DISPLAYORDER),0)+1 FROM O_FIREPROOFMASTER)
+			</if>
+			, GETDATE()
+			, #{m_inid}
+		)
+	</insert>
+	
+	<update id="up" parameterType="hashmap">
+	<!-- 2024-11-28 hsg Tomstone Piledriver 업데이트 문에 테이블 별칭(FM) 삭제 -->
+		UPDATE O_FireproofMaster
+		<set>
+			<if test="m_fireprooftype != null and m_fireprooftype != ''">FIREPROOFTYPE = #{m_fireprooftype},</if>
+			<if test="m_active != null and m_active != ''">ACTIVE = #{m_active},</if>
+			<if test="m_desc1 != null and m_desc1 != ''">DESC1 = #{m_desc1},</if>
+			<if test="m_desc2 != null and m_desc2 != ''">DESC2 = #{m_desc2},</if>
+			<if test="m_firetime != null and m_firetime != ''">FIRETIME = #{m_firetime},</if>	
+			<if test="m_displayorder != null and m_displayorder != ''">DISPLAYORDER = #{m_displayorder},</if>
+			<if test="m_upid != null and m_upid != ''">UPDATEUSER = #{m_upid},</if>
+			UPDATETIME = GETDATE()
+		</set>
+		<where>
+			AND KEYCODE = #{m_keycode}
+		</where>
+	</update>
+	
+	<delete id="del" parameterType="hashmap">
+		DELETE O_FireproofMaster FM
+		 WHERE FM.KEYCODE = #{m_keycode}
+	</delete>
+	
+	<update id="upForFile" parameterType="hashmap">
+		UPDATE O_FireproofMaster FM
+		<set>
+			<if test="m_fileName != null and m_fileName != ''">FILENAME = #{m_fileName},</if>
+			<if test="m_fileType != null and m_fileType != ''">FILETYPE = #{m_fileType},</if>
+			<if test="m_upid != null and m_upid != ''">UPDATEUSER = #{m_upid},</if>
+			UPDATETIME = GETDATE()
+		</set>
+		<where>
+			AND KEYCODE = #{m_keycode}
+		</where>
+	</update> 
+	
+	<update id="upInfoForFile" parameterType="hashmap">
+		UPDATE O_FireproofMaster FM
+		<set>
+			<if test='r_delfile1 != null and "Y".equals(r_delfile1)'>FILENAME = NULL, FILETYPE = NULL,</if>
+			UPDATETIME = GETDATE()
+		</set>
+		<where>
+			AND KEYCODE = #{r_keycode}
+		</where>
+	</update>
+	
+	
+
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT FM.*, FM.FILENAME AS ITI_FILE1, CONVERT(VARCHAR(10), FM.CREATETIME, 120) AS CREATEDATE2
+		FROM O_FireproofMaster FM
+		WHERE KEYCODE = #{r_keycode}
+	</select>
+	
+	<select id="getFireProofCheck" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*)
+		FROM O_FireproofMaster FM
+		WHERE KEYCODE = #{m_keycode}
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM O_FireproofMaster
+		<where>
+			<if test="rl_fireproof != null and rl_fireproof != '' ">AND fireproofType LIKE '%' + #{rl_fireproof} + '%'</if>
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT 
+			ROW_NUMBER() OVER(
+			<choose>
+				<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+				<otherwise>ORDER BY (SELECT 1)</otherwise>
+			</choose>
+			) AS ROWNUM
+			, XX.* FROM (
+			SELECT FM.* 
+			FROM O_FireproofMaster FM
+			<where>
+				<if test="rl_fireproof != null and rl_fireproof != '' ">AND fireproofType LIKE '%' + #{rl_fireproof} + '%'</if>
+			</where>
+			) XX 
+		) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+	
+</mapper>

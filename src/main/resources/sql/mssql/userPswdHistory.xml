@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.userPswdHistory">
+	<insert id="in" parameterType="hashmap">
+		<!-- 2024-10-15 HSG 시퀀스 대신 MAX값으로 대체  -->
+		<selectKey keyProperty="uphSeq" resultType="long" order="BEFORE">
+    		SELECT MAX(UPH_SEQ)+1 FROM USERPSWDHISTORY;
+    	</selectKey>
+
+		INSERT INTO USERPSWDHISTORY (
+			UPH_SEQ, UPH_ID, UPH_PSWD, UPH_CODE, UPH_MSG, UPH_INID, UPH_INDATE
+		)
+		VALUES (
+		<!-- 2024-10-18 HSG 시퀀스 대신 MAX값으로 대체  -->
+			<!-- USQ_USERPSWDHISTORY.NEXTVAL -->
+<!-- 			NEST VALUE FOR USQ_USERPSWDHISTORY -->
+			#{uphSeq}
+			, #{m_uphid}
+			, dbo.UDF_SETPASSWORD(#{m_uphpswd})
+			, #{m_uphcode}
+			, #{m_uphmsg}
+			, #{m_uphinid}
+			, GETDATE()
+		)
+	</insert>
+	
+	<insert id="in2" parameterType="hashmap">
+		<!-- 2024-10-15 HSG 시퀀스 대신 MAX값으로 대체  -->
+		<selectKey keyProperty="uphSeq2" resultType="long" order="BEFORE">
+    		SELECT MAX(UPH_SEQ)+1 FROM USERPSWDHISTORY;
+    	</selectKey>
+
+		INSERT INTO USERPSWDHISTORY (
+			UPH_SEQ, UPH_ID, UPH_PSWD, UPH_CODE, UPH_MSG, UPH_INID, UPH_INDATE
+		)
+		VALUES (
+		<!-- 2024-10-18 HSG 시퀀스 대신 MAX값으로 대체  -->
+<!-- 			USQ_USERPSWDHISTORY.NEXTVAL -->
+			#{uphSeq}
+			, #{m_uphid}
+			, #{m_uphpswd}
+			, #{m_uphcode}
+			, #{m_uphmsg}
+			, #{m_uphinid}
+			, GETDATE()
+		)
+	</insert>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT 
+				ROW_NUMBER() OVER(
+				<choose>
+					<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+					<otherwise>ORDER BY (SELECT 1)</otherwise>
+				</choose>
+				) AS ROWNUM
+				, XX.* FROM (
+		
+		SELECT 
+			UPH.*
+			<if test="r_uphpswd_now != null and r_uphpswd_now != '' ">, dbo.UDF_SETPASSWORD(#{r_uphpswd_now}) AS NOW_PASSWORD_SECURITY</if>
+		FROM 
+			USERPSWDHISTORY UPH
+		<where>
+			<if test="r_uphid != null and r_uphid != '' ">AND UPH_ID = #{r_uphid}</if>
+			<if test="r_uphpswd != null and r_uphpswd != '' ">AND UPH_PSWD = dbo.UDF_SETPASSWORD(#{r_uphpswd})</if>
+			<if test="r_uphinsdate != null and r_uphinsdate != '' ">AND UPH_INDATE <![CDATA[>=]]> CONVERT(VARCHAR(10), #{r_uphinsdate}, 120)</if>
+			<!-- <if test="r_uphinedate != null and r_uphinedate != '' ">AND UPH_INDATE <![CDATA[<]]> DATE_ADD(STR_TO_DATE(#{r_uphinedate}, '%Y-%m-%d'), INTERVAL +1 DAY)</if>  -->
+			<if test="r_uphinedate != null and r_uphinedate != '' ">AND UPH_INDATE <![CDATA[<]]> DATEADD(DAY, CONVERT(VARCHAR(10), #{r_uphinedate}, 120), INTERVAL + 1)</if>
+		</where>
+		) XX ) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+	
+	<update id="inHistoryByShiptoUser" parameterType="hashmap">
+		INSERT INTO USERPSWDHISTORY(
+			UPH_SEQ, UPH_ID, UPH_PSWD, UPH_CODE, UPH_MSG, UPH_INID, UPH_INDATE
+		)
+		SELECT 
+			<!-- USQ_USERPSWDHISTORY.NEXTVAL -->
+			NEXT VALUE FOR USQ_USERPSWDHISTORY
+			, A.* 
+		FROM(
+			<foreach collection="newShiptoList" item="newShipto" index="index" separator="UNION ALL">
+				SELECT #{newShipto.SHIPTO_USERID}
+						, dbo.UDF_SETPASSWORD(#{newShipto.SHIPTO_USERID})
+						, #{newShipto.UPH_CODE}
+						, #{newShipto.UPH_MSG}
+						, #{newShipto.INSERTID}
+						, GETDATE()
+				<!-- FROM DUAL  -->
+			</foreach>
+		) A
+	</update>
+	
+	<select id="cntForUpdateCheck" parameterType="hashmap" resultType="int">
+		<!-- SELECT COUNT(*) FROM USERPSWDHISTORY 
+		<where>
+			UPH_SEQ = #{r_uphseq} AND UPH_INDATE <![CDATA[<]]> ADD_MONTHS(SYSDATE, #{r_userpswdmonth})
+		</where> -->
+		
+		SELECT COUNT(*) FROM USERPSWDHISTORY 
+		<where>
+			UPH_SEQ = #{r_uphseq} AND UPH_INDATE <![CDATA[<]]> DATEADD(MONTH, + #{r_userpswdmonth}, GETDATE() )
+		</where>
+	</select>
+	
+	<select id="getLastHistory" parameterType="hashmap" resultType="hashmap">
+			SELECT TOP 1 * FROM USERPSWDHISTORY WHERE UPH_ID = #{r_uphid} ORDER BY UPH_INDATE DESC
+	</select>
+	
+	
+</mapper>

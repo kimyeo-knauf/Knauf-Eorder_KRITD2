@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.promotionItem">
+	<insert id="in" parameterType="hashmap">
+	    INSERT INTO PROMOTIONITEM
+			(
+			 PRMI_PRMSEQ,
+			 PRMI_ITEMCD,
+			 PRMI_INID,
+			 PRMI_INDATE
+			 )
+		 values (
+	 		 #{ m_prmiprmseq },
+	 		 #{ m_prmiitemcd },
+	 		 #{ m_prmiinid },
+	 		 GETDATE()
+			)
+	</insert>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT 
+			ROW_NUMBER() OVER(
+			<choose>
+				<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+				<otherwise>ORDER BY (SELECT 1)</otherwise>
+			</choose>
+			) AS ROWNUM
+			, XX.* FROM (
+			SELECT * FROM PROMOTIONITEM PRMI
+			INNER JOIN O_ITEM_NEW ITM ON PRMI_ITEMCD = ITEM_CD
+			LEFT JOIN ITEMINFO ITI ON PRMI_ITEMCD = ITI_ITEMCD
+			<where>
+				<if test="r_prmiprmseq != null and r_prmiprmseq != ''">AND PRMI_PRMSEQ = #{ r_prmiprmseq }</if>
+			</where>
+			) XX 
+		) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+
+	<select id="cnt" parameterType="hashmap" resultType="long">
+		SELECT COUNT(*) FROM PROMOTIONITEM
+		<where>
+				<if test="r_prmiprmseq != null and r_prmiprmseq != ''">PRMI_PRMSEQ = #{ r_prmiprmseq }</if>
+	    </where>
+	</select>
+
+	
+	<delete id="del" parameterType="hashmap" >
+		DELETE FROM PROMOTIONITEM
+		<where>
+			 AND PRMI_PRMSEQ = #{ r_prmiprmseq }
+		</where>
+	</delete>
+	
+</mapper>

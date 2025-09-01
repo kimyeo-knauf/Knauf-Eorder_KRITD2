@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.o_order_confirm_h">
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO O_ORDER_CONFIRM_H(
+			REQ_NO
+			, CUST_PO
+			, CUST_CD
+			, USERID
+			, STATUS_CD
+			, ZIP_CD
+			, ADD1
+			, ADD2
+			, REQUEST_DT
+			, COMPANY_CD
+			, TEL1
+			, TEL2
+			, BUILDING_TY
+			, SHIPTO_CD
+			, TRANS_TY
+			, REQUEST_TIME
+			, REMARK
+			, CONFIRM_DT
+			, PICKING_DT
+			, RECEIVER
+			, CONFIRMID
+			, CANCEL_DT
+			, CUSTOMMATTER
+			, DUMMY
+			, QUOTE_QT
+			, INTERFACE_DT
+			, INSERT_DT
+			, INSERTID
+		)VALUES(
+			#{m_reqno}
+			, #{m_custpo}
+			, #{m_custcd}
+			, #{m_userid}
+			, #{m_statuscd}
+			, #{m_zipcd}
+			, #{m_add1}
+			, #{m_add2}
+			, #{m_requestdt}
+			, #{m_companycd}
+			, #{m_tel1}
+			, #{m_tel2}
+			, #{m_buildingty}
+			, #{m_shiptocd}
+			, #{m_transty}
+			, #{m_requesttime}
+			, #{m_remark}
+			, SUBSTRING(CONVERT(CHAR(19), GETDATE(), 20), 1, 16)
+			, #{m_pickingdt}
+			, #{m_receiver}
+			, #{m_confirmid}
+			, #{m_canceldt}
+			, #{m_custommatter}
+			, #{m_dummy}
+			, #{m_quoteQt}
+			, #{m_interfacedt}
+			, SUBSTRING(CONVERT(CHAR(19), GETDATE(), 20), 1, 16)
+			, #{m_insertid}
+		)
+	</insert>
+	
+	<update id="upByReqNo" parameterType="hashmap">
+		UPDATE O_ORDER_CONFIRM_H
+		<set>
+			<if test="m_reqno != null and m_reqno != ''">REQ_NO = #{m_reqno},</if>
+			<if test="m_custpo != null and m_custpo != ''">CUST_PO = #{m_custpo},</if>
+			<if test="m_custcd != null and m_custcd != ''">CUST_CD = #{m_custcd},</if>
+			<if test="m_userid != null and m_userid != ''">USERID = #{m_userid},</if>
+			<if test="m_statuscd != null and m_statuscd != ''">STATUS_CD = #{m_statuscd},</if>
+			<if test="m_zipcd != null and m_zipcd != ''">ZIP_CD = #{m_zipcd},</if>
+			<if test="m_add1 != null and m_add1 != ''">ADD1 = #{m_add1},</if>
+			<if test="m_add2 != null and m_add2 != ''">ADD2 = #{m_add2},</if>
+			<if test="m_requestdt != null and m_requestdt != ''">REQUEST_DT = #{m_requestdt},</if>
+			<if test="m_companycd != null and m_companycd != ''">COMPANY_CD = #{m_companycd},</if>
+			<if test="m_tel1 != null and m_tel1 != ''">TEL1 = #{m_tel1},</if>
+			<if test="m_tel2 != null and m_tel2 != ''">TEL2 = #{m_tel2},</if>
+			<if test="m_buildingty != null and m_buildingty != ''">BUILDING_TY = #{m_buildingty},</if>
+			<if test="m_shiptocd != null and m_shiptocd != ''">SHIPTO_CD = #{m_shiptocd},</if>
+			<if test="m_transty != null and m_transty != ''">TRANS_TY = #{m_transty},</if>
+			<if test="m_requesttime != null and m_requesttime != ''">REQUEST_TIME = #{m_requesttime},</if>
+			<if test="m_remark != null and m_remark != ''">REMARK = #{m_remark},</if>
+			<if test="m_confirmdt != null and m_confirmdt != ''">CONFIRM_DT = #{m_confirmdt},</if>
+			<if test="m_pickingdt != null and m_pickingdt != ''">PICKING_DT = #{m_pickingdt},</if>
+			<if test="m_receiver != null and m_receiver != ''">RECEIVER = #{m_receiver},</if>
+			<if test="m_confirmid != null and m_confirmid != ''">CONFIRMID = #{m_confirmid},</if>
+			<if test="m_canceldt != null and m_canceldt != ''">CANCEL_DT = #{m_canceldt},</if>
+			<if test="m_custommatter != null and m_custommatter != ''">CUSTOMMATTER = #{m_custommatter},</if>
+			<if test="m_dummy != null and m_dummy != ''">DUMMY = #{m_dummy},</if>
+			<if test="m_interfacedt != null and m_interfacedt != ''">INTERFACE_DT = #{m_interfacedt},</if>
+			<if test="m_updatedt != null and m_updatedt != ''">UPDATE_DT = #{m_updatedt},</if>
+			UPDATE_DT = SUBSTRING(CONVERT(CHAR(19), GETDATE(), 20), 1, 16),
+		</set>
+		<where>
+			AND REQ_NO = #{r_reqno}
+			<if test="r_custpo != null and r_custpo != ''">AND CUST_PO = #{r_custpo}</if>
+		</where>
+	</update>
+	
+	<update id="upByCustPo" parameterType="hashmap">
+		UPDATE O_ORDER_CONFIRM_H
+		<set>
+			<if test="m_reqno != null and m_reqno != ''">REQ_NO = #{m_reqno},</if>
+			<if test="m_custpo != null and m_custpo != ''">CUST_PO = #{m_custpo},</if>
+			<if test="m_custcd != null and m_custcd != ''">CUST_CD = #{m_custcd},</if>
+			<if test="m_userid != null and m_userid != ''">USERID = #{m_userid},</if>
+			<if test="m_statuscd != null and m_statuscd != ''">STATUS_CD = #{m_statuscd},</if>
+			<if test="m_zipcd != null and m_zipcd != ''">ZIP_CD = #{m_zipcd},</if>
+			<if test="m_add1 != null and m_add1 != ''">ADD1 = #{m_add1},</if>
+			<if test="m_add2 != null and m_add2 != ''">ADD2 = #{m_add2},</if>
+			<if test="m_requestdt != null and m_requestdt != ''">REQUEST_DT = #{m_requestdt},</if>
+			<if test="m_companycd != null and m_companycd != ''">COMPANY_CD = #{m_companycd},</if>
+			<if test="m_tel1 != null and m_tel1 != ''">TEL1 = #{m_tel1},</if>
+			<if test="m_tel2 != null and m_tel2 != ''">TEL2 = #{m_tel2},</if>
+			<if test="m_buildingty != null and m_buildingty != ''">BUILDING_TY = #{m_buildingty},</if>
+			<if test="m_shiptocd != null and m_shiptocd != ''">SHIPTO_CD = #{m_shiptocd},</if>
+			<if test="m_transty != null and m_transty != ''">TRANS_TY = #{m_transty},</if>
+			<if test="m_requesttime != null and m_requesttime != ''">REQUEST_TIME = #{m_requesttime},</if>
+			<if test="m_remark != null and m_remark != ''">REMARK = #{m_remark},</if>
+			<if test="m_confirmdt != null and m_confirmdt != ''">CONFIRM_DT = #{m_confirmdt},</if>
+			<if test="m_pickingdt != null and m_pickingdt != ''">PICKING_DT = #{m_pickingdt},</if>
+			<if test="m_receiver != null and m_receiver != ''">RECEIVER = #{m_receiver},</if>
+			<if test="m_confirmid != null and m_confirmid != ''">CONFIRMID = #{m_confirmid},</if>
+			<if test="m_canceldt != null and m_canceldt != ''">CANCEL_DT = #{m_canceldt},</if>
+			<if test="m_custommatter != null and m_custommatter != ''">CUSTOMMATTER = #{m_custommatter},</if>
+			<if test="m_dummy != null and m_dummy != ''">DUMMY = #{m_dummy},</if>
+			<if test="m_interfacedt != null and m_interfacedt != ''">INTERFACE_DT = #{m_interfacedt},</if>
+			<if test="m_updatedt != null and m_updatedt != ''">UPDATE_DT = #{m_updatedt},</if>
+			UPDATE_DT = SUBSTRING(CONVERT(CHAR(19), GETDATE(), 20), 1, 16),
+		</set>
+		<where>
+			AND CUST_PO = #{r_custpo}
+		</where>
+	</update>
+	
+	<!-- ★★ 2025-07-21 hsg 주문상태 보류 추가 ★★ 주문 상태 변경 -->
+	<update id="chageOrderStatusUpdate" parameterType="hashmap">
+		UPDATE O_CUST_ORDER_H
+		<set>
+			STATUS_CD = #{m_statuscd},
+			UPDATEID = #{m_userId},
+			UPDATE_DT = GETDATE()
+		</set>
+		<where>
+			AND REQ_NO = #{m_reqno}
+			AND STATUS_CD != '05'
+		</where>
+	</update>
+
+
+
+
+</mapper>

@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+<head>
+<meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>메일링서비스</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+
+<style>
+
+table.type03 {
+	border-collapse: collapse;
+	text-align: left;
+	line-height: 1.5;
+	border-top: 1px solid #ccc;
+	border-left: 3px solid #369;
+  margin : 20px 10px;
+
+
+
+}
+table.type03 th {
+	width: 147px;
+	padding: 10px;
+	font-weight: bold;
+	vertical-align: top;
+	color: #153d73;
+	border-right: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+	
+	
+
+}
+table.type03 td {
+	width: 349px;
+	padding: 10px;
+	vertical-align: top;
+	border-right: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+	
+	
+	
+}
+
+
+</style>
+
+
+
+</head>
+<body>
+<form name="frmPopSubmit" method="post">
+	<input type="hidden" name="pop" value="1" />
+	<input type="hidden" name="r_bdseq" value="" />			
+	<input type="hidden" name="r_bdid_pop" value="faq" />
+</form>
+<form name="frmPop" method="post">
+	<input type="hidden" name="pop" value="1" />
+	<input type="hidden" name="r_bdseq" value="" />			
+	<input type="hidden" name="r_bdid_pop" value="faq" />
+</form>
+<table cellpadding="0" cellspacing="0" border="0" style="margin: 0; padding: 0; width: 740px; background: #f9f9f9;">
+	<tbody>
+		<tr>
+			<td style="background: #f9f9f9;">
+				<!-- top logo -->
+				<!-- <table cellpadding="0" cellspacing="0" border="0" width="680" style="margin: 27px 30px 0 30px; background: #f9f9f9;">
+					<tbody>
+						<tr>
+							<td style="padding-bottom: 20px; border-bottom: 1px solid #e8e8e8;"><a href="${url}" target="_blank"><img src="${url}/include/images/email/logo.png" width="220" alt="logo" border="0" /></a></td>
+							<td style="background: #f9f9f9;"></td>
+						</tr>
+					</tbody>
+				</table> -->
+				<!-- //top logo -->
+			</td>
+		</tr>
+		
+		<tr>
+			<td>
+				<!-- content -->
+				<table cellpadding="0" cellspacing="0" border="0" width="680" style="margin: 0 30px; background: #f9f9f9;">
+					<tbody>
+						<tr>
+							<td style="padding: 30px 0 30px 0; font-size: 24px; text-align: center;">
+							</td>
+						</tr>
+						
+						<tr>
+							<td style="padding: 30px 30px 0; width: 617px; font-family: Dotum, 'Arial'; font-size: 15px; line-height: 18px; color: #333; background: #fff; border-top: 1px solid #e9e9e9; border-right: 1px solid #e9e9e9; border-left: 1px solid #e9e9e9;">
+								<a style="font-size: 16px;   font-weight: 900;">신규 샘플 요청이 접수 되었습니다.</a><br/><br/>
+								
+								
+								<table class="type03" style= "border-collapse: collapse; text-align: left; line-height: 1.5; border-top: 1px solid #ccc; border-left: 3px solid #369; margin : 20px 10px;"
+								>
+									<tr>
+										<th scope="row" style="width: 147px;	padding: 10px;	font-weight: 600;	vertical-align: top;	color: #153d73;	border-right: 1px solid #ccc;	border-bottom: 1px solid #ccc;"
+										>접수일자</th>
+										<td style ="width: 349px;	padding: 10px;	vertical-align: top;	border-right: 1px solid #ccc;	border-bottom: 1px solid #ccc;">${m_bdindate}</td>
+									</tr>
+									<tr>
+										<th scope="row" style="width: 147px;	padding: 10px;	font-weight: 600;	vertical-align: top;	color: #153d73;	border-right: 1px solid #ccc;	border-bottom: 1px solid #ccc;"
+										>거래처명</th>
+										<td style ="width: 349px;	padding: 10px;	vertical-align: top;	border-right: 1px solid #ccc;	border-bottom: 1px solid #ccc;">${m_bduser}</td>
+									</tr>
+									<tr>
+										<th scope="row" style="width: 147px;	padding: 10px;	font-weight: 600;	vertical-align: top;	color: #153d73;	border-right: 1px solid #ccc;	border-bottom: 1px solid #ccc;"
+										>요청제목</th>
+										<td style ="width: 349px;	padding: 10px;	vertical-align: top;	border-right: 1px solid #ccc;	border-bottom: 1px solid #ccc;">${m_bdtitle}</td>
+									</tr>
+								</table>
+								
+						
+								<br/>
+								<p style="margin: 0 0 10px;">
+										<span style="font-family: Dotum, 'Arial'; font-size: 14px; color: #333;"><strong> 바로가기 : <a href="${url}/admin/board/sampleList.lime" target='_blank'>이오더 샘플 요청 게시판 바로가기</a></strong></span>
+										
+								</p>
+								<br/>
+							</td>
+						</tr>
+						
+						<tr>
+							<td style="padding: 30px 30px 0; width: 617px; font-family: Dotum, 'Arial'; font-size: 15px; background: #fff; border-right: 1px solid #e9e9e9; border-left: 1px solid #e9e9e9;">
+							</td>
+						</tr>
+
+                        <tr>
+                            <td aling="center" style="padding:2px;">
+                                <img style="width:100%;" src="${mailBottomImg}"/>
+                            </td>
+                        </tr>
+						
+						<tr>
+							<td style="border-bottom: 1px solid #c8c8c8;"></td>
+						</tr>
+						
+						<tr>
+							<td style="height: 20px; border-top: 1px solid #e2e2e2;"></td>
+						</tr>
+						<tr>
+							<!-- td style="text-align: center;"><a href="${url}/admin/board/sampleList.lime" target="_blank"><img src="${url}/include/images/email/btn_go.gif" alt="바로가기" border="0" /></a></td-->
+							 <!-- button class="btn btn-default btn-xs"  onclick="boardViewPop(this, '${r_bdseq}')" type="button" title="상세">상세</button-->
+							 
+							 
+							 
+							 
+						</tr>
+					</tbody>
+				</table>
+				
+				
+				<!-- //content -->
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<!-- bottom -->
+<table cellpadding="0" cellspacing="0" border="0" style="margin: 0; padding: 0; width: 740px;">
+	<tbody>
+		<tr>
+			<td style="width: 740px; height: 50px; background: #f9f9f9;"></td>
+		</tr>
+		<tr>
+			<td>
+				<table cellpadding="0" cellspacing="0" border="0" width="740" style="background: #009b3a;">
+					<tbody>
+						<tr>
+							<td colspan="2" style="padding-top: 20px; padding-left: 33px; font-family: Dotum, 'Arial'; font-size: 12px; line-height: 24px; color: #fff;">
+								본 메일은 발신전용입니다. 상품에 대한 불만 및 분쟁처리, 기타 관련 사항은 고객센터(02-6902-3100)로 문의 바랍니다.<br />
+								<span style="font-weight: bold;">© 2020 USG BORAL. All rights reserved.</span>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2" style="height: 26px;"></td>
+						</tr>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<!-- //bottom -->
+
+</body>
+</html>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.o_cssalesmap">
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO O_CSSALESMAP(
+			CSUSERID
+			, SALESUSERID
+			, SALESUSERNM
+			, DUMMY
+			, FIXEDYN
+			, INSERTID
+			, INSERT_DT
+		)VALUES(
+			#{m_csuserid}
+			, #{m_salesuserid}
+			, (SELECT USER_NM FROM O_USER WHERE USERID = #{m_salesuserid})
+			, #{m_dummy}
+			, #{m_fixedyn}
+			, #{m_insertid}
+			<!-- 2024-11-06 hsg PlayStation4 오라클 문법(TO_CHAR(GETDATE(), 'yyyy-MM-dd'))을 MSSQL문법(CONVERT(DATE, GETDATE(), 102))으로 변경 -->
+			, CONVERT(DATE, GETDATE(), 102)
+
+		)
+	</insert>
+	
+	<update id="merge" parameterType="hashmap">
+		MERGE INTO O_CSSALESMAP
+		<!-- 2024-11-06 hsg PlayStation4 mybatis의 sql 파일은 XML로 작성하는데, 흔히 사용하는 SQL의 주석처리 방법 dashdash은 XML에서 사용하는 문법이 아니기 때문에 발생 USING DUAL ON (CSUSERID = #{m_csuserid} AND SALESUSERID = #{m_salesuserid}) -->
+		USING (SELECT 1 AS dual) AS D ON (CSUSERID = #{m_csuserid} AND SALESUSERID = #{m_salesuserid})
+		WHEN MATCHED THEN 
+			UPDATE SET 
+				SALESUSERNM = (SELECT USER_NM FROM O_USER WHERE USERID = #{m_salesuserid})
+				, DUMMY = #{m_dummy}
+				, FIXEDYN = #{m_fixedyn}
+				<!-- 2024-11-06 hsg PlayStation4 오라클 문법(TO_CHAR(GETDATE(), 'yyyy-MM-dd'))을 MSSQL문법(CONVERT(DATE, GETDATE(), 102))으로 변경 -->
+				, UPDATE_DT = CONVERT(DATE, GETDATE(), 102)
+				, UPDATEID = #{m_insertid}
+		WHEN NOT MATCHED THEN
+			INSERT (
+				CSUSERID
+				, SALESUSERID
+				, SALESUSERNM
+				, DUMMY
+				, FIXEDYN
+				, INSERTID
+				, INSERT_DT
+			)VALUES(
+				#{m_csuserid}
+				, #{m_salesuserid}
+				, (SELECT USER_NM FROM O_USER WHERE USERID = #{m_salesuserid})
+				, #{m_dummy}
+				, #{m_fixedyn}
+				, #{m_insertid}
+				<!-- 2024-11-06 hsg PlayStation4 오라클 문법(TO_CHAR(GETDATE(), 'yyyy-MM-dd'))을 MSSQL문법(CONVERT(DATE, GETDATE(), 102))으로 변경 -->
+				, CONVERT(DATE, GETDATE(), 102)
+			) ;
+	</update>
+	
+	<update id="up" parameterType="hashmap">
+		UPDATE O_CSSALESMAP
+		<set>
+			<if test="m_salesuserid != null and m_salesuserid != ''">SALESUSERID = #{m_salesuserid},</if>
+			<if test="m_salesusernm != null and m_salesusernm != ''">SALESUSERNM = #{m_salesusernm},</if>
+			<if test="m_dummy != null and m_dummy != ''">DUMMY = #{m_dummy},</if>
+			<if test="m_fixedyn != null and m_fixedyn != ''">FIXEDYN = #{m_fixedyn},</if>
+			<if test="m_updateid != null and m_updateid != ''">UPDATEID = #{m_updateid},</if>
+			<!-- 2024-11-06 hsg PlayStation4 오라클 문법(TO_CHAR(GETDATE(), 'yyyy-MM-dd'))을 MSSQL문법(CONVERT(DATE, GETDATE(), 102))으로 변경 -->
+			UPDATE_DT = CONVERT(DATE, GETDATE(), 102),
+		</set>
+		<where>
+			AND CSUSERID = #{r_csuserid}
+			<if test="r_salesuserid != null and r_salesuserid != '' ">AND SALESUSERID = #{r_salesuserid}</if>
+			<if test="r_fixedyn != null and r_fixedyn != '' ">AND FIXEDYN = #{r_fixedyn}</if>
+		</where>
+	</update>
+	
+	<delete id="del" parameterType="hashmap">
+		DELETE FROM O_CSSALESMAP
+		<where>
+			AND CSUSERID = #{r_csuserid}
+			<if test="r_fixedyn != null and r_fixedyn != '' ">AND FIXEDYN = #{r_fixedyn}</if>
+		</where>
+	</delete>
+	
+	<delete id="del2" parameterType="hashmap">
+		DELETE FROM O_CSSALESMAP
+		<where>
+			AND SALESUSERID = #{r_salesuserid}
+			<if test="r_fixedyn != null and r_fixedyn != '' ">AND FIXEDYN = #{r_fixedyn}</if>
+		</where>
+	</delete>
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT CSM.* 
+			, (SELECT USER_NM FROM O_USER WHERE USERID = CSM.SALESUSERID) AS SALESUSER_NAME
+			, (SELECT USER_NM FROM O_USER WHERE USERID = CSM.CSUSERID) AS CSUSER_NAME
+		FROM O_CSSALESMAP CSM
+		<where>
+			<if test="r_csuserid != null and r_csuserid != '' ">AND CSUSERID = #{r_csuserid}</if>
+			<if test="r_salesuserid != null and r_salesuserid != '' ">AND SALESUSERID = #{r_salesuserid}</if>
+			<if test="r_salesusernm != null and r_salesusernm != '' ">AND SALESUSERNM = #{r_salesusernm}</if>
+			<if test="rl_salesusernm != null and rl_salesusernm != '' ">AND SALESUSERNM LIKE '%' + #{rl_salesusernm} + '%'</if>
+			<if test="r_fixedyn != null and r_fixedyn != '' ">AND FIXEDYN = #{r_fixedyn}</if>
+		</where>
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM O_CSSALESMAP CSM
+		<where>
+			<if test="r_csuserid != null and r_csuserid != '' ">AND CSUSERID = #{r_csuserid}</if>
+			<if test="r_salesuserid != null and r_salesuserid != '' ">AND SALESUSERID = #{r_salesuserid}</if>
+			<if test="r_salesusernm != null and r_salesusernm != '' ">AND SALESUSERNM = #{r_salesusernm}</if>
+			<if test="rl_salesusernm != null and rl_salesusernm != '' ">AND SALESUSERNM LIKE '%' + #{rl_salesusernm} + '%'</if>
+			<if test="r_fixedyn != null and r_fixedyn != '' ">AND FIXEDYN = #{r_fixedyn}</if>
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT 
+			ROW_NUMBER() OVER(
+			<choose>
+				<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+				<otherwise>ORDER BY (SELECT 1)</otherwise>
+			</choose>
+			) AS ROWNUM
+			, XX.* FROM (
+				SELECT CSM.*
+					, (SELECT USER_NM FROM O_USER WHERE USERID = CSM.SALESUSERID) AS SALESUSER_NAME
+					, (SELECT USER_NM FROM O_USER WHERE USERID = CSM.CSUSERID) AS CSUSER_NAME
+				FROM O_CSSALESMAP CSM
+				<where>
+					<if test="r_csuserid != null and r_csuserid != '' ">AND CSUSERID = #{r_csuserid}</if>
+					<if test="r_salesuserid != null and r_salesuserid != '' ">AND SALESUSERID = #{r_salesuserid}</if>
+					<if test="r_salesusernm != null and r_salesusernm != '' ">AND SALESUSERNM = #{r_salesusernm}</if>
+					<if test="rl_salesusernm != null and rl_salesusernm != '' ">AND SALESUSERNM LIKE '%' + #{rl_salesusernm} + '%'</if>
+					<if test="r_fixedyn != null and r_fixedyn != '' ">AND FIXEDYN = #{r_fixedyn}</if>
+				</where>
+				) XX
+			) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+	
+</mapper>

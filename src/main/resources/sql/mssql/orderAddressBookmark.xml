@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.orderAddressBookmark">
+	<insert id="in" parameterType="hashmap">
+		<!-- 2024-10-18 HSG 시퀀스 대신 MAX값으로 대체  -->
+		<selectKey keyProperty="oabSeq" resultType="long" order="BEFORE">
+    		SELECT MAX(OAB_SEQ)+1 FROM ORDERADDRESSBOOKMARK;
+    	</selectKey>
+
+		INSERT INTO ORDERADDRESSBOOKMARK(
+			OAB_SEQ, 
+			OAB_USERID,
+			OAB_ZIPCD,
+			OAB_ADD1,
+			OAB_ADD2,
+			OAB_TEL1,
+			OAB_TEL2,
+			OAB_RECEIVER,
+			OAB_INID,
+			OAB_INDATE
+		)VALUES(
+			<!-- 2024-10-18 HSG 시퀀스 대신 MAX값으로 대체  -->
+<!-- 			- - USQ_ORDERADDRESSBOOKMARK.NEXTVAL -->
+<!-- 			NEXT VALUE FOR USQ_ORDERADDRESSBOOKMARK -->
+			#{oabSeq}
+			, #{m_oabuserid}
+			, #{m_oabzipcd}
+			, #{m_oabadd1}
+			, #{m_oabadd2}
+			, #{m_oabtel1}
+			, #{m_oabtel2}
+			, #{m_oabreceiver}
+			, #{m_oabinid}
+			, GETDATE()
+		)
+	</insert>
+	
+	<delete id="del" parameterType="hashmap">
+		DELETE FROM ORDERADDRESSBOOKMARK
+		<where>
+			OAB_SEQ = #{r_oabseq}
+			<if test="r_oabuserid != null and r_oabuserid != '' ">AND OAB_USERID = #{r_oabuserid}</if>
+		</where>
+	</delete>
+	
+	<delete id="delByArr" parameterType="hashmap">
+		DELETE FROM ORDERADDRESSBOOKMARK
+		<where>
+			AND OAB_SEQ IN <foreach collection="ri_oabseq" item="oabseq" separator="," open="(" close=")">#{oabseq}</foreach>
+			<if test="r_oabuserid != null and r_oabuserid != '' ">AND OAB_USERID = #{r_oabuserid}</if>
+		</where>
+	</delete>
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT OAB.* 
+		FROM ORDERADDRESSBOOKMARK OAB
+		<where>
+			<if test="r_oabseq != null and r_oabseq != '' ">AND OAB_SEQ = #{r_oabseq}</if>
+			<if test="r_oabuserid != null and r_oabuserid != '' ">AND OAB_USERID = #{r_oabuserid}</if>
+		</where>
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM ORDERADDRESSBOOKMARK OAB
+		<where>
+			<if test="r_oabseq != null and r_oabseq != '' ">AND OAB_SEQ = #{r_oabseq}</if>
+			<if test="r_oabuserid != null and r_oabuserid != '' ">AND OAB_USERID = #{r_oabuserid}</if>
+			<!-- 2024-12-24 hsg Camel Clutch first E-order front – 주문 등록 – 주소록 List에서 Keyword 서치 기능 추가 -->
+			<if test="r_srchGbn != null and r_srchGbn != ''">AND ISNULL(${r_selectedColumn},'') LIKE '%' + #{r_inputText} + '%'</if>
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT 
+			ROW_NUMBER() OVER(
+			<choose>
+				<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+				<otherwise>ORDER BY (SELECT 1)</otherwise>
+			</choose>
+			) AS ROWNUM
+			, XX.* FROM (
+		SELECT OAB.* 
+		FROM ORDERADDRESSBOOKMARK OAB
+		<where>
+			<if test="r_oabseq != null and r_oabseq != '' ">AND OAB_SEQ = #{r_oabseq}</if>
+			<if test="r_oabuserid != null and r_oabuserid != '' ">AND OAB_USERID = #{r_oabuserid}</if>
+			<!-- 2024-12-24 hsg Camel Clutch first E-order front – 주문 등록 – 주소록 List에서 Keyword 서치 기능 추가 -->
+			<if test="r_srchGbn != null and r_srchGbn != ''">AND ISNULL(${r_selectedColumn},'') LIKE '%' + #{r_inputText} + '%'</if>
+		</where>
+		) XX ) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+	
+</mapper>

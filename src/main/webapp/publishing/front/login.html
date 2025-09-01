@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>e-Ordering System</title>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta name="title" content="">
+<meta name="keywords" content="">
+<meta name="description" content="">
+
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+
+<link rel="shortcut icon" href="images/common/favicon.ico" />
+
+<!-- css -->
+<link rel="stylesheet" href="js/bootstrap/css/bootstrap.css" />
+<link rel="stylesheet" href="css/style.css" />
+
+<!-- jQuery -->
+<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="js/jquery.sweet-dropdown.min.js"></script> <!-- HEADER MYPAGE -->
+<script type="text/javascript" src="js/lightslider.js"></script> <!-- BANNER -->
+<script type="text/javascript" src="js/tabcontent.js"></script> <!-- TAB -->
+
+<!--[if lt IE 9]>
+<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+<![endif]-->
+<!--[if lt IE 8]>
+<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE8.js"></script>
+<![endif]-->
+<!--[if lt IE 7]>
+<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE7.js"></script>
+<![endif]-->
+
+<script type="text/javascript">
+(function($) {
+})(jQuery);
+
+$(document).ready(function() {
+	// login height
+	$(window).on('ready load resize', function() {
+		var body = $('body'),
+			heightBody = $(window).height(),
+			heightImg = $('.right-img');
+		if(heightBody > 940) {
+			body.css('overflow-y', 'hidden');
+		} else {
+			body.css('overflow-y', 'auto');
+		}
+	});
+
+	// login top banner
+	$("#login-slider1").lightSlider({
+		auto:true,
+		loop:true,
+		keyPress:true
+	});
+
+	// login bottom banner
+	$("#login-slider2").lightSlider({
+		auto:true,
+		loop:true,
+		keyPress:true
+	});
+	
+	imgPop();
+});
+
+// Popup
+function popup(winNM,width,height){
+	var sw=screen.width;
+	var sh=screen.height;
+	
+	var px=(sw-width)/2;
+	var py=(sh-height)/2;
+	
+	var set='top='+py+',left='+px;
+	set+=',width='+width+',height='+height+
+	',toobar=0,resizable=0,status=0,scrollbars=0';
+	
+	window.open(winNM,'',set);
+}
+function imgPop(){
+	var param = 'imgPop';
+	var widthPx = 615;
+	var heightPx = 745;
+	var option = 'toolbar=no, location=no, status=no, directories=no, channelmode=no, menubar=no, scrollbars=yes, resizable=yes, width='+widthPx+', height='+heightPx;
+	window.open('imgPop.html', param, option);
+}
+</script>
+</head>
+
+<body class="login-wrapper">
+
+	<!-- Wrap -->
+	<div id="wrap">
+	
+		<!-- Container Fluid -->
+		<div class="container-fluid">
+		
+			<div class="login-left">
+				<section class="slider1">
+					<h2>새소식</h2>
+					<div class="sliderArea">
+						<ul id="login-slider1" class="login-slider">
+							<li>
+								<img src="images/login/img01-1.jpg" onerror="this.src='images/content/none_img.png'" alt="img" />
+								<span>한국 유에스지 보랄, 호주상공회의소 비즈니스 어워즈 수상</span>
+							</li>
+							<li>
+								<img src="images/login/img01-1.jpg" onerror="this.src='images/content/none_img.png'" alt="img" />
+								<span>한국 유에스지 보랄, 호주상공회의소 비즈니스 어워즈 수상</span>
+							</li>
+							<li>
+								<img src="images/login/img01-1.jpg" onerror="this.src='images/content/none_img.png'" alt="img" />
+								<span>한국 유에스지 보랄, 호주상공회의소 비즈니스 어워즈 수상</span>
+							</li>
+						</ul>
+					</div>
+				</section>
+				
+				<section class="slider2">
+					<h2>제품&솔루션</h2>
+					<div class="sliderArea">
+						<ul id="login-slider2" class="login-slider">
+							<li>
+								<img src="images/content/product02.jpg" onerror="this.src='images/content/none_product.png'" alt="img" />
+								<span>방화방수석고보드</span>
+							</li>
+							<li>
+								<img src="images/content/product03.jpg" onerror="this.src='images/content/none_product.png'" alt="img" />
+								<span>시트락 일반석고보드</span>
+							</li>
+							<li>
+								<img src="images/content/product01.jpg" onerror="this.src='images/content/none_product.png'" alt="img" />
+								<span>시트락 일반석고보드</span>
+							</li>
+						</ul>
+					</div>
+				</section>
+			</div>
+			
+			<div class="login-right">
+				<a href="#" class="logo-name">
+					<img src="images/common/usg_boral_logo.png" alt="logo" />
+				</a>
+				
+				<div class="login-box">
+					<div class="login-content">
+						<h3>크나우프 석고보드 e-Ordering 시스템<strong>거래처 로그인</strong></h3>
+						
+						<form class="" action="index.html">
+							<div class="form-group form-id">
+								<input type="text" name="r_mbid" id="r_mbid" class="form-control-login" placeholder="아이디를 입력해 주세요" required />
+							</div>
+							<div class="form-group form-pw">
+								<input type="password" name="r_mbpswd" id="r_mbpswd" class="form-control-login" placeholder="비밀번호를 입력해 주세요" required />
+							</div>
+							
+							<div class="idpw">
+								<a href="javascript:popup('idpwSearchPop.html', 650, 450);" class="text-sm">비밀번호 찾기</a>
+								<div class="checkbox">
+									<label class="lol-label-checkbox" for="c_saveid">
+										<input type="checkbox" id="c_saveid" name="c_saveid">
+										<span class="lol-text-checkbox">아이디저장</span>
+									</label>
+								</div>
+							</div>
+							
+							<button type="submit" class="btn" onclick="location.href='index.html'">LOGIN</button>
+						</form>
+					</div>
+					
+					<div class="login-footer">
+						<p>© 2020 USG BORAL. ALL RIGHTS RESERVED.</p>
+						<ul>
+							<li><a href="#"><img src="images/login/sns01@2x.png" alt="image" /></a></li>
+							<li><a href="#"><img src="images/login/sns02@2x.png" alt="image" /></a></li>
+							<li><a href="#"><img src="images/login/sns03@2x.png" alt="image" /></a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			
+			<div class="right-img"></div>
+			
+		</div> <!-- Container Fluid -->
+		
+	</div> <!-- Wrap -->
+
+</body>
+</html>

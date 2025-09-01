@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.schedule">
+	<insert id="in" parameterType="hashmap">
+	    INSERT INTO SCHEDULE 
+   				(
+	    		SCD_SEQ 
+	    		,SCD_DATE 
+	    		,SCD_TITLE
+                ,SCD_INID
+                ,SCD_INDATE
+                )
+	    VALUES(
+	    	 USQ_SCHEDULE.NEXTVAL
+			 ,TO_DATE(#{m_scddate}, 'YYYY-MM-DD') 	
+			 ,#{ m_scdtitle}
+			 ,#{ m_scdinid}
+			 , SYSDATE	
+			 )
+		<selectKey resultType="long" keyProperty="nowSeq" order="AFTER">
+			SELECT USQ_SCHEDULE.CURRVAL FROM DUAL
+		</selectKey>
+	</insert>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT SCD.*, US.*		     
+		  FROM SCHEDULE SCD
+		  LEFT OUTER JOIN O_USER US ON SCD.SCD_INID = US.USERID
+		  <where>
+		  		SCD_DATE = TO_DATE(#{r_scddate}, 'YYYY-MM-DD')
+	      </where>		
+	      
+	</select>	
+	
+		<select id="listGroup" parameterType="hashmap" resultType="hashmap">
+		SELECT *
+		FROM 
+			SCHEDULE
+		<where>
+			<![CDATA[
+			SCD_DATE >= TO_DATE(#{r_start}, 'YYYY-MM-DD') AND SCD_DATE < TO_DATE(#{r_end}, 'YYYY-MM-DD')
+			]]>
+		</where>
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="long">
+		SELECT COUNT(*) FROM SCHEDULE SCD
+		<where>
+				<if test="r_scdseq != null and r_scdseq != ''">SCD_SEQ = #{ r_scdseq }</if>		
+	    		<if test="r_scddate != null and r_scddate != ''">AND SCD_DATE = TO_DATE(#{r_scddate}, 'YYYY-MM-DD')</if> 	
+	    </where>		
+	</select>
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">		
+		SELECT SCD.*, US.*		     
+		  FROM SCHEDULE SCD
+		  LEFT OUTER JOIN O_USER US ON SCD.SCD_INID = US.USERID
+		  <where>
+		  	SCD_SEQ = #{ r_scdseq }	   		
+	      </where>			      	     	     	
+	</select>
+	
+	<update id="up" parameterType="hashmap" >
+    	UPDATE SCHEDULE
+    	<set>
+			<if test=" m_scdtitle != null and m_scdtitle != '' ">SCD_TITLE = #{ m_scdtitle }, </if>
+			<if test=" m_scdmoid != null and m_scdmoid != '' ">SCD_MOID = #{ m_scdmoid }, </if>
+    		SCD_MODATE = SYSDATE
+    	</set>
+    	<where>
+    		AND SCD_SEQ = #{ r_scdseq }
+    	</where>
+    </update>
+	
+	<delete id="del" parameterType="hashmap" >
+		DELETE FROM SCHEDULE
+		<where>
+			 AND SCD_SEQ = #{ r_scdseq }			
+		</where>
+	</delete>
+	
+</mapper>

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.popup">
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO POPUP
+		(
+			PU_SEQ,
+			PU_TYPE,
+			PU_TITLE,
+			PU_IMAGE,
+			PU_IMAGETYPE,
+			PU_SDATE,
+			PU_EDATE,
+			PU_WIDTH,
+			PU_HEIGHT,
+			PU_X,
+			PU_Y,
+			PU_LINK,
+			PU_LINKUSE,			
+			PU_TARGET,
+			PU_USEYN,
+			PU_INID,
+			PU_INDATE
+		)values(
+			USQ_POPUP.NEXTVAL,
+			#{ m_putype, jdbcType=VARCHAR },
+			#{ m_putitle, jdbcType=VARCHAR },
+			#{ m_puimage, jdbcType=VARCHAR },
+			#{ m_puimagetype, jdbcType=VARCHAR },
+			#{ m_pusdate, jdbcType=VARCHAR },
+			#{ m_puedate, jdbcType=VARCHAR },
+			#{ m_puwidth, jdbcType=NUMERIC },
+			#{ m_puheight, jdbcType=NUMERIC },
+			#{ m_pux, jdbcType=NUMERIC },
+			#{ m_puy, jdbcType=NUMERIC },
+			#{ m_pulink, jdbcType=VARCHAR },
+			#{ m_pulinkuse, jdbcType=VARCHAR },			
+			#{ m_putarget, jdbcType=VARCHAR },			
+			#{ m_puuseyn, jdbcType=VARCHAR },
+			#{ m_puinid, jdbcType=VARCHAR },
+			SYSDATE
+		)
+	</insert>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT count(*) FROM POPUP
+		LEFT OUTER JOIN O_USER ON PU_INID = USERID
+		<where>
+			<if test=" r_puseq != null and r_puseq != '' ">AND PU_SEQ = #{ r_puseq }</if>
+            <if test=" r_putype != null and r_putype != '' ">AND PU_TYPE = #{ r_putype }</if>
+			<if test=" r_putarget != null and r_putarget != '' ">AND PU_TARGET = #{ r_putarget }</if>
+			<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' || #{rl_usernm} || '%'</if>			
+    	</where>
+	</select>
+	
+	<delete id="del">
+		DELETE FROM POPUP
+		<where>
+			AND PU_SEQ = #{ r_puseq }
+    	</where>
+	</delete>
+	
+	<select id="max" parameterType="hashmap" resultType="long">
+		SELECT NVL( MAX(PU_SEQ), 0 )+1 FROM POPUP
+	</select>
+	
+	<select id="one"  parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM POPUP
+    	<where>
+    		<if test=" r_puseq != null ">
+    			AND PU_SEQ = #{ r_puseq }
+    		</if>
+    	</where>
+    </select>
+    
+    <select id="list"  parameterType="hashmap" resultType="hashmap">
+    	SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		    SELECT PU.*,US.*,
+	    		CASE
+		    	<![CDATA[
+		    	WHEN TO_CHAR( SYSDATE, 'YYYY-MM-DD') < PU_SDATE THEN 'N'
+		    	WHEN PU_SDATE <= TO_CHAR( SYSDATE, 'YYYY-MM-DD') AND PU_EDATE >= TO_CHAR( SYSDATE, 'YYYY-MM-DD') THEN 'Y'
+		    	WHEN PU_EDATE < TO_CHAR( SYSDATE, 'YYYY-MM-DD') THEN 'N'
+		    	ELSE 'M'
+		    	]]>
+		    	END AS STATUS
+		    FROM POPUP PU
+		    LEFT OUTER JOIN O_USER US ON PU.PU_INID = US.USERID
+			<where>
+				<if test=" r_putype != null and r_putype != '' ">AND PU_TYPE = #{ r_putype }</if>
+	    		<if test=" r_putarget != null and r_putarget != '' ">AND PU_TARGET = #{ r_putarget }</if>
+	    		<if test=" r_puseq != null ">AND PU_SEQ = #{ r_puseq }</if>
+	    		<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' || #{rl_usernm} || '%'</if>
+	    	</where>
+		    	<if test="r_orderby != null and r_orderby != ''">
+		    		ORDER BY ${ r_orderby }
+		    	</if>
+	    	) XX
+		 <where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{ r_endrow }]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{ r_startrow }]]></if>		
+		</where>
+    </select>
+
+	<select id="listForFront"  parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (
+			SELECT PU.*,
+			CASE
+					<![CDATA[
+					WHEN TO_CHAR( SYSDATE, 'YYYY-MM-DD') < PU_SDATE THEN 'N'
+					WHEN PU_SDATE <= TO_CHAR( SYSDATE, 'YYYY-MM-DD') AND PU_EDATE >= TO_CHAR( SYSDATE, 'YYYY-MM-DD') THEN 'Y'
+					WHEN PU_EDATE < TO_CHAR( SYSDATE, 'YYYY-MM-DD') THEN 'N'
+					ELSE 'M'
+					]]>
+			END AS STATUS
+			FROM POPUP PU
+			<where>
+				<if test=" r_putype != null and r_putype != '' ">AND PU_TYPE = #{ r_putype }</if>
+				AND PU_SDATE <![CDATA[<=]]> TO_CHAR( SYSDATE, 'YYYY-MM-DD') AND PU_EDATE <![CDATA[>=]]> TO_CHAR( SYSDATE, 'YYYY-MM-DD')
+			</where>
+			<if test="r_orderby != null and r_orderby != ''">
+				ORDER BY ${ r_orderby }
+			</if>
+		)
+		<where>
+			<if test="r_limitrow != null and r_limitrow != ''">ROWNUM <![CDATA[<=]]> #{ r_limitrow }</if>
+		</where>
+	</select>
+    
+    <update id="up">
+    	UPDATE POPUP
+    	<set>
+			<if test=" m_putitle != null and m_putitle != '' ">PU_TITLE = #{ m_putitle }, </if>
+			<if test=" m_pucpcode != null and m_pucpcode != '' ">PU_IMAGE = #{ m_pucpcode }, </if>
+			<if test=" m_puimage != null and m_puimage != '' ">PU_IMAGE = #{ m_puimage }, </if>
+			<if test=" m_puimagetype != null and m_puimagetype != '' ">PU_IMAGETYPE = #{ m_puimagetype }, </if>
+			<if test=" m_pusdate != null and m_pusdate != '' ">PU_SDATE = #{ m_pusdate }, </if>
+			<if test=" m_puedate != null and m_puedate != '' ">PU_EDATE = #{ m_puedate }, </if>
+			<if test=" m_puwidth != null and m_puwidth != '' ">PU_WIDTH = #{ m_puwidth }, </if>
+			<if test=" m_puheight != null and m_puheight != '' ">PU_HEIGHT = #{ m_puheight }, </if>
+			<if test=" m_pux != null and m_pux != '' ">PU_X = #{ m_pux }, </if>
+			<if test=" m_puy != null and m_puy != '' ">PU_Y = #{ m_puy }, </if>
+			<if test=" m_pulink != null and m_pulink != '' ">PU_LINK = #{ m_pulink }, </if>
+			<if test=" m_pulinkuse != null and m_pulinkuse != '' ">PU_LINKUSE = #{ m_pulinkuse }, </if>
+			<if test=" m_putarget != null and m_putarget != '' ">PU_TARGET = #{ m_putarget }, </if>
+			<if test=" m_putype != null and m_putype != '' ">PU_TYPE = #{ m_putype }, </if>
+			<if test=" m_pumoid != null and m_pumoid != '' ">PU_MOID = #{ m_pumoid }, </if>
+			<if test=" m_puinid != null and m_puinid != '' ">PU_INID = #{ m_puinid }, </if>
+			PU_MODATE = sysdate
+    	</set>
+    	<where>
+    		AND PU_SEQ = #{ r_puseq }
+    	</where>
+    </update>
+
+
+	<!-- *추가 -->
+	
+		<!--  -->
+	<select id="popupCnt" parameterType="hashmap" resultType="int">
+		SELECT count(*) FROM POPUP pu
+			LEFT OUTER JOIN COMPANY cp on cp.CP_CODE = pu.PU_TARGET
+			<where>
+				<if test=" s_putarget != null and s_putarget != '' ">AND PU_TARGET = #{ s_putarget }</if>
+	    		<if test="r_putarget != null and r_putarget != ''">AND PU_TARGET = #{ r_putarget }</if>
+	 	  	</where>
+	</select>
+	
+	<select id="popupList"  parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+	    	SELECT * FROM POPUP pu 
+			LEFT OUTER JOIN COMPANY cp on cp.CP_CODE = pu.PU_TARGET
+	    		<where>
+		    		<if test="r_putarget != null and r_putarget != ''">
+		    			AND PU_TARGET = #{ r_putarget }
+		    		</if>
+		    	</where>
+	    	<if test="r_orderby != null and r_orderby != ''">
+	    		ORDER BY ${ r_orderby }
+	    	</if>
+    	) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{ r_endrow }]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{ r_startrow }]]></if>		
+		</where>
+    </select>
+    
+    <select id="getCpName"  parameterType="hashmap" resultType="String">
+		SELECT CP_NAME FROM COMPANY
+    	<where>
+    		<if test=" r_cpcode != null ">
+    			AND CP_CODE = #{ r_cpcode }
+    		</if>
+    	</where>
+    </select>
+    
+</mapper>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.banner">
+
+    <insert id="in" parameterType="hashmap">
+		INSERT INTO BANNER (
+			BN_SEQ
+			, BN_TYPE
+			, BN_ORDER
+			, BN_LINK
+			, BN_LINKUSE
+			, BN_ALT
+			, BN_TARGET
+			, BN_IMAGE
+			, BN_IMAGETYPE
+			, BN_TEXT
+			, BN_USEYN
+			, BN_INID
+			, BN_INDATE
+			, BN_MOBILEIMAGE
+			, BN_MOBILEIMAGETYPE )
+		VALUES (
+            NEXT VALUE FOR USQ_BANNER
+            , #{ m_bntype }
+            , #{ m_bnorder }
+            , #{ m_bnlink }
+            , #{ m_bnlinkuse }
+            , #{ m_bnalt }
+            , #{ m_bntarget }
+            , #{ m_bnimage }
+            , #{ m_bnimagetype }
+            , #{ m_bntext }
+            , 'Y'
+            , #{ m_bninid }
+            , GETDATE()
+            , #{ m_bnmobileimage }
+            , #{ m_bnmobileimagetype }
+		)
+	</insert>
+
+    <update id="up" parameterType="hashmap">
+        UPDATE BANNER
+        <set>
+            <if test="m_bntype != null and m_bntype != ''">BN_TYPE = #{ m_bntype },</if>
+            <if test="m_bnorder != null and m_bnorder != ''">BN_ORDER = #{ m_bnorder },</if>
+            <if test="m_bnlink != null ">BN_LINK = #{ m_bnlink },</if>
+            <if test="m_bnlinkuse != null and m_bnlinkuse != ''">BN_LINKUSE = #{ m_bnlinkuse },</if>
+            <if test="m_bnalt != null ">BN_ALT = #{ m_bnalt },</if>
+            <if test="m_bntarget != null ">BN_TARGET = #{ m_bntarget },</if>
+            <if test="m_bnimage != null and m_bnimage != ''">BN_IMAGE = #{ m_bnimage },</if>
+            <if test="m_bnimagetype != null and m_bnimagetype != ''">BN_IMAGETYPE = #{ m_bnimagetype },</if>
+            <if test="m_bnuseyn != null and m_bnuseyn != ''">BN_USEYN = #{ m_bnuseyn },</if>
+            <if test="m_bnmoid != null and m_bnmoid != ''">BN_MOID = #{ m_bnmoid },</if>
+            <if test="m_bnmobileimage != null and m_bnmobileimage != ''">BN_MOBILEIMAGE = #{ m_bnmobileimage },</if>
+            <if test="m_bnmobileimagetype != null and m_bnmobileimagetype != ''">BN_MOBILEIMAGETYPE = #{ m_bnmobileimagetype },</if>
+            BN_MODATE = GETDATE()
+        </set>
+        <where>
+            AND BN_SEQ = #{ r_bnseq }
+        </where>
+    </update>
+
+    <delete id="del" parameterType="hashmap">
+        DELETE BANNER
+        <where>
+            AND BN_SEQ = #{ r_bnseq }
+        </where>
+    </delete>
+
+    <select id="one" parameterType="hashmap" resultType="hashmap">
+        SELECT * FROM BANNER
+        <where>
+            <if test="r_bnseq != null and r_bnseq != '' ">AND BN_SEQ = #{ r_bnseq }</if>
+            <if test=" r_bntype != null and r_bntype != '' ">AND BN_TYPE = #{ r_bntype }</if>
+        </where>
+    </select>
+
+    <select id="cnt" parameterType="hashmap" resultType="int">
+        SELECT COUNT(*) FROM BANNER 
+        LEFT OUTER JOIN O_USER ON BN_INID = USERID
+        <where>
+            <if test="r_bnseq != null and r_bnseq != '' ">AND BN_SEQ = #{ r_bnseq }</if>
+            <if test=" r_bntype != null and r_bntype != '' ">AND BN_TYPE = #{ r_bntype }</if>
+            <if test=" r_bnlinkuse != null and r_bnlinkuse != '' ">AND BN_LINKUSE = #{ r_bnlinkuse }</if>
+            <if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' + #{rl_usernm} + '%'</if>
+        </where>
+    </select>
+
+    <select id="list" parameterType="hashmap" resultType="hashmap">
+        SELECT * FROM (
+        SELECT 
+        	ROW_NUMBER() OVER(
+				<choose>
+					<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+					<otherwise>ORDER BY (SELECT 1)</otherwise>
+				</choose>
+			) AS ROWNUM
+        	, XX.* FROM (
+
+        SELECT * FROM BANNER BN
+        LEFT OUTER JOIN O_USER US ON BN.BN_INID = US.USERID
+        <where>
+            <if test=" r_bntype != null and r_bntype != '' ">AND BN_TYPE = #{ r_bntype }</if>
+            <if test=" r_bnlinkuse != null and r_bnlinkuse != '' ">AND BN_LINKUSE = #{ r_bnlinkuse }</if>
+            <if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' + #{rl_usernm} + '%'</if>
+        </where>
+        ) XX ) S
+        <where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+    </select>
+
+    <select id="listForFront" parameterType="hashmap" resultType="hashmap">
+        SELECT *
+        FROM (
+            SELECT ROW_NUMBER() OVER(
+            	/*ORDER BY (SELECT 1)*/
+            	<choose>
+					<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+					<otherwise>ORDER BY (SELECT 1)</otherwise>
+				</choose>
+            ) AS ROWNUM
+            , *
+            FROM BANNER
+            <where>
+                BN_USEYN = 'Y'
+                <if test=" r_bntype != null and r_bntype != '' ">AND BN_TYPE = #{ r_bntype }</if>
+            </where>
+        ) XX 
+        <where>
+            <if test="r_limitrow != null and r_limitrow != ''">ROWNUM <![CDATA[<=]]> #{ r_limitrow }</if>
+        </where>
+        <!-- <if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${ r_orderby }</if>  -->
+
+    </select>
+
+</mapper>

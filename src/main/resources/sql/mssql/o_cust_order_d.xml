@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.o_cust_order_d">
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO O_CUST_ORDER_D(
+			REQ_NO
+			, LINE_NO
+			, ITEM_CD
+			, UNIT
+			, QUANTITY
+			, PRICE
+			, DUMMY
+			, INSERTID
+			, INSERT_DT
+			, INDATE
+		)VALUES(
+			#{m_reqno}
+			, #{m_lineno}
+			, #{m_itemcd}
+			, #{m_unit}
+			, #{m_quantity}
+			, 0
+			, #{m_dummy}
+			, #{m_insertid}
+			, SUBSTRING(CONVERT(CHAR(19), GETDATE(), 20), 1, 16)
+			, GETDATE()
+		)
+	</insert>
+	
+	<update id="up" parameterType="hashmap">
+		UPDATE O_CUST_ORDER_D
+		<set>
+			<if test="m_itemcd != null and m_itemcd != ''">ITEM_CD = #{m_itemcd},</if>
+			<if test="m_unit != null">UNIT = #{m_unit},</if>
+			<if test="m_quantity != null and m_quantity != ''">QUANTITY = #{m_quantity},</if>
+			<if test="m_price != null and m_price != ''">PRICE = #{m_price},</if>
+			<if test="m_dummy != null and m_dummy != ''">DUMMY = #{m_dummy},</if>
+			<if test="m_updateid != null and m_updateid != ''">UPDATEID = #{m_updateid},</if>
+			UPDATE_DT = SUBSTRING(CONVERT(CHAR(19), GETDATE(), 20), 1, 16),
+			MODATE = GETDATE()
+		</set>
+		<where>
+			AND REQ_NO = #{r_reqno} AND LINE_NO = #{r_lineno}
+		</where>
+	</update>
+	
+	<update id="upReqNo" parameterType="hashmap">
+		UPDATE O_CUST_ORDER_D
+		<set>
+			REQ_NO = #{m_reqno},
+			<if test="m_updateid != null and m_updateid != ''">UPDATEID = #{m_updateid},</if>
+			UPDATE_DT = SUBSTRING(CONVERT(CHAR(19), GETDATE(), 20), 1, 16),
+			MODATE = GETDATE()
+		</set>
+		<where>
+			AND REQ_NO = #{r_reqno}
+		</where>
+	</update>
+	
+	<delete id="del" parameterType="hashmap">
+		DELETE O_CUST_ORDER_D
+		<where>
+			AND REQ_NO = #{r_reqno}
+			<if test="r_lineno != null and r_lineno != ''">AND LINE_NO = #{r_lineno}</if>
+		</where>
+	</delete>
+	
+	<select id="one" parameterType="hashmap" resultType="hashmap">
+		SELECT COD.* 
+		FROM O_CUST_ORDER_D COD
+		<where>
+			<if test="r_reqno != null and r_reqno != ''">AND REQ_NO = #{r_reqno}</if>
+			<if test="r_lineno != null and r_lineno != ''">AND LINE_NO = #{r_lineno}</if>
+			<if test="r_itemcd != null and r_itemcd != ''">AND ITEM_CD = #{r_itemcd}</if>
+		</where>
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) 
+		FROM O_CUST_ORDER_D COD
+			LEFT JOIN O_CUST_ORDER_H COH ON COD.REQ_NO = COH.REQ_NO
+			LEFT JOIN O_ITEM_NEW IT ON COD.ITEM_CD = IT.ITEM_CD
+			LEFT JOIN ITEMINFO ITI ON COD.ITEM_CD = ITI.ITI_ITEMCD
+		<where>
+			<if test="r_reqno != null and r_reqno != ''">AND COD.REQ_NO = #{r_reqno}</if>
+			<if test="r_custcd != null and r_custcd != ''">AND COH.CUST_CD = #{r_custcd}</if>
+			<if test="r_shiptocd != null and r_shiptocd != ''">AND COH.SHIPTO_CD = #{r_shiptocd}</if>
+			<if test="r_lineno != null and r_lineno != ''">AND COD.LINE_NO = #{r_lineno}</if>
+			<if test="r_itemcd != null and r_itemcd != ''">AND IT.ITEM_CD = #{r_itemcd}</if>
+			<if test="r_statuscd != null and r_statuscd != '' ">AND COH.STATUS_CD = #{r_statuscd}</if>
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (
+			SELECT ROW_NUMBER() OVER(
+			<choose>
+				<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+				<otherwise>ORDER BY (SELECT 1)</otherwise>
+			</choose>
+			) AS ROWNUM
+			, XX.* FROM (
+			SELECT COD.*
+				, COH.CUST_CD, COH.SHIPTO_CD
+				, IT.DESC1, IT.DESC2
+				, ITI.*
+				, (SELECT COUNT(*) FROM ITEMRECOMMEND WHERE ITR_ITEMCD = COD.ITEM_CD) AS RECOMMEND_ITEM_COUNT
+				, CASE WHEN SALES_CD1 = 'A' AND (SALES_CD2 IN ('02','06','US1') OR (SALES_CD2 = '76' AND PLAN_FMLY = 'H15' ) ) THEN 'Y' ELSE 'N' END AS FIREPROOF_YN
+			FROM O_CUST_ORDER_D COD
+				LEFT JOIN O_CUST_ORDER_H COH ON COD.REQ_NO = COH.REQ_NO
+				LEFT JOIN O_ITEM_NEW IT ON COD.ITEM_CD = IT.ITEM_CD
+				LEFT JOIN ITEMINFO ITI ON COD.ITEM_CD = ITI.ITI_ITEMCD
+			<where>
+				<if test="r_reqno != null and r_reqno != ''">AND COD.REQ_NO = #{r_reqno}</if>
+				<if test="r_custcd != null and r_custcd != ''">AND COH.CUST_CD = #{r_custcd}</if>
+				<if test="r_shiptocd != null and r_shiptocd != ''">AND COH.SHIPTO_CD = #{r_shiptocd}</if>
+				<if test="r_lineno != null and r_lineno != ''">AND COD.LINE_NO = #{r_lineno}</if>
+				<if test="r_itemcd != null and r_itemcd != ''">AND IT.ITEM_CD = #{r_itemcd}</if>
+				<if test="r_statuscd != null and r_statuscd != '' ">AND COH.STATUS_CD = #{r_statuscd}</if>
+			</where>
+			) XX 
+		) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+	</select>
+	
+</mapper>

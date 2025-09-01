@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>e-Ordering System</title>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta name="title" content="">
+<meta name="keywords" content="">
+<meta name="description" content="">
+
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+
+<link rel="shortcut icon" href="images/common/favicon.ico" />
+
+<!-- css -->
+<link rel="stylesheet" href="js/bootstrap/css/bootstrap.css" />
+<link rel="stylesheet" href="css/style.css" />
+
+<!-- jQuery -->
+<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="js/jquery.sweet-dropdown.min.js"></script> <!-- HEADER MYPAGE -->
+<script type="text/javascript" src="js/lightslider.js"></script> <!-- BANNER -->
+<script type="text/javascript" src="js/tabcontent.js"></script> <!-- TAB -->
+
+<!--[if lt IE 9]>
+<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+<![endif]-->
+<!--[if lt IE 8]>
+<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE8.js"></script>
+<![endif]-->
+<!--[if lt IE 7]>
+<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE7.js"></script>
+<![endif]-->
+
+<script type="text/javascript">
+// HEADER ALL MENU
+$(document).on("click",".site_map_btn",function() {
+	$(this).hide();
+	$(".site_map_btn_close").show();
+	$("#fullWrap,#fullWrapM").slideToggle(300);
+	$("#fullWrap,#fullWrapM").toggleClass("on");
+});
+
+$(document).on("click",function(e) {
+	var target = $(e.target);
+	var chkSearch = target.parents(".site_map_btn").length;
+	if(chkSearch == 0) {
+		$(".site_map_btn").show();
+		$(".site_map_btn_close").hide();
+		$("#fullWrap,#fullWrapM").removeClass("on");
+		$("#fullWrap,#fullWrapM").slideUp(300);
+	}
+});
+
+//HEADER SEARCH
+function searchlist() {
+	if(!$("#searchkey").val()) {
+		alert('검색어를 입력 해 주십시오.');
+		return false;
+	}
+	$("#totalsearchfrm").submit();
+}
+function searchlist2(acturl, searchtype) {
+	if(!$("#searchkey2").val()) {
+		alert('검색어를 입력 해 주십시오.');
+		return false;
+	}
+	$("#searchkey").val($("#searchkey2").val());
+	$("#searchtype").val(searchtype);
+	$("#totalsearchfrm").attr("action", acturl);
+	$("#totalsearchfrm").submit();
+}
+
+// HEADER FIXING
+$(window).scroll(function() {
+	if($(window).scrollTop() >= 186) {
+		$('#header .gnbArea').addClass('fixed-header');
+		$('#header .fullWrapOut').addClass('fixed-header-sub');
+		$('#header .fullWrapM').addClass('fixed-header-mobile');
+	} else if($(window).scrollTop() >= 62) {
+		$('#subWrap .gnbArea').addClass('fixed-header');
+		$('#subWrap .fullWrapOut').addClass('fixed-header-sub');
+		$('#subWrap .fullWrapM').addClass('fixed-header-mobile');
+	} else {
+		$('#header .gnbArea').removeClass('fixed-header');
+		$('#header .fullWrapOut').removeClass('fixed-header-sub');
+		$('#header .fullWrapM').removeClass('fixed-header-mobile');
+	}
+});
+
+$(document).ready(function() {
+	// BANNER
+	$("#content-slider").lightSlider({
+		auto:true,
+		loop:true,
+		keyPress:true
+	});
+	
+	$(".mask").hover(function() {
+		$(this).parent().find('.maskSpanClass').toggleClass("pad");
+	});
+	
+	// SUB HEADER
+	var subWrap = $('#subWrap'),
+		allImg = $('.site_map_btn').find('img'),
+		allImgSrc = allImg.attr('src');
+	if( subWrap.hasClass('subWrap') ) {
+		allImg.attr('src', allImgSrc.substring(0, allImgSrc.length-4) + '_sub.png');
+	} else {
+		allImg.attr('src', allImgSrc.substring(0, allImgSrc.length-11) + '.png');
+	}
+});
+
+$(document).ready(function() {
+	// FOOTER SELECT
+	$('.select').on('click','.placeholder',function() {
+		var parent = $(this).closest('.select');
+		if( ! parent.hasClass('is-open')) {
+			parent.addClass('is-open');
+		$('.select.is-open').not(parent).removeClass('is-open');
+		} else {
+			parent.removeClass('is-open');
+		}
+	}).on('click','ul>li',function() {
+		var parent = $(this).closest('.select');
+		parent.removeClass('is-open').find('.placeholder').text( $(this).text() );
+	});
+
+	// hide .topbtn first
+	$(".topbtn").hide();
+
+	// fade in .topbtn
+	$(function () {
+		$(window).scroll(function () {
+			if ($(this).scrollTop() > 100) {
+				$('.topbtn').fadeIn();
+			} else {
+				$('.topbtn').fadeOut();
+			}
+		});
+
+		// scroll body to 0px on click
+		$('.topbtn a').click(function () {
+			$('body,html').animate({
+				scrollTop: 0
+			}, 800);
+			return false;
+		});
+	});
+});
+
+// Popup
+function popup(winNM,width,height){
+	var sw=screen.width;
+	var sh=screen.height;
+	
+	var px=(sw-width)/2;
+	var py=(sh-height)/2;
+	
+	var set='top='+py+',left='+px;
+	set+=',width='+width+',height='+height+
+	',toobar=0,resizable=0,status=0,scrollbars=0';
+	
+	window.open(winNM,'',set);
+}
+
+// 페이지이동
+function tabChange(val){
+	document.location.href = val;
+}
+</script>
+</head>
+
+<body>
+
+	<div id="subWrap" class="subWrap">
+	
+		<!-- Header -->
+		<div id="header">
+		
+			<div class="headerWrap">
+				<div class="inner">
+					<h1 onclick="location.href='index.html'"><img src="images/common/usg_boral_logo.png" alt="logo" /></h1>
+					<ul class="lnbArea">
+						<li>
+							<button type="button" data-dropdown="#basic"><em>(주)라임네츠 <strong>길라임</strong><img src="images/common/arrow.png" alt="arrow" /></em><img class="img-circle avatar" src="images/common/profile.jpg" alt="img" onclick="location.href='memberEdit.html'" /></button>
+							<div class="dropdown-menu dropdown-anchor-top-left dropdown-has-anchor" id="basic">
+								<ul>
+									<li><a href="orderList.html">주문현황</a></li>
+									<li><a href="#">마감현황</a></li>
+									<li><a href="#">거래원장</a></li>
+									<li><a href="customerList.html">회사정보</a></li>
+								</ul>
+							</div>
+						</li>
+						<li><button type="button"><img src="images/common/icon_bag@2x.png" class="icn" alt="img" /><span>15</span></button></li>
+						<li><button type="button" onclick="location.href='login.html'"><img src="images/common/icon_logout@2x.png" class="icn" alt="img" /></button></li>
+					</ul>
+				</div>
+			</div> <!-- headerWrap -->
+			
+			<div class="gnbArea">
+				<ul>
+					<li>
+						<a href="javascript:;" class="site_map_btn" style="display: inline;"><img src="images/common/total_menu_icon.png" alt="전체보기"></a>
+						<a href="javascript:;" class="site_map_btn_close" style="display: none;"><img src="images/common/total_menu_close_icon.png" alt="닫기" title="닫기"></a>
+					</li>
+					<li>
+						<a href="javascript:;" onclick="location.href='orderList.html'">주문현황</a>
+						<a href="javascript:;" onclick="location.href='stockOrder.html'">출고현황</a>
+						<a href="javascript:;" onclick="location.href='estimateOrder.html'">리포트</a>
+						<a href="javascript:;" onclick="location.href='productList.html'">품목관리</a>
+						<a href="javascript:;" onclick="location.href='eventList.html'">프로모션</a>
+						<a href="javascript:;" onclick="location.href='noticeList.html'">정보공유</a>
+						<a href="javascript:;" onclick="location.href='customerList.html'">자사정보관리</a>
+					</li>
+					<li class="btnSearch">
+						<!--검색바 St-->
+						<!--<a href="javascript:;" class="linkS searchbtn"><img src="/images/common/search_icon.png" alt=""/>검색</a>-->
+						<div class="top_search_wrap">
+						<form name="totalsearchfrm" id="totalsearchfrm" method="get" action="/search/list.asp">
+							<input type="hidden" name="searchtype" id="searchtype">
+							<div class="search_layer">
+								<input type="text" name="searchkey" id="searchkey" class="inp" value="" placeholder="검색어를 입력하세요" maxlength="50" />
+								<button type="button" class="search_btn"><img src="images/common/search_icon.png" /></button>
+							</div>
+						</form>
+						</div>
+						<!--//검색바 En-->
+					</li>
+				</ul>
+			</div> <!-- gnbArea -->
+			
+			
+			<!-- 전체보기 St-->
+			<div class="fullWrapOut" id="fullWrap">
+			
+				<div class="fullWrap" >
+					<ul>
+						<li class="out total_01">
+							<p>주문현황</p>
+							<ul>
+								<li><a href="javascript:;" onclick="location.href='orderAdd.html'">주문등록</a></li>
+								<li><a href="javascript:;" onclick="location.href='orderList.html'">주문현황</a></li>
+								<li><a href="javascript:;">거래장(주문)</a></li>
+								<li><a href="javascript:;">거래장(품목)</a></li>
+							</ul>
+						</li>
+						<li class="out total_02">
+							<p>출고현황</p>
+							<ul>
+								<li><a href="javascript:;" onclick="location.href='stockOrder.html'">출고현황</a></li>
+							</ul>
+						</li>
+						<li class="out total_03">
+							<p>리포트</p>
+							<ul>
+								<li><a href="javascript:;" onclick="location.href='estimateOrder.html'">납품확인서</a></li>
+								<li><a href="javascript:;">채권/잔액확인서 </a></li>
+							</ul>
+						</li>
+						<li class="out total_04">
+							<p>품목관리</p>
+							<ul>
+								<li><a href="javascript:;" onclick="location.href='productList.html'">품목현황</a></li>
+							</ul>
+						</li>
+						<li class="out total_05">
+							<p>프로모션</p>
+							<ul>
+								<li><a href="javascript:;" onclick="location.href='eventList.html'">이벤트</a></li>
+							</ul>
+						</li>
+						<li class="out total_06">
+							<p>정보공유</p>
+							<ul>
+								<li><a href="javascript:;" onclick="location.href='noticeList.html'">공지사항</a></li>
+								<li><a href="javascript:;" onclick="location.href='faqList.html'">FAQ</a></li>
+								<li><a href="javascript:;">자료실</a></li>
+							</ul>
+						</li>
+						<li class="out total_07">
+							<p>자사정보관리</p>
+							<ul>
+								<li><a href="javascript:;" onclick="location.href='customerList.html'">회사정보</a></li>
+								<li><a href="javascript:;">계정확인</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+				
+				<div class="fullWrapM" >
+					<span>
+						<button type="button" onclick="location.href='memberEdit.html'">(주)라임네츠 <strong>길라임</strong><img class="img-circle avatar" src="images/common/profile.jpg" alt="img" /><img src="images/common/arrow_right.png" alt="arrow" /></button>
+					</span>
+					<span>
+						<a href="javascript:;" onclick="location.href='orderList.html'">주문현황</a>
+						<a href="javascript:;" onclick="location.href='stockOrder.html'">출고현황</a>
+						<a href="javascript:;" onclick="location.href='estimateOrder.html'">리포트</a>
+						<a href="javascript:;" onclick="location.href='productList.html'">품목관리</a>
+						<a href="javascript:;" onclick="location.href='eventList.html'">프로모션</a>
+						<a href="javascript:;" onclick="location.href='noticeList.html'">정보공유</a>
+						<a href="javascript:;" onclick="location.href='customerList.html'">자사정보관리</a>
+						<a href="javascript:;"></a>
+					</span>
+				</div>
+				
+			</div>
+			<!-- //전체보기 En-->
+		</div> <!-- Header -->
+		
+		<div class="container-fluid">
+			<div class="full-content">
+			
+				<div class="row no-m">
+					<div class="page-breadcrumb"><strong>품목현황</strong></div>
+					
+					<div class="page-location">
+						<ul>
+							<li><a href="#"><img src="images/common/location_home.png" alt="img" /></a></li>
+							<li><a>품목관리</a></li>
+							<li>
+								<select onchange="tabChange(this.value);">
+									<option value="productList.html" selected>품목현황</option>
+								</select>
+							</li>
+						</ul>
+					</div>
+				</div> <!-- Row -->
+				
+			</div> <!-- Full Content -->
+		</div> <!-- Container Fluid -->
+		
+		<!-- Container -->
+		<main class="container" id="container">
+		
+			<!-- Content -->
+			<div class="content">
+			
+				<!-- Row -->
+				<div class="row">
+					<!-- Col-md-12 -->
+					<div class="col-md-12">
+					
+						<div class="searchArea">
+							<div class="col-md-11">
+								<em class="high">품목분류</em>
+								<select class="form-control form-sm">
+									<option>선택하세요.</option>
+								</select>
+								<select class="form-control form-sm">
+									<option>선택하세요.</option>
+								</select>
+								<select class="form-control form-sm">
+									<option>선택하세요.</option>
+								</select>
+							</div>
+							<div class="col-md-1 empty searchBtn">
+								<button type="button">Search</button>
+							</div>
+							
+							<div class="col-md-6">
+								<em>품목명1</em>
+								<input type="text" class="form-control" name="" value="" />
+							</div>
+							<div class="col-md-6 right">
+								<em>품목명2</em>
+								<input type="text" class="form-control" name="" value="" />
+							</div>
+							<div class="col-md-6">
+								<em>SEARCH_TEXT</em>
+								<input type="text" class="form-control" name="" value="" />
+							</div>
+							<div class="col-md-6 right">
+								<em>품목코드</em>
+								<input type="text" class="form-control" name="" value="" />
+							</div>
+							
+							<div class="col-md-12 line">
+								<em>즐겨찾기 품목</em>
+								<div class="table-radio">
+									<label class="lol-label-radio" for="radio1">
+										<input type="radio" id="radio1" name="" checked="" />
+										<span class="lol-text-radio">즐겨찾기</span>
+									</label>
+								</div>
+							</div>
+							
+						</div> <!-- searchArea -->
+						<div class="searchBtn full-tablet">
+							<button type="button">Search</button>
+						</div>
+						
+						<div class="boardListArea">
+							<h2>
+								Total <strong>8</strong>EA
+								<div class="title-right">
+									<button type="button" class="btn btn-yellow">즐겨찾기 저장</button>
+									<button type="button" class="btn btn-gray">즐겨찾기 해제</button>
+									<button type="button" class="btn-excel"><img src="images/common/icon_excel@2x.png" alt="img" /></button>
+								</div>
+							</h2>
+							
+							<div class="boardList productList">
+								<!-- desktop -->
+								<table class="full-desktop" width="100%" cellpadding="0" cellspacing="0" border="0">
+									<colgroup>
+										<col width="5%" />
+										<col width="4%" />
+										<col width="6%" />
+										<col width="9%" />
+										<col width="18%" />
+										<col width="10%" />
+										<col width="12%" />
+										<col width="10%" />
+										<col width="11%" />
+										<col width="7%" />
+										<col width="8%" />
+									</colgroup>
+									<thead>
+										<tr>
+											<th>선택</th>
+											<th>NO</th>
+											<th>이미지</th>
+											<th>품목코드</th>
+											<th>품목명</th>
+											<th>구매단위</th>
+											<th>SEARCH_TEXT</th>
+											<th>추천품목</th>
+											<th>품목분류</th>
+											<th>순서</th>
+											<th>즐겨찾기</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>
+												<div class="basic-checkbox">
+													<input type="checkbox" class="lol-checkbox" id="checkbox18" />
+													<label class="lol-label-checkbox" for="checkbox18"></label>
+												</div>
+											</td>
+											<td>8</td>
+											<td><img src="images/common/icon_img@2x.png" onerror="this.src='../images/common/icon_img@2x.png'" width="40" height="40" alt="img" /></td>
+											<td>105135</td>
+											<td class="text-left"><a href="#" class="nowrap" onclick="popup('productDetailPop.html', 955, 825);">12.5*900*2510 일반 평보드</a></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td><input type="text" class="form-control text-right" name="" value="" /></td>
+											<td><button type="button"><img src="images/common/icon_star@2x_active.png" width="20" height="20" alt="img" /></button></td>
+										</tr>
+										<tr>
+											<td>
+												<div class="basic-checkbox">
+													<input type="checkbox" class="lol-checkbox" id="checkbox17" />
+													<label class="lol-label-checkbox" for="checkbox17"></label>
+												</div>
+											</td>
+											<td>7</td>
+											<td></td>
+											<td>105135</td>
+											<td class="text-left"><a href="#" class="nowrap" onclick="popup('productDetailPop.html', 955, 825);">9.5*900*2510 일반 평보드</a></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td><input type="text" class="form-control text-right" name="" value="" /></td>
+											<td><button type="button"><img src="images/common/icon_star@2x.png" width="20" height="20" alt="img" /></button></td>
+										</tr>
+										<tr>
+											<td>
+												<div class="basic-checkbox">
+													<input type="checkbox" class="lol-checkbox" id="checkbox16" />
+													<label class="lol-label-checkbox" for="checkbox16"></label>
+												</div>
+											</td>
+											<td>6</td>
+											<td></td>
+											<td>105135</td>
+											<td class="text-left"><a href="#" class="nowrap"></a></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+										</tr>
+										<tr>
+											<td>
+												<div class="basic-checkbox">
+													<input type="checkbox" class="lol-checkbox" id="checkbox15" />
+													<label class="lol-label-checkbox" for="checkbox15"></label>
+												</div>
+											</td>
+											<td>5</td>
+											<td></td>
+											<td>105135</td>
+											<td class="text-left"><a href="#" class="nowrap"></a></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+										</tr>
+										<tr>
+											<td>
+												<div class="basic-checkbox">
+													<input type="checkbox" class="lol-checkbox" id="checkbox14" />
+													<label class="lol-label-checkbox" for="checkbox14"></label>
+												</div>
+											</td>
+											<td>4</td>
+											<td></td>
+											<td>105135</td>
+											<td class="text-left"><a href="#" class="nowrap"></a></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+										</tr>
+										<tr>
+											<td>
+												<div class="basic-checkbox">
+													<input type="checkbox" class="lol-checkbox" id="checkbox13" />
+													<label class="lol-label-checkbox" for="checkbox13"></label>
+												</div>
+											</td>
+											<td>3</td>
+											<td></td>
+											<td>105135</td>
+											<td class="text-left"><a href="#" class="nowrap"></a></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+										<tr>
+											<td>
+												<div class="basic-checkbox">
+													<input type="checkbox" class="lol-checkbox" id="checkbox12" />
+													<label class="lol-label-checkbox" for="checkbox12"></label>
+												</div>
+											</td>
+											<td>2</td>
+											<td></td>
+											<td>105135</td>
+											<td class="text-left"><a href="#" class="nowrap"></a></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+										</tr>
+										<tr>
+											<td>
+												<div class="basic-checkbox">
+													<input type="checkbox" class="lol-checkbox" id="checkbox11" />
+													<label class="lol-label-checkbox" for="checkbox11"></label>
+												</div>
+											</td>
+											<td>1</td>
+											<td></td>
+											<td>105135</td>
+											<td class="text-left"><a href="#" class="nowrap"></a></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+										</tr>
+									</tbody>
+								</table>
+								
+								<!-- mobile -->
+								<table class="full-mobile" width="100%" cellpadding="0" cellspacing="0" border="0">
+									<colgroup>
+										<col width="9%" />
+										<col width="15%" />
+										<col width="45%" />
+										<col width="15%" />
+										<col width="16%" />
+									</colgroup>
+									<thead>
+										<tr>
+											<th>선택</th>
+											<th>이미지</th>
+											<th>품목코드<br />품목명</th>
+											<th>순서</th>
+											<th>즐겨찾기</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>
+												<div class="basic-checkbox">
+													<input type="checkbox" class="lol-checkbox" id="checkbox18" />
+													<label class="lol-label-checkbox" for="checkbox18"></label>
+												</div>
+											</td>
+											<td><img src="images/common/icon_img@2x.png" onerror="this.src='../images/common/icon_img@2x.png'" width="40" height="40" alt="img" /></td>
+											<td class="text-left"><a href="#" class="nowrap" onclick="popup('productDetailPop.html', 955, 825);">105135<br />12.5*900*2510 일반 평보드</a></td>
+											<td><input type="text" class="form-control text-right" name="" value="" /></td>
+											<td><button type="button"><img src="images/common/icon_star@2x_active.png" width="20" height="20" alt="img" /></button></td>
+										</tr>
+									</tbody>
+								</table>
+								
+							</div> <!-- boardList -->
+							
+							<!-- BEGIN paginate -->
+							<div class="paginate">
+								<a class="pre_end">맨앞</a>
+								<a class="pre">이전</a>
+								<strong>1</strong>
+								<a href="javascript:pager('', '', 2);"><span>2</span></a>
+								<a href="javascript:pager('', '', 3);"><span>3</span></a>
+								<a href="javascript:pager('', '', 4);"><span>4</span></a>
+								<a href="javascript:pager('', '', 5);"><span>5</span></a>
+								<a class="next" href="javascript:pager('', '', 2);">다음</a>
+								<a class="next_end" href="javascript:pager('', '', 3);">맨뒤</a>
+							</div>
+							<!-- END paginate -->
+							
+						</div> <!-- boardListArea -->
+						
+					</div> <!-- Col-md-12 -->
+				</div> <!-- Row -->
+				
+			</div> <!-- Content -->
+		</main> <!-- Container -->
+		
+		<section>
+			<div class="bottomArea">
+				<ul>
+					<li>
+						<h5>CITI 입금계좌</h5>
+						<span>
+							<img class="img-circle avatar" src="images/common/citi.png" alt="" />
+							<em>123123-1234567</em>
+						</span>
+					</li>
+					<li>
+						<h5>영업담당자</h5>
+						<span>
+							<img class="img-circle avatar" src="images/common/sales.jpg" alt="" />
+							<em>영업팀 안서진 차장 010.3321.9876</em>
+						</span>
+					</li>
+					<li>
+						<h5>CS담당자</h5>
+						<span>
+							<img class="img-circle avatar" src="images/common/cs.jpg" alt="" />
+							<em>CS1팀 이아름 대리 02.321.9876</em>
+						</span>
+					</li>
+				</ul>
+			</div>
+		</section>
+		
+		<!-- Footer -->
+		<footer>
+			<div class="inner">
+				<span>
+					<a href="#"><strong>개인정보취급방침</strong></a>
+					<a href="#">이용수칙</a>
+					<a href="faqList.html">FAQ</a>
+					<a href="#">이용안내</a>
+					
+					<div class="select">
+						<div class="placeholder">패밀리사이트</div>
+						<ul>
+							<li><a href="#">USG Boral 본사</a></li>
+							<li><a href="#">USG Boral 공식 홈페이지</a></li>
+							<li><a href="#">USG Boral 아시아</a></li>
+						</ul>
+					</div>
+				</span>
+			</div>
+			<div class="copyrightArea">
+				<span>
+					<i>크나우프 석고보드(주)</i> <i>대표이사 : 권혁준</i> <i>전화번호 : 02-6902-3100</i> <i>팩스번호 : 02-6902-3190</i><br />
+					<i>서울특별시 강남구 테헤란로 87길 36 (삼성동) 도심공항타워 7층</i><br /><br />
+					
+					© 2020 USG BORAL. All rights reserved.
+				</span>
+			</div>
+		</footer> <!-- Footer -->
+		
+		<div class="topbtn"><a href="#header"><span class="screen_out">최상단으로 가기</span></a></div>
+		
+	</div> <!-- Wrap -->
+
+</body>
+</html>

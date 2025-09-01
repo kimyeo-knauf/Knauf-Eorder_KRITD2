@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.popup">
+	<insert id="in" parameterType="hashmap">
+		<!-- 2024-10-15 HSG 시퀀스 대신 MAX값으로 대체  -->
+		<selectKey keyProperty="puSeq" resultType="long" order="BEFORE">
+    		SELECT MAX(PU_SEQ)+1 FROM POPUP;
+    	</selectKey>
+
+		INSERT INTO POPUP
+		(
+			PU_SEQ,
+			PU_TYPE,
+			PU_TITLE,
+			PU_IMAGE,
+			PU_IMAGETYPE,
+			PU_SDATE,
+			PU_EDATE,
+			PU_WIDTH,
+			PU_HEIGHT,
+			PU_X,
+			PU_Y,
+			PU_LINK,
+			PU_LINKUSE,			
+			PU_TARGET,
+			PU_USEYN,
+			PU_INID,
+			PU_INDATE
+		)values(
+		<!-- 2024-10-18 HSG 시퀀스 대신 MAX값으로 대체  -->
+<!-- 			USQ_POPUP.NEXTVAL, -->
+			#{puSeq},
+			#{ m_putype},
+			#{ m_putitle},
+			#{ m_puimage},
+			#{ m_puimagetype},
+			#{ m_pusdate},
+			#{ m_puedate},
+			#{ m_puwidth},
+			#{ m_puheight},
+			#{ m_pux},
+			#{ m_puy},
+			#{ m_pulink},
+			#{ m_pulinkuse},			
+			#{ m_putarget},			
+			#{ m_puuseyn},
+			#{ m_puinid},
+			GETDATE()
+		)
+	</insert>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT count(*) FROM POPUP
+		LEFT OUTER JOIN O_USER ON PU_INID = USERID
+		<where>
+			<if test=" r_puseq != null and r_puseq != '' ">AND PU_SEQ = #{ r_puseq }</if>
+            <if test=" r_putype != null and r_putype != '' ">AND PU_TYPE = #{ r_putype }</if>
+			<if test=" r_putarget != null and r_putarget != '' ">AND PU_TARGET = #{ r_putarget }</if>
+			<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' + #{rl_usernm} + '%'</if>			
+    	</where>
+	</select>
+	
+	<delete id="del">
+		DELETE FROM POPUP
+		<where>
+			AND PU_SEQ = #{ r_puseq }
+    	</where>
+	</delete>
+	
+	<select id="max" parameterType="hashmap" resultType="long">
+		SELECT ISNULL( MAX(PU_SEQ), 0 )+1 FROM POPUP
+	</select>
+	
+	<select id="one"  parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM POPUP
+    	<where>
+    		<if test=" r_puseq != null ">
+    			AND PU_SEQ = #{ r_puseq }
+    		</if>
+    	</where>
+    </select>
+    
+    <select id="list"  parameterType="hashmap" resultType="hashmap">
+    	SELECT * FROM (SELECT 
+   			ROW_NUMBER() OVER(
+			<choose>
+				<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+				<otherwise>ORDER BY (SELECT 1)</otherwise>
+			</choose>
+			) AS ROWNUM
+   			, XX.* FROM (
+		    SELECT PU.*,US.*,
+	    		CASE
+		    	<![CDATA[
+		    	WHEN CONVERT(VARCHAR(10),  GETDATE(), 120) < PU_SDATE THEN 'N'
+		    	WHEN PU_SDATE <= CONVERT(VARCHAR(10),  GETDATE(), 120) AND PU_EDATE >= CONVERT(VARCHAR(10),  GETDATE(), 120) THEN 'Y'
+		    	WHEN PU_EDATE < CONVERT(VARCHAR(10),  GETDATE(), 120) THEN 'N'
+		    	ELSE 'M'
+		    	]]>
+		    	END AS STATUS
+		    FROM POPUP PU
+		    LEFT OUTER JOIN O_USER US ON PU.PU_INID = US.USERID
+			<where>
+				<if test=" r_putype != null and r_putype != '' ">AND PU_TYPE = #{ r_putype }</if>
+	    		<if test=" r_putarget != null and r_putarget != '' ">AND PU_TARGET = #{ r_putarget }</if>
+	    		<if test=" r_puseq != null ">AND PU_SEQ = #{ r_puseq }</if>
+	    		<if test="rl_usernm != null and rl_usernm != '' ">AND USER_NM LIKE '%' + #{rl_usernm} + '%'</if>
+	    	</where>
+	    	) XX ) S
+		 	<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+    </select>
+
+	<select id="listForFront"  parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			<if test="r_limitrow != null and r_limitrow != ''">TOP #{ r_limitrow }</if>
+			 PU.*,
+		CASE
+				<![CDATA[
+				WHEN CONVERT(VARCHAR(10),  GETDATE(), 120) < PU_SDATE THEN 'N'
+				WHEN PU_SDATE <= CONVERT(VARCHAR(10),  GETDATE(), 120) AND PU_EDATE >= CONVERT(VARCHAR(10),  GETDATE(), 120) THEN 'Y'
+				WHEN PU_EDATE < CONVERT(VARCHAR(10),  GETDATE(), 120) THEN 'N'
+				ELSE 'M'
+				]]>
+		END AS STATUS
+		FROM POPUP PU
+		<where>
+			<if test=" r_putype != null and r_putype != '' ">AND PU_TYPE = #{ r_putype }</if>
+			AND PU_SDATE <![CDATA[<=]]> CONVERT(VARCHAR(10),  GETDATE(), 120) AND PU_EDATE <![CDATA[>=]]> CONVERT(VARCHAR(10),  GETDATE(), 120)
+		</where>
+		<if test="r_orderby != null and r_orderby != ''">
+			ORDER BY ${ r_orderby }
+		</if>
+	</select>
+    
+    <update id="up">
+    	UPDATE POPUP
+    	<set>
+			<if test=" m_putitle != null and m_putitle != '' ">PU_TITLE = #{ m_putitle }, </if>
+			<if test=" m_pucpcode != null and m_pucpcode != '' ">PU_IMAGE = #{ m_pucpcode }, </if>
+			<if test=" m_puimage != null and m_puimage != '' ">PU_IMAGE = #{ m_puimage }, </if>
+			<if test=" m_puimagetype != null and m_puimagetype != '' ">PU_IMAGETYPE = #{ m_puimagetype }, </if>
+			<if test=" m_pusdate != null and m_pusdate != '' ">PU_SDATE = #{ m_pusdate }, </if>
+			<if test=" m_puedate != null and m_puedate != '' ">PU_EDATE = #{ m_puedate }, </if>
+			<if test=" m_puwidth != null and m_puwidth != '' ">PU_WIDTH = #{ m_puwidth }, </if>
+			<if test=" m_puheight != null and m_puheight != '' ">PU_HEIGHT = #{ m_puheight }, </if>
+			<if test=" m_pux != null and m_pux != '' ">PU_X = #{ m_pux }, </if>
+			<if test=" m_puy != null and m_puy != '' ">PU_Y = #{ m_puy }, </if>
+			<if test=" m_pulink != null and m_pulink != '' ">PU_LINK = #{ m_pulink }, </if>
+			<if test=" m_pulinkuse != null and m_pulinkuse != '' ">PU_LINKUSE = #{ m_pulinkuse }, </if>
+			<if test=" m_putarget != null and m_putarget != '' ">PU_TARGET = #{ m_putarget }, </if>
+			<if test=" m_putype != null and m_putype != '' ">PU_TYPE = #{ m_putype }, </if>
+			<if test=" m_pumoid != null and m_pumoid != '' ">PU_MOID = #{ m_pumoid }, </if>
+			<if test=" m_puinid != null and m_puinid != '' ">PU_INID = #{ m_puinid }, </if>
+			PU_MODATE = GETDATE()
+    	</set>
+    	<where>
+    		AND PU_SEQ = #{ r_puseq }
+    	</where>
+    </update>
+
+
+	<!-- *추가 -->
+	
+	<!--  -->
+	<select id="popupCnt" parameterType="hashmap" resultType="int">
+		SELECT count(*) FROM POPUP pu
+			LEFT OUTER JOIN COMPANY cp on cp.CP_CODE = pu.PU_TARGET
+			<where>
+				<if test=" s_putarget != null and s_putarget != '' ">AND PU_TARGET = #{ s_putarget }</if>
+	    		<if test="r_putarget != null and r_putarget != ''">AND PU_TARGET = #{ r_putarget }</if>
+	 	  	</where>
+	</select>
+	
+	<select id="popupList"  parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT 
+			ROW_NUMBER() OVER(
+			<choose>
+				<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+				<otherwise>ORDER BY (SELECT 1)</otherwise>
+			</choose>
+			) AS ROWNUM
+			, XX.* FROM (
+	    	SELECT * FROM POPUP pu 
+			LEFT OUTER JOIN COMPANY cp on cp.CP_CODE = pu.PU_TARGET
+	    		<where>
+		    		<if test="r_putarget != null and r_putarget != ''">
+		    			AND PU_TARGET = #{ r_putarget }
+		    		</if>
+		    	</where>
+    		) XX 
+    	) S
+		<where>
+			<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+				ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
+			</if>
+		</where>
+    </select>
+    
+    <select id="getCpName"  parameterType="hashmap" resultType="String">
+		SELECT CP_NAME FROM COMPANY
+    	<where>
+    		<if test=" r_cpcode != null ">
+    			AND CP_CODE = #{ r_cpcode }
+    		</if>
+    	</where>
+    </select>
+    
+</mapper>

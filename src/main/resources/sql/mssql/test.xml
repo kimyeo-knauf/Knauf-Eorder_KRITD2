@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.test">
+	<insert id="in" parameterType="hashmap">
+		<!-- 2024-10-15 HSG 시퀀스 대신 MAX값으로 대체  -->
+		<selectKey keyProperty="ts0" resultType="long" order="BEFORE">
+    		SELECT MAX(TS_0)+1 FROM TEST_L;
+    	</selectKey>
+
+		INSERT INTO TEST_L (
+			TS_0, TS_1, TS_2, TS_3, TS_INDATE1, TS_INDATE2
+		) 
+		VALUES (
+		<!-- 2024-10-18 HSG 시퀀스 대신 MAX값으로 대체  -->
+<!-- 			USQ_TESTLSEQ.NEXTVAL -->
+			#{ts0}
+			, #{m_ts1, jdbcType=VARCHAR}
+			, UDF_SETPASSWORD(#{m_ts2, jdbcType=VARCHAR})
+			<!--, '${@com.limenets.eorder.util.PasswordSHA@getShaPasswd(m_ts2)}'-->
+			<!-- , #{m_ts2, jdbcType=VARCHAR} -->
+			, #{m_ts3, jdbcType=VARCHAR}
+			, SYSDATE
+			, SYSDATE
+		)
+	</insert>
+	
+	<select id="one" parameterType="hashmap" resultType="com.limenets.eorder.dto.TestDto">
+		SELECT * FROM TEST_L
+		<where>
+			<if test="r_ts0 != null and r_ts0 != '' ">AND TS_0 = #{r_ts0}</if>
+			<if test="r_ts1 != null and r_ts1 != '' ">AND TS_1 = #{r_ts1}</if>
+			<if test="r_ts2 != null and r_ts2 != '' ">AND TS_2 = #{r_ts2}</if>
+			<if test="r_ts3 != null and r_ts3 != '' ">AND TS_3 = #{r_ts3}</if>
+			<if test="rl_ts1 != null and rl_ts1 != '' ">AND TS_1 LIKE '%' || #{rl_ts1} || '%'</if>
+			<if test="rl_ts2 != null and rl_ts2 != '' ">AND TS_2 LIKE '%' || #{rl_ts2} || '%'</if>
+			<if test="rl_ts3 != null and rl_ts3 != '' ">AND TS_3 LIKE '%' || #{rl_ts3} || '%'</if>
+		</where>
+	</select>
+	
+	<select id="list" parameterType="hashmap" resultType="com.limenets.eorder.dto.TestDto">
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		
+		SELECT * FROM TEST_L
+		<where>
+			<if test="r_ts0 != null and r_ts0 != '' ">AND TS_0 = #{r_ts0}</if>
+			<if test="r_ts1 != null and r_ts1 != '' ">AND TS_1 = #{r_ts1}</if>
+			<if test="r_ts2 != null and r_ts2 != '' ">AND TS_2 = #{r_ts2}</if>
+			<if test="r_ts3 != null and r_ts3 != '' ">AND TS_3 = #{r_ts3}</if>
+			<if test="rl_ts1 != null and rl_ts1 != '' ">AND TS_1 LIKE '%' || #{rl_ts1} || '%'</if>
+			<if test="rl_ts2 != null and rl_ts2 != '' ">AND TS_2 LIKE '%' || #{rl_ts2} || '%'</if>
+			<if test="rl_ts3 != null and rl_ts3 != '' ">AND TS_3 LIKE '%' || #{rl_ts3} || '%'</if>
+		</where>
+		
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+	</select>
+	
+	
+</mapper>

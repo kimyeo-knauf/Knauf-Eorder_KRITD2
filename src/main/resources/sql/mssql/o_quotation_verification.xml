@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.o_quotation_verification">
+
+	<!-- ################################################# -->
+	<!-- ####### O_ORDER_VERIFICATION Table Start. ####### -->
+	<!-- ################################################# -->
+	
+	<update id="mergeQuotation" parameterType="hashmap">
+        MERGE INTO O_QUOTATION_VERIFICATION
+        USING (SELECT 1 AS dual) AS D
+           ON (QUOTE_QT = #{quoteQt} AND ITEM_CD = #{itemCd})
+         WHEN MATCHED THEN 
+              UPDATE SET 
+                     UPDATEID = #{insertId},
+                     MODATE   = GETDATE()
+         WHEN NOT MATCHED THEN
+              INSERT (
+                  QUOTE_QT,
+                  ITEM_CD,
+                  INSERTID,
+                  INDATE
+              ) VALUES (
+                  #{quoteQt},
+                  #{itemCd},
+                  #{insertId},
+                  GETDATE()
+              );
+	</update>
+	
+	
+	<select id="checkQuotationItemListAjax" parameterType="hashmap" resultType="com.limenets.eorder.dto.QuotationDto">
+        SELECT TRIM(A.QUOTE_QT) AS QUOTE_QT, TRIM(A.ITEM_CD) AS ITEM_CD
+          FROM O_QUOTATION_VERIFICATION A
+         WHERE A.QUOTE_QT = #{quoteQt}
+           AND A.ITEM_CD IN 
+           <foreach item="itemCd" collection="itemList" open="(" separator="," close=")">
+               #{itemCd}
+           </foreach>
+	</select>
+	
+	<select id="getQuotationListAjax" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM ( SELECT
+				ROW_NUMBER() OVER( 
+				<choose>
+					<when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+					<otherwise>ORDER BY (SELECT 1)</otherwise>
+				</choose>
+				) AS ROWNUM, XX.* FROM(
+				SELECT DISTINCT
+					S.QUOTE_QT
+					, S.ITEM_CD
+					, S.INDATE
+					, B.ITEM_DESC
+			FROM O_QUOTATION_VERIFICATION S 
+				LEFT JOIN O_SALESORDER B ON S.ITEM_CD = B.ITEM_CD
+			<where>	
+				<if test="r_quote_qt != null and r_quote_qt != '' ">AND S.QUOTE_QT = #{r_quote_qt}</if>
+				<if test="r_item_cd != null and r_item_cd != '' ">AND S.ITEM_CD = #{r_item_cd}</if>
+				<if test="r_indate != null and r_indate != '' ">AND CAST(S.INDATE AS DATE) = #{r_indate}</if>
+			</where>
+			) XX
+			)S
+			<where>
+					<if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >	
+					ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}</if>
+			</where>
+			
+			
+			
+	</select>
+	
+	<select id="cnt" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM O_QUOTATION_VERIFICATION S
+			<where>	
+				<if test="r_quote_qt != null and r_quote_qt != '' ">AND S.QUOTE_QT = #{r_quote_qt}</if>
+				<if test="r_item_cd != null and r_item_cd != '' ">AND S.ITEM_CD = #{r_item_cd}</if>
+				<if test="r_indate != null and r_indate != '' ">AND CAST(S.INDATE AS DATE) = #{r_indate}</if>
+			</where>
+	</select>
+	
+	
+	
+</mapper>

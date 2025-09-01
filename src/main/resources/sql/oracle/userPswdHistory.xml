@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="eorder.userPswdHistory">
+	<insert id="in" parameterType="hashmap">
+		INSERT INTO USERPSWDHISTORY (
+			UPH_SEQ, UPH_ID, UPH_PSWD, UPH_CODE, UPH_MSG, UPH_INID, UPH_INDATE
+		)
+		VALUES (
+			USQ_USERPSWDHISTORY.NEXTVAL
+			, #{m_uphid, jdbcType=VARCHAR}
+			, UDF_SETPASSWORD(#{m_uphpswd, jdbcType=VARCHAR})
+			, #{m_uphcode, jdbcType=VARCHAR}
+			, #{m_uphmsg, jdbcType=VARCHAR}
+			, #{m_uphinid, jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+	
+	<insert id="in2" parameterType="hashmap">
+		INSERT INTO USERPSWDHISTORY (
+			UPH_SEQ, UPH_ID, UPH_PSWD, UPH_CODE, UPH_MSG, UPH_INID, UPH_INDATE
+		)
+		VALUES (
+			USQ_USERPSWDHISTORY.NEXTVAL
+			, #{m_uphid, jdbcType=VARCHAR}
+			, #{m_uphpswd, jdbcType=VARCHAR}
+			, #{m_uphcode, jdbcType=VARCHAR}
+			, #{m_uphmsg, jdbcType=VARCHAR}
+			, #{m_uphinid, jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+	
+	<select id="list" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (SELECT ROWNUM RR, XX.* FROM (
+		
+		SELECT 
+			UPH.*
+			<if test="r_uphpswd_now != null and r_uphpswd_now != '' ">, UDF_SETPASSWORD(#{r_uphpswd_now, jdbcType=VARCHAR}) AS NOW_PASSWORD_SECURITY</if>
+		FROM 
+			USERPSWDHISTORY UPH
+		<where>
+			<if test="r_uphid != null and r_uphid != '' ">AND UPH_ID = #{r_uphid}</if>
+			<if test="r_uphpswd != null and r_uphpswd != '' ">AND UPH_PSWD = UDF_SETPASSWORD(#{r_uphpswd, jdbcType=VARCHAR})</if>
+			<if test="r_uphinsdate != null and r_uphinsdate != '' ">AND UPH_INDATE <![CDATA[>=]]> STR_TO_DATE(#{r_uphinsdate}, '%Y-%m-%d')</if>
+			<if test="r_uphinedate != null and r_uphinedate != '' ">AND UPH_INDATE <![CDATA[<]]> DATE_ADD(STR_TO_DATE(#{r_uphinedate}, '%Y-%m-%d'), INTERVAL +1 DAY)</if>
+		</where>
+
+		<if test=" r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</if>
+		) XX 
+		<where>
+			<if test="r_endrow != null and r_endrow != ''"><![CDATA[ROWNUM <= #{r_endrow}]]></if>		
+		</where> )
+		<where>
+			<if test="r_startrow != null and r_startrow != ''"><![CDATA[RR >= #{r_startrow}]]></if>
+		</where>
+	</select>
+	
+	<update id="inHistoryByShiptoUser" parameterType="hashmap">
+		INSERT INTO USERPSWDHISTORY(
+			UPH_SEQ, UPH_ID, UPH_PSWD, UPH_CODE, UPH_MSG, UPH_INID, UPH_INDATE
+		)
+		SELECT USQ_USERPSWDHISTORY.NEXTVAL, A.* 
+		FROM(
+			<foreach collection="newShiptoList" item="newShipto" index="index" separator="UNION ALL">
+				SELECT #{newShipto.SHIPTO_USERID}
+						, UDF_SETPASSWORD(#{newShipto.SHIPTO_USERID})
+						, #{newShipto.UPH_CODE}
+						, #{newShipto.UPH_MSG}
+						, #{newShipto.INSERTID}
+						, SYSDATE
+				FROM DUAL
+			</foreach>
+		) A
+	</update>
+	
+	<select id="cntForUpdateCheck" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM USERPSWDHISTORY 
+		<where>
+			UPH_SEQ = #{r_uphseq} AND UPH_INDATE <![CDATA[<]]> ADD_MONTHS(SYSDATE, #{r_userpswdmonth})
+		</where>
+	</select>
+	
+	<select id="getLastHistory" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (
+			SELECT * FROM USERPSWDHISTORY WHERE UPH_ID = #{r_uphid} ORDER BY UPH_INDATE DESC
+		) WHERE ROWNUM <![CDATA[<=]]> 1
+	</select>
+	
+	
+</mapper>
