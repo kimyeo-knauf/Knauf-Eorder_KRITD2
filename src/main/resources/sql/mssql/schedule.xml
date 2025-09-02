@@ -88,4 +88,44 @@
 		</where>
 	</delete>
 	
+	
+	<select id="getDailyEmailSenderList" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			M.CUST_CD, 
+			M.CUST_MAIN_EMAIL, 
+			M.CUST_SENDMAIL_YN , 
+			M.SALESREP_EMAIL, 
+			M.SALESREP_SENDMAIL_YN, 
+			C.CUST_NM 
+		FROM O_CUSTOMER_MAILINFO M
+		LEFT JOIN O_CUSTOMER C ON M.CUST_CD = C.CUST_CD
+		<where>
+			M.CUST_SENDMAIL_YN = 'Y' OR M.SALESREP_SENDMAIL_YN = 'Y'
+		</where>
+	</select>
+	
+	<select id="getDailyEmailList" parameterType="hashmap" resultType="hashmap">
+        SELECT 
+			OH.CUST_CD, 
+			OH.REQ_NO, 
+			PT.PT_NAME, 
+			OH.REQUEST_DT, 
+			OH.REQUEST_TIME, 
+			OC.CUST_NM, 
+			OS.SHIPTO_NM,
+			OI.DESC1,
+			OD.QUANTITY,
+			OS.ADD1,
+			OH.TEL1
+		FROM O_ORDER_CONFIRM_H OH
+		LEFT JOIN O_ORDER_CONFIRM_D OD ON OH.CUST_PO = OD.CUST_PO 
+		LEFT JOIN O_CUSTOMER OC ON OH.CUST_CD = OC.CUST_CD
+		LEFT JOIN O_SHIPTO OS ON OH.SHIPTO_CD = OS.SHIPTO_CD 
+		LEFT JOIN PLANT PT ON OH.COMPANY_CD  = PT.WERKS
+		LEFT JOIN O_ITEM OI ON OD.ITEM_CD = OI.ITEM_CD
+		<where>
+			OH.CUST_CD = #{cust_code} AND OH.REQUEST_DT = #{request_dt}	
+		</where>
+	</select>	
+	
 </mapper>

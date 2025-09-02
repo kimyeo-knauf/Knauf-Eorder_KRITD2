@@ -41,4 +41,13 @@ public class ScheduleDao {
 	public int del(Map<String, Object> svcMap) {
 		return sqlSession.delete("eorder.schedule.del", svcMap);
 	}
+	
+	
+	public List<Map<String, Object>> getDailyEmailSenderList(final Map<String, Object> svcMap) {
+		return sqlSession.selectList("eorder.schedule.getDailyEmailSenderList", svcMap);
+	}
+	
+	public List<Map<String, Object>> getDailyEmailList(final Map<String, Object> svcMap) {
+		return sqlSession.selectList("eorder.schedule.getDailyEmailList", svcMap);
+	}
 }

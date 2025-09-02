@@ -86,6 +86,48 @@ public class MailUtil {
 		return true;
 	}
 	
+	
+	public boolean sendHtmlMail(final String smtpHost, final String title, final String toName, final String toEmail, final String fromName, final String fromEmail
+			, final String contentStr, final File file, final String filename) throws AddressException, MessagingException, IOException, com.sun.xml.internal.messaging.saaj.packaging.mime.MessagingException {
+			
+			final Properties properties = System.getProperties();
+			properties.put("mail.smtp.host", smtpHost);
+		    logger.debug("*****************************************메일 전송 시작.******************************* ");
+
+			final Session sessions = Session.getInstance(properties, null); // 메일 세션 생성
+			final MimeMessage message = new MimeMessage(sessions); 
+			
+			final Address[] toAddresses = InternetAddress.parse(toEmail);
+			message.setRecipients(Message.RecipientType.TO, toAddresses);
+			
+			final InternetAddress from = new InternetAddress(fromEmail, fromName, "UTF-8");
+			message.setFrom(from);
+			message.setSubject(title,"UTF-8");
+			message.setText(contentStr,"text/html");
+			message.setSentDate(new java.util.Date());
+			message.setHeader("Content-type", "text/html; charset=UTF-8"); // 메일 본문관련, 첨부파일과 관련없음
+			
+			//파일 첨부
+			if(file != null) {
+				MimeBodyPart attachPart = new MimeBodyPart();
+				attachPart.setDataHandler(new DataHandler(new FileDataSource(file)));
+				attachPart.setFileName(MimeUtility.encodeText(filename, "EUC-KR", "B"));
+//				System.out.println(MimeUtility.encodeText(filename, "EUC-KR", "B"));
+				
+				Multipart multipart = new MimeMultipart();
+				multipart.addBodyPart(attachPart);
+				message.setContent(multipart);
+			}
+			try {
+				Transport.send(message);
+				logger.debug("SMTP : SUCESS");
+			}catch(Exception e) {
+				logger.debug("SMTP : FAIL");
+			}
+			return true;
+		}
+	
+	
 	public boolean sendMail(final String smtpHost, final String title, final String toName, final String toEmail, final String fromName, final String fromEmail
 			, final String contentPage, final String[] repStr1, final String[] repStr2, final String userId, final String userPw) throws Exception, AddressException, MessagingException {
 			
