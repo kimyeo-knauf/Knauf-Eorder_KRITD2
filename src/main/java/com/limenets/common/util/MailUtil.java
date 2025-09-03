@@ -87,7 +87,7 @@ public class MailUtil {
 	}
 	
 	
-	public boolean sendHtmlMail(final String smtpHost, final String title, final String toName, final String toEmail, final String fromName, final String fromEmail
+	/*public boolean sendHtmlMail(final String smtpHost, final String title, final String toName, final String toEmail, final String fromName, final String fromEmail
 			, final String contentStr, final File file, final String filename) throws AddressException, MessagingException, IOException, com.sun.xml.internal.messaging.saaj.packaging.mime.MessagingException {
 			
 			final Properties properties = System.getProperties();
@@ -126,7 +126,7 @@ public class MailUtil {
 			}
 			return true;
 		}
-	
+	*/
 	
 	public boolean sendMail(final String smtpHost, final String title, final String toName, final String toEmail, final String fromName, final String fromEmail
 			, final String contentPage, final String[] repStr1, final String[] repStr2, final String userId, final String userPw) throws Exception, AddressException, MessagingException {
