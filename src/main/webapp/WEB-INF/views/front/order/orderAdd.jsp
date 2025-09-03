@@ -409,7 +409,7 @@
     overflow-y: auto;
     flex-grow: 1;
     line-height: 1.6;
-    font-size: 14px;
+    font-size: 13px;
     color: #333;
 }
 
