@@ -129,4 +129,41 @@
 		</where>
 	</select>	
 	
+	<update id="insertUpdateDailyEmailScheduleTime" parameterType="map">
+        <![CDATA[
+        MERGE O_DynamicSchedule_Time AS T
+        USING (
+                 SELECT
+                        #{m_hour}      AS TIME
+                      , #{m_min}       AS MINUTE
+                      , GETDATE()      AS INDATE
+                      , 'id'		   AS INSERTID
+              ) AS S
+         ON T.INSERTID = S.INSERTID
+         WHEN MATCHED THEN
+              UPDATE SET
+                     TIME       = S.TIME
+                   , MINUTE     = S.MINUTE
+                   , INDATE     = S.INDATE
+                   , INSERTID   = S.INSERTID
+         WHEN NOT MATCHED THEN
+              INSERT (
+                        TIME
+                      , MINUTE
+                      , INDATE
+                      , INSERTID
+                     )
+              VALUES (
+                        S.TIME
+                      , S.MINUTE
+                      , S.INDATE
+                      , S.INSERTID
+                     ); 
+        ]]>
+    </update>
+    
+    <select id="getDailyEmailScheduleTime" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM O_DynamicSchedule_Time;
+	</select>
+	
 </mapper>

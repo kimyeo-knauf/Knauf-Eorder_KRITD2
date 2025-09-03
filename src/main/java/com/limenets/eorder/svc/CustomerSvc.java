@@ -20,6 +20,7 @@ import com.limenets.common.util.Converter;
 import com.limenets.common.util.Pager;
 import com.limenets.eorder.dao.CustomerDao;
 import com.limenets.eorder.dao.SalesOrderDao;
+import com.limenets.eorder.dao.ScheduleDao;
 import com.limenets.eorder.dao.ShipToDao;
 import com.limenets.eorder.scheduler.DynamicDailyEmailScheduler;
 
@@ -33,6 +34,7 @@ public class CustomerSvc {
 	@Inject private CustomerDao customerDao;
 	@Inject private ShipToDao shipToDao;
 	@Inject private SalesOrderDao salesOrderDao;
+	@Inject private ScheduleDao scheduleDao;
 	@Inject private DynamicDailyEmailScheduler dScheduler;
 	
 	
@@ -340,11 +342,15 @@ public class CustomerSvc {
 		resMap.put("endpage", params.get("endpage"));
 		resMap.put("r_limitrow", params.get("r_limitrow"));
 		
-		/* For Select */
-		resMap.put("scheduleTime", "03");
-		resMap.put("scheduleMinute", "10");
-		// End.
-		
+		List<Map<String, Object>> schTime  = scheduleDao.getDailyEmailScheduleTime(null);
+		if(schTime.size() > 0) {
+			resMap.put("scheduleTime", schTime.get(0).get("TIME"));
+			resMap.put("scheduleMinute", schTime.get(0).get("MINUTE"));
+		} else {
+			resMap.put("scheduleTime", "03");
+			resMap.put("scheduleMinute", "00");
+		}
+
 		String r_orderby = "";
 		String sidx = Converter.toStr(params.get("sidx")); //정렬기준컬럼
 		String sord = Converter.toStr(params.get("sord")); //내림차순,오름차순
@@ -352,7 +358,7 @@ public class CustomerSvc {
 		if(StringUtils.equals("", sidx)) { r_orderby = "CUST_MAIN_EMAIL DESC"; } //디폴트 지정
 		params.put("r_orderby", r_orderby);
 
-		String r_custcd = Converter.toStr(params.get("r_custcd"));
+		//String r_custcd = Converter.toStr(params.get("r_custcd"));
 
 		// 엑셀 다운로드.
 		String where = Converter.toStr(params.get("where"));
@@ -383,6 +389,11 @@ public class CustomerSvc {
         String schdMin = req.getParameter("scheduleMin");
         
         dScheduler.updateDailyTime(Integer.parseInt(schdHour), Integer.parseInt(schdMin));
+        
+        Map<String, Object> param = new HashMap<String, Object>();
+        param.put("m_hour", schdHour);
+        param.put("m_min", schdMin);
+        scheduleDao.insertUpdateDailyEmailScheduleTime(param);
         
         if (custCdArray == null) {
             return MsgCode.getResultMap(MsgCode.ERROR, "데이터가 없습니다.");

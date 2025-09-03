@@ -50,4 +50,12 @@ public class ScheduleDao {
 	public List<Map<String, Object>> getDailyEmailList(final Map<String, Object> svcMap) {
 		return sqlSession.selectList("eorder.schedule.getDailyEmailList", svcMap);
 	}
+	
+	public int insertUpdateDailyEmailScheduleTime(final Map<String, Object> svcMap) {
+		return sqlSession.update("eorder.schedule.insertUpdateDailyEmailScheduleTime", svcMap);
+	}
+	
+	public List<Map<String, Object>> getDailyEmailScheduleTime(final Map<String, Object> svcMap) {
+		return sqlSession.selectList("eorder.schedule.getDailyEmailScheduleTime", svcMap);
+	}
 }
