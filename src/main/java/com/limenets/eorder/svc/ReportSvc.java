@@ -6,7 +6,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.io.OutputStream;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
@@ -27,9 +31,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 
@@ -43,6 +50,7 @@ import com.limenets.common.util.FileUpload;
 import com.limenets.common.util.MailUtil;
 import com.limenets.eorder.dao.ReportDao;
 import com.limenets.eorder.dao.SalesOrderDao;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 /**
  * 공통으로 사용하는 서비스.
@@ -531,7 +539,8 @@ public class ReportSvc {
 		SimpleDateFormat sdf = new SimpleDateFormat("_yyyy_MM_dd");
         Calendar c1 = Calendar.getInstance();
 		// 파일생성
-		String filename = "거래사실확인서" + sdf.format(c1.getTime()) + ".html";
+		//String filename = "거래사실확인서" + sdf.format(c1.getTime()) + ".html";
+		String filename = "거래사실확인서" + sdf.format(c1.getTime()) + ".pdf";
 		
 		File file = new File(filename);
 //		FileWriter fw = new FileWriter(file, false);
@@ -552,11 +561,63 @@ public class ReportSvc {
 		} 
 		
 		MailUtil mail = new MailUtil();
+		
+		/*
+		String htmlContent = contentStr;
+		File pdfFile = null;
+		
+		try {
+			pdfFile = File.createTempFile("report", ".pdf");
+			pdfFile.deleteOnExit(); // JVM 종료 시 파일 자동 삭제
+			try(OutputStream os = new FileOutputStream(pdfFile)){
+				PdfRendererBuilder builder = new PdfRendererBuilder();
+				builder.useFastMode();
+				builder.withHtmlContent(htmlContent, null);
+				builder.toStream(os);
+				builder.run();
+			}
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+		*/
 		for(String email : emailArr) {
 			if(!StringUtils.equals("", email)) {
-				// 메일전송
-				mail.sendMail(smtpHost, title, "", email, shopName, smtpSender, contentStr, file, filename);
+			//if(!StringUtils.equals("", email)&& pdfFile !=null) {
+				// 기존 소스코드
+				//mail.sendMail(smtpHost, title, "", email, shopName, smtpSender, contentStr, file, filename);
 				
+				String htmlContent = contentStr;
+				htmlContent = htmlContent.replaceAll("(?i)<br>", "<br/>");
+				
+				
+			    //W3C로 파싱하기
+				//String htmlToPdf = new String(Files.readAllBytes(Paths.get(htmlContent.getFile().getAbsolutePath())));
+				Document document = Jsoup.parse(htmlContent);
+				
+				
+				File pdfFile = File.createTempFile("converted-", ".pdf");
+				pdfFile.deleteOnExit(); // JVM 종료 시 삭제
+				
+				// pdf 생성
+				try(OutputStream os = new FileOutputStream(pdfFile)){
+					PdfRendererBuilder builder = new PdfRendererBuilder();
+					
+					URL fontUrl = getClass().getClassLoader().getResource("fonts/NanumGothic-Regular.ttf");
+					builder.useFont(new File(fontUrl.toURI()), "NanumGothic");
+
+					builder.useDefaultPageSize(210, 297, PdfRendererBuilder.PageSizeUnits.MM); // A4 비율로 맞추기
+					//builder.useDefaultDPI(300);
+					builder.useFastMode();
+					builder.withHtmlContent(htmlContent, null);
+					builder.toStream(os);
+					//builder.withW3cDocument(new W3CDom().fromJsoup(htmlContent), "/");
+					builder.run();
+				}
+		
+				// 메일전송
+				mail.sendMail(smtpHost, title, "", email, shopName, smtpSender, contentStr, pdfFile, filename);
+				
+	
 				// 전송이력 저장
 				this.insertSendMailHistory("factReport", Converter.toStr(params.get("insdate")), Converter.toStr(params.get("inedate"))
 						, Converter.toStr(params.get("m_custcd")), Converter.toStr(params.get("m_shiptocd")), Converter.toStr(params.get("r_smhtype")), email, loginDto.getUserId());
