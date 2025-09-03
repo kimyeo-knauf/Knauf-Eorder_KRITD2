@@ -330,7 +330,21 @@ function dataSave(obj) {
             grid.jqGrid('saveRow', rowId);
         }
     });
-    debugger;
+    
+    const schdHour = document.getElementById("schdHour").value;
+    const schdMin = document.getElementById("schdMin").value;
+    if(schdHour === '') {
+    	alert('예약발송 [시간]을 선택해 주세요.');
+        $(obj).prop('disabled', false);
+        return false;
+    }
+    
+    if(schdMin === '') {
+    	alert('예약발송 [분]을 선택해 주세요.');
+        $(obj).prop('disabled', false);
+        return false;
+    }
+    
     // 선택된 행 중에서 실제 수정된 행만 가져오기
     var modifiedRows = getModifiedRows();
     if (modifiedRows.length === 0) {
@@ -371,8 +385,8 @@ function dataSave(obj) {
         $(obj).prop('disabled', false);
         return false;
     }
+
     
-    debugger;
     // 데이터 준비
     var iFormObj = $('form[name="iForm"]');
     iFormObj.empty();
@@ -384,6 +398,9 @@ function dataSave(obj) {
         iFormObj.append('<input type="hidden" name="salesrepSendmailYn" value="' + (rowData.SALESREP_SENDMAIL_YN || 'N') + '" />');
         iFormObj.append('<input type="hidden" name="comments" value="' + (rowData.COMMENTS || '') + '" />');
     });
+    
+    iFormObj.append('<input type="hidden" name="scheduleHour" value="' + schdHour.substring(0, 2) + '" />');
+    iFormObj.append('<input type="hidden" name="scheduleMin" value="' + schdMin.substring(0, 2) + '" />');
     if (confirm('저장 하시겠습니까?')) {
         var iFormData = iFormObj.serialize();
         var url = '${url}/admin/customer/insertUpdateOrderEmailAlarmAjax.lime';
@@ -559,6 +576,14 @@ function getGridList(){
                  });
                  originalDataMap[item.CUST_CD] = normalizedItem;
              });
+         }
+
+         if(data && data.scheduleTime) {
+        	 document.getElementById("schdHour").value = data.scheduleTime;
+         }
+         
+         if(data && data.scheduleMinute) {
+        	 document.getElementById("schdMin").value = data.scheduleMinute;
          }
          
          // multiselect 헤더 체크박스에 이벤트 바인딩
@@ -738,7 +763,7 @@ function excelDown(obj){
                                 <div class="btnList writeObjectClass">
                                         <%-- 예약발송 시각 설정 --%>
                                         <label>예약발송 시간:</label>
-                                        <select name="scheduleTime">
+                                        <select name="scheduleTime" id="schdHour">
                                             <option value="">선택</option>
                                             <% 
                                             String currentHour = request.getParameter("scheduleTime") != null ? request.getParameter("scheduleTime") : "";
@@ -749,7 +774,7 @@ function excelDown(obj){
                                                 <option value="<%= hourStr %>" <%= selected %>><%= hourStr %>시</option>
                                             <% } %>
                                         </select>
-                                        <select name="scheduleMinute">
+                                        <select name="scheduleMinute" id="schdMin">
                                             <option value="">선택</option>
                                             <% 
                                             String currentMinute = request.getParameter("scheduleMinute") != null ? request.getParameter("scheduleMinute") : "";

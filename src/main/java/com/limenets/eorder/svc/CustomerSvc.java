@@ -21,6 +21,7 @@ import com.limenets.common.util.Pager;
 import com.limenets.eorder.dao.CustomerDao;
 import com.limenets.eorder.dao.SalesOrderDao;
 import com.limenets.eorder.dao.ShipToDao;
+import com.limenets.eorder.scheduler.DynamicDailyEmailScheduler;
 
 /**
  * 거래처 & 납품처 서비스
@@ -32,6 +33,7 @@ public class CustomerSvc {
 	@Inject private CustomerDao customerDao;
 	@Inject private ShipToDao shipToDao;
 	@Inject private SalesOrderDao salesOrderDao;
+	@Inject private DynamicDailyEmailScheduler dScheduler;
 	
 	
 	public List<Map<String, Object>> getCustomerList(Map<String, Object> svcMap){
@@ -337,6 +339,10 @@ public class CustomerSvc {
 		resMap.put("startpage", params.get("startpage"));
 		resMap.put("endpage", params.get("endpage"));
 		resMap.put("r_limitrow", params.get("r_limitrow"));
+		
+		/* For Select */
+		resMap.put("scheduleTime", "03");
+		resMap.put("scheduleMinute", "10");
 		// End.
 		
 		String r_orderby = "";
@@ -372,6 +378,11 @@ public class CustomerSvc {
         String[] salesrepEmailArray = req.getParameterValues("salesrepEmail");
         String[] salesrepSendmailYnArray = req.getParameterValues("salesrepSendmailYn");
         String[] commentsArray = req.getParameterValues("comments");
+        
+        String schdHour = req.getParameter("scheduleHour");
+        String schdMin = req.getParameter("scheduleMin");
+        
+        dScheduler.updateDailyTime(Integer.parseInt(schdHour), Integer.parseInt(schdMin));
         
         if (custCdArray == null) {
             return MsgCode.getResultMap(MsgCode.ERROR, "데이터가 없습니다.");

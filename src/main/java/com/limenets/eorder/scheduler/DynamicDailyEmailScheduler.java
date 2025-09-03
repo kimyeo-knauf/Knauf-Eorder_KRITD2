@@ -1,18 +1,13 @@
 package com.limenets.eorder.scheduler;
 
-import java.io.File;
-import java.io.IOException;
+
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -21,9 +16,7 @@ import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronTrigger;
 
-import com.limenets.common.util.Converter;
 import com.limenets.common.util.MailUtil;
-import com.limenets.eorder.dto.DynamicDailyMailDto;
 import com.limenets.eorder.svc.ScheduleSvc;
 
 @Configuration
