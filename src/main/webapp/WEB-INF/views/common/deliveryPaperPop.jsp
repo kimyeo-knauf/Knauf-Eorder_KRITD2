@@ -215,29 +215,34 @@ $(document).ready(function(){
 									<th>배송지</th>
 								</tr>
 								<c:forEach items="${pageList}" var="itemList" varStatus="status2">
-									<tr>
-										<td>
-											<fmt:parseDate var="actualShipDt" value="${itemList.ACTUAL_SHIP_DT}" pattern="yyyyMMdd" />
-											<fmt:formatDate value="${actualShipDt}" pattern="yyyy-MM-dd"/>
-										</td>
-										<td class="ta_lft" id='td_item'>${fn:trim(itemList.ITEM_DESC)}</td>
-										<td class="ta_rgt" id='td_qty'><fmt:formatNumber value="${fn:trim(itemList.ORDER_QTY)}" type="number" pattern="#,###" /></td>
-										<td>${fn:trim(itemList.UNIT)}</td>
-										<td>${fn:trim(itemList.MANUFACT)}</td>
-										<!-- <td>
-											<c:choose>
-												<c:when test="${'255' eq itemList.ITEM_CD_3}">세경산업㈜</c:when>
-												<c:when test="${'254' eq itemList.ITEM_CD_3}">생고뱅이소바코리아</c:when>
-												<c:when test="${'21M' eq itemList.ITEM_CD_3}">유창㈜</c:when>
-												<c:otherwise>크나우프 석고보드㈜</c:otherwise>
-											</c:choose>
-										</td>-->
-										<td class="ta_lft" id="td_addr">
-											<c:set value="${fn:trim(itemList.ADD1)}" var="add1" />
-											<c:set value="${fn:trim(itemList.ADD2)}" var="add2" />
-											${add1}<c:if test="${'' ne add2 and !empty add2}"> ${add2}</c:if>
-										</td>
-									</tr>
+									<c:if test="${itemList.ORDER_QTY != 0}">
+										<tr>
+											<td>
+												<fmt:parseDate var="actualShipDt" value="${itemList.ACTUAL_SHIP_DT}" pattern="yyyyMMdd" />
+												<fmt:formatDate value="${actualShipDt}" pattern="yyyy-MM-dd"/>
+											</td>
+											<td class="ta_lft" id='td_item'>${fn:trim(itemList.ITEM_DESC)}</td>
+											<!-- 납품확인서 출력 시 개수가 0인 경우 출력되지 않도록 예외 처리 psy -->
+											<td class="ta_rgt" id='td_qty'>
+												<fmt:formatNumber value="${fn:trim(itemList.ORDER_QTY)}" type="number" pattern="#,###" />
+											</td>
+											<td>${fn:trim(itemList.UNIT)}</td>
+											<td>${fn:trim(itemList.MANUFACT)}</td>
+											<!-- <td>
+												<c:choose>
+													<c:when test="${'255' eq itemList.ITEM_CD_3}">세경산업㈜</c:when>
+													<c:when test="${'254' eq itemList.ITEM_CD_3}">생고뱅이소바코리아</c:when>
+													<c:when test="${'21M' eq itemList.ITEM_CD_3}">유창㈜</c:when>
+													<c:otherwise>크나우프 석고보드㈜</c:otherwise>
+												</c:choose>
+											</td>-->
+											<td class="ta_lft" id="td_addr">
+												<c:set value="${fn:trim(itemList.ADD1)}" var="add1" />
+												<c:set value="${fn:trim(itemList.ADD2)}" var="add2" />
+												${add1}<c:if test="${'' ne add2 and !empty add2}"> ${add2}</c:if>
+											</td>
+										</tr>
+									</c:if>
 								</c:forEach>
 							</tbody>
 						</c:if>
