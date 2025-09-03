@@ -1,10 +1,18 @@
 package com.limenets.eorder.scheduler;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -13,18 +21,18 @@ import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronTrigger;
 
+import com.limenets.common.util.Converter;
+import com.limenets.common.util.MailUtil;
 import com.limenets.eorder.dto.DynamicDailyMailDto;
-import com.limenets.eorder.svc.CustomerSvc;
-import com.limenets.eorder.svc.OrderSvc;
+import com.limenets.eorder.svc.ScheduleSvc;
 
 @Configuration
 @EnableScheduling
 public class DynamicDailyEmailScheduler implements SchedulingConfigurer {
-	//private String cronExpr = "0 0 3 * * ?";
-	private String cronExpr = "0 */30 * * * *";
+	private String cronExpr = "0 0 3 * * ?";
+	//private String cronExpr = "0 */1 * * * *";
 	
-	@Inject CustomerSvc customerSvc;
-	@Inject OrderSvc orderSvc;
+	@Inject ScheduleSvc scheduleSvc;
 	@Value("${https.url}") private String httpsUrl;
     @Value("${mail.smtp.sender.addr}") private String smtpSender;
     @Value("${shop.name}") private String shopName;
@@ -43,13 +51,11 @@ public class DynamicDailyEmailScheduler implements SchedulingConfigurer {
 		System.out.println("Updated DynamicDailyEmailScheduler : " + hour + minute);
 	}
 	
-	public String buildOrderTable(List<DynamicDailyMailDto> orders) {
+	private String buildOrderTable(List<Map<String, Object>> orders, String tm) {
 	    StringBuilder sb = new StringBuilder();
-
 	    sb.append("<div style='font-family:Arial,sans-serif; font-size:14px; color:#333;'>")
 	      .append("안녕하세요 크나우프석고보드 입니다<br><br>")
-	      .append("2025년 5월 16일 기준 귀사의 익일착 오더 안내 드립니다<br><br>")
-
+	      .append(String.format("%s년 %s월 %s일 기준 귀사의 익일착 오더 안내 드립니다<br><br>", tm.substring(0, 4), tm.substring(4, 6), tm.substring(6, 8)))
 	      .append("<table border='1' cellspacing='0' cellpadding='5' ")
 	      .append("style='border-collapse:collapse; width:100%; text-align:center;'>")
 	      .append("<thead style='background-color:#00AEEF; color:white;'>")
@@ -63,21 +69,23 @@ public class DynamicDailyEmailScheduler implements SchedulingConfigurer {
 	      .append("<th>품목</th>")
 	      .append("<th>수량</th>")
 	      .append("<th>납품처 주소</th>")
+	      .append("<th>인수자 연락처</th>")
 	      .append("</tr>")
 	      .append("</thead>")
 	      .append("<tbody>");
 
-	    for (DynamicDailyMailDto order : orders) {
+	    for (Map<String, Object> order : orders) {
 	        sb.append("<tr>")
-	          .append("<td>").append(order.getOrderNo()).append("</td>")
-	          .append("<td>").append(order.getFactory()).append("</td>")
-	          .append("<td>").append(order.getReqDate()).append("</td>")
-	          .append("<td>").append(order.getReqTime()).append("</td>")
-	          .append("<td>").append(order.getClient()).append("</td>")
-	          .append("<td>").append(order.getDeliClient()).append("</td>")
-	          .append("<td>").append(order.getProduct()).append("</td>")
-	          .append("<td>").append(order.getQuantity()).append("</td>")
-	          .append("<td>").append(order.getDeliAddress()).append("</td>")
+	          .append("<td>").append(order.get("REQ_NO")).append("</td>")
+	          .append("<td>").append(order.get("PT_NAME")==null ? "" : order.get("PT_NAME")).append("</td>")
+	          .append("<td>").append(order.get("REQUEST_DT")==null ? "" : order.get("REQUEST_DT")).append("</td>")
+	          .append("<td>").append(order.get("REQUEST_TIME")==null ? "" : order.get("REQUEST_TIME")).append("</td>")
+	          .append("<td>").append(order.get("CUST_NM")==null ? "" : order.get("CUST_NM")).append("</td>")
+	          .append("<td>").append(order.get("SHIPTO_NM")==null ? "" : order.get("SHIPTO_NM")).append("</td>")
+	          .append("<td>").append(order.get("DESC1")==null ? "" : order.get("DESC1")).append("</td>")
+	          .append("<td>").append(order.get("QUANTITY")).append("</td>")
+	          .append("<td>").append(order.get("ADD1")==null ? "" : order.get("ADD1")).append("</td>")
+	          .append("<td>").append(order.get("TEL1")==null ? "" : order.get("TEL1")).append("</td>")
 	          .append("</tr>");
 	    }
 
@@ -89,11 +97,56 @@ public class DynamicDailyEmailScheduler implements SchedulingConfigurer {
 	    return sb.toString();
 	}
 	
-	public void sendEmail() {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		LocalDate today = LocalDate.now();
-		String stDate = today.atStartOfDay().format(formatter);
-		String endDate = today.atTime(23,59, 59).format(formatter);
-		System.out.println("DynamicDailyEmailScheduler : " + stDate + " : " + endDate);
+	public void sendEmail() {		
+		//String tomorrow = "20230608"; getTomorrow();
+		String tomorrow = getTomorrow();
+		
+		List<Map<String, Object>> senders = scheduleSvc.getDailyEmailSenderList(null);
+		
+		for(Map<String, Object> sender : senders) {
+			String CUST_CD = sender.get("CUST_CD").toString(); 
+			String CUST_MAIN_EMAIL = sender.get("CUST_MAIN_EMAIL").toString(); 
+			boolean CUST_SENDMAIL_YN = sender.get("CUST_SENDMAIL_YN").toString().equals("Y") ? true : false; 
+			String SALESREP_EMAIL = sender.get("SALESREP_EMAIL").toString();
+			boolean SALESREP_SENDMAIL_YN = sender.get("SALESREP_SENDMAIL_YN").toString().equals("Y") ? true : false;
+			String SALESREP_NM = sender.get("SALESREP_NM").toString();
+			String CUST_NM = sender.get("CUST_NM").toString();
+			
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("cust_code", CUST_CD);
+			map.put("request_dt", tomorrow);
+			List<Map<String, Object>> orders = scheduleSvc.getDailyEmailList(map);
+			
+			if(orders.size() > 0) {
+				String strContext = buildOrderTable(orders, tomorrow);				
+	            String title = String.format("크나우프석고보드 - %s 익일착 오더 안내", tomorrow);	           
+	            try {
+	            	MailUtil mail = new MailUtil();
+					//mail.sendMail(smtpHost, title, "SG.Hong", "seungjooko@gmail.com", shopName, smtpSender, strContext, null, "");
+					//mail.sendMail(smtpHost, title, "Squall", "stpj0002@sorin.co.kr", shopName, smtpSender, strContext, null, "");
+	            	
+	            	if(CUST_SENDMAIL_YN) {
+	            		mail.sendMail(smtpHost, title, CUST_NM, CUST_MAIN_EMAIL, shopName, smtpSender, strContext, null, "");
+	            	}
+	            	
+	            	if(SALESREP_SENDMAIL_YN) {
+	            		mail.sendMail(smtpHost, title, SALESREP_NM, SALESREP_EMAIL, shopName, smtpSender, strContext, null, "");
+	            	}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+	            //발송후 상태값 업데이트
+	           
+			}
+		}
+	}
+	
+	private String getTomorrow() {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, 1);
+		SimpleDateFormat sdt = new SimpleDateFormat("yyyyMMdd");
+		return sdt.format(cal.getTime());
 	}
  }
