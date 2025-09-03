@@ -347,11 +347,11 @@ function dataSave(obj) {
     
     // 선택된 행 중에서 실제 수정된 행만 가져오기
     var modifiedRows = getModifiedRows();
-    if (modifiedRows.length === 0) {
+    /*if (modifiedRows.length === 0) {
         alert('수정된 내용이 없습니다.');
         $(obj).prop('disabled', false);
         return false;
-    }
+    }*/
     // *** 여기서만 유효성 검사 수행 ***
     var validationFailed = false;
     $.each(modifiedRows, function(i, rowData) {
@@ -562,6 +562,16 @@ function getGridList(){
          id: 'CUST_CD'
      },
      
+     cellEdit: true,
+     cellsubmit: "clientArray",
+     afterEditCell: function (rowid, cellname, value, iRow, iCol) {
+         var $td = $("tr#" + rowid + " td:eq(" + iCol + ")");
+         var $inputs = $td.find("input");
+         if ($inputs.length > 0) {
+             $inputs.last().focus();
+         }
+     },
+     
      // 그리드 로드 완료 후 원본 데이터 저장 - 정규화 처리 추가
      loadComplete: function(data) {
          originalDataMap = {};
@@ -584,6 +594,10 @@ function getGridList(){
          
          if(data && data.scheduleMinute) {
         	 document.getElementById("schdMin").value = data.scheduleMinute;
+         }
+         
+         if(data && data.scheduleMinute) {
+        	 document.getElementById("listTotalCountSpanId").innerText = " " + data.listTotalCount;
          }
          
          // multiselect 헤더 체크박스에 이벤트 바인딩
@@ -759,7 +773,7 @@ function excelDown(obj){
                             </div>
                             
                             <div class="panel-body">
-                                <h5 class="table-title listT">TOTAL <span id="listTotalCountSpanId">0</span>EA</h5>
+                                <h5 class="table-title listT">TOTAL <span id="listTotalCountSpanId"></span>EA</h5>
                                 <div class="btnList writeObjectClass">
                                         <%-- 예약발송 시각 설정 --%>
                                         <label>예약발송 시간:</label>
