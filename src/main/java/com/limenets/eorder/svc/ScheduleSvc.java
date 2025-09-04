@@ -32,4 +32,12 @@ public class ScheduleSvc {
 	public List<Map<String, Object>> getDailyEmailScheduleTime(Map<String, Object> svcMap) {
 		return scheduleDao.getDailyEmailScheduleTime(svcMap);
 	}
+	
+	public int insertDailyEmailSendLog(Map<String, Object> svcMap) {
+		return scheduleDao.insertDailyEmailSendLog(svcMap);
+	}
+	
+	public int deleteDailyEmailSender(Map<String, Object> svcMap) {
+		return scheduleDao.deleteDailyEmailSender(svcMap);
+	}
 }

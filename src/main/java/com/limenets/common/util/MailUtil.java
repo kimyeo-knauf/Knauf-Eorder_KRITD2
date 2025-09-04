@@ -82,6 +82,7 @@ public class MailUtil {
 			logger.debug("SMTP : SUCESS");
 		}catch(Exception e) {
 			logger.debug("SMTP : FAIL");
+			return false;
 		}
 		return true;
 	}

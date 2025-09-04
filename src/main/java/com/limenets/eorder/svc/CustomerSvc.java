@@ -388,15 +388,15 @@ public class CustomerSvc {
         String schdHour = req.getParameter("scheduleHour");
         String schdMin = req.getParameter("scheduleMin");
         
-        dScheduler.updateDailyTime(Integer.parseInt(schdHour), Integer.parseInt(schdMin));
-        
         Map<String, Object> param = new HashMap<String, Object>();
         param.put("m_hour", schdHour);
         param.put("m_min", schdMin);
         scheduleDao.insertUpdateDailyEmailScheduleTime(param);
         
+        dScheduler.updateDailyTime(Integer.parseInt(schdHour), Integer.parseInt(schdMin));
+        
         if (custCdArray == null) {
-            return MsgCode.getResultMap(MsgCode.ERROR, "데이터가 없습니다.");
+            return MsgCode.getResultMap(MsgCode.ERROR, "저장할 데이터가 없습니다.");
         }
         
         int totalCount = custCdArray.length;

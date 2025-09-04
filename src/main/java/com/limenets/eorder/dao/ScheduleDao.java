@@ -58,4 +58,12 @@ public class ScheduleDao {
 	public List<Map<String, Object>> getDailyEmailScheduleTime(final Map<String, Object> svcMap) {
 		return sqlSession.selectList("eorder.schedule.getDailyEmailScheduleTime", svcMap);
 	}
+	
+	public int insertDailyEmailSendLog(Map<String, Object> svcMap) {
+		return sqlSession.insert("eorder.schedule.insertDailyEmailSendLog", svcMap);
+	}
+	
+	public int deleteDailyEmailSender(Map<String, Object> svcMap) {
+		return sqlSession.delete("eorder.schedule.deleteDailyEmailSender", svcMap);
+	}
 }

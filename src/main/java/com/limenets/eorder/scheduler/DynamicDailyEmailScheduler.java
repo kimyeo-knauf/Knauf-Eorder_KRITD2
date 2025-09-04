@@ -6,42 +6,59 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
+import org.springframework.stereotype.Component;
 
 import com.limenets.common.util.MailUtil;
+import com.limenets.eorder.dao.ScheduleDao;
 import com.limenets.eorder.svc.ScheduleSvc;
 
-@Configuration
-@EnableScheduling
-public class DynamicDailyEmailScheduler implements SchedulingConfigurer {
+@Component
+public class DynamicDailyEmailScheduler {
+	
+	private final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+	private ScheduledFuture<?> scheduledFuter;
 	private String cronExpr = "0 0 3 * * ?";
 	//private String cronExpr = "0 */1 * * * *";
 	
+	@Inject private ScheduleDao scheduleDao;
 	@Inject ScheduleSvc scheduleSvc;
 	@Value("${https.url}") private String httpsUrl;
     @Value("${mail.smtp.sender.addr}") private String smtpSender;
     @Value("${shop.name}") private String shopName;
     @Value("${mail.smtp.url}") private String smtpHost;
-	
-	@Override
-	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-		taskRegistrar.addTriggerTask(
-			() -> sendEmail() ,
-			triggerContext -> new CronTrigger(cronExpr).nextExecutionTime(triggerContext)
-		);
-	}
-	
-	public void updateDailyTime(int hour, int minute) {
-		this.cronExpr = String.format("0, %d %d * * ?", minute, hour);
-		System.out.println("Updated DynamicDailyEmailScheduler : " + hour + minute);
+    
+    public DynamicDailyEmailScheduler() {
+    	scheduler.initialize();
+    }
+    
+    @PostConstruct
+    public void init() {
+    	getCronExp();
+    }
+    
+    private void schedulTask() {
+    	if(scheduledFuter != null) {
+    		scheduledFuter.cancel(false);
+    	}
+    	
+    	scheduledFuter = scheduler.schedule(
+			() -> sendEmail(),
+			new CronTrigger(cronExpr)
+    	);
+    }
+    
+    public void updateDailyTime(int hour, int minute) {
+		this.cronExpr = String.format("0 %d %d * * ?", minute, hour);
+		System.out.println("Updated DynamicDailyEmailScheduler : " + this.cronExpr);
+		schedulTask();
 	}
 	
 	private String buildOrderTable(List<Map<String, Object>> orders, String tm) {
@@ -94,6 +111,9 @@ public class DynamicDailyEmailScheduler implements SchedulingConfigurer {
 		//String tomorrow = "20230608"; getTomorrow();
 		String tomorrow = getTomorrow();
 		
+		int ret = scheduleSvc.deleteDailyEmailSender(null);
+		boolean ret_f = false;
+		
 		List<Map<String, Object>> senders = scheduleSvc.getDailyEmailSenderList(null);
 		
 		for(Map<String, Object> sender : senders) {
@@ -112,18 +132,35 @@ public class DynamicDailyEmailScheduler implements SchedulingConfigurer {
 			
 			if(orders.size() > 0) {
 				String strContext = buildOrderTable(orders, tomorrow);				
-	            String title = String.format("크나우프석고보드 - %s 익일착 오더 안내", tomorrow);	           
+	            String title = String.format("크나우프석고보드 - %s 익일착 오더 안내", tomorrow);
+	            
+	            Map<String, Object> map_log = new HashMap<String, Object>();
+	            map_log.put("m_cust_cd", CUST_CD);
+	            map_log.put("m_to_email", CUST_MAIN_EMAIL);
+	            map_log.put("m_sales_email", SALESREP_EMAIL);
+	            map_log.put("m_sent_hour", "");
+	            map_log.put("m_send_min", "");
+	            
+	            map_log.put("m_subject", title);
+	            map_log.put("m_body", strContext);
+	            map_log.put("m_err_code", "");
+	            map_log.put("m_err_msg", "");
+	            
 	            try {
 	            	MailUtil mail = new MailUtil();
 					//mail.sendMail(smtpHost, title, "SG.Hong", "seungjooko@gmail.com", shopName, smtpSender, strContext, null, "");
 					//mail.sendMail(smtpHost, title, "Squall", "stpj0002@sorin.co.kr", shopName, smtpSender, strContext, null, "");
 	            	
 	            	if(CUST_SENDMAIL_YN) {
-	            		mail.sendMail(smtpHost, title, CUST_NM, CUST_MAIN_EMAIL, shopName, smtpSender, strContext, null, "");
+	            		ret_f = mail.sendMail(smtpHost, title, CUST_NM, CUST_MAIN_EMAIL, shopName, smtpSender, strContext, null, "");
+	            		map_log.put("m_success", ret_f);
+	            		scheduleSvc.insertDailyEmailSendLog(map_log);
 	            	}
 	            	
 	            	if(SALESREP_SENDMAIL_YN) {
-	            		mail.sendMail(smtpHost, title, SALESREP_NM, SALESREP_EMAIL, shopName, smtpSender, strContext, null, "");
+	            		ret_f = mail.sendMail(smtpHost, title, SALESREP_NM, SALESREP_EMAIL, shopName, smtpSender, strContext, null, "");
+	            		map_log.put("m_success", ret_f);
+	            		scheduleSvc.insertDailyEmailSendLog(map_log);
 	            	}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -141,5 +178,17 @@ public class DynamicDailyEmailScheduler implements SchedulingConfigurer {
 		cal.add(Calendar.DATE, 1);
 		SimpleDateFormat sdt = new SimpleDateFormat("yyyyMMdd");
 		return sdt.format(cal.getTime());
+	}
+	
+	private void getCronExp() {
+		int hour = 3;
+		int min = 0;
+		List<Map<String, Object>> schTime  = scheduleDao.getDailyEmailScheduleTime(null);
+		if(schTime.size() > 0) {
+			hour = Integer.parseInt(schTime.get(0).get("TIME").toString());
+			min = Integer.parseInt(schTime.get(0).get("MINUTE").toString());
+		} 
+		
+		updateDailyTime(hour, min);
 	}
  }
