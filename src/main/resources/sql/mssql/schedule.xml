@@ -166,4 +166,44 @@
 		SELECT * FROM O_DynamicSchedule_Time;
 	</select>
 	
+	<insert id="insertDailyEmailSendLog" parameterType="map">
+        <![CDATA[
+        	INSERT INTO O_DynamicSchedule_Log (
+				CUST_CD
+				, TO_EMAIL
+				, SALES_EMAIL
+				, SENT_TIME
+				, SENT_MIN
+				, SEND_SUCCESS
+				, SUBJECT
+				, BODY
+				, ERROR_CODE
+				, ERROR_MESSAGE
+				, INID
+				, INDT
+			) VALUES(
+				#{m_cust_cd}
+				, #{m_to_email}
+				, #{m_sales_email}
+				, #{m_sent_hour}
+				, #{m_send_min}
+				, #{m_success}
+				, #{m_subject}
+				, #{m_body}
+				, #{m_err_code}
+				, #{m_err_msg}
+				, ''
+				, getdate())
+        ]]>
+    </insert>
+        
+    <delete id="deleteDailyEmailSender" parameterType="map">
+    	<![CDATA[
+	    	DELETE O_CUSTOMER_MAILINFO 
+			WHERE CUST_SENDMAIL_YN <> 'Y' AND SALESREP_SENDMaIL_YN <> 'Y'
+		]]>
+    </delete>
+        
+        
+	
 </mapper>
