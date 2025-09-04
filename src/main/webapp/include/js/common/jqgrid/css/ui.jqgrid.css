@@ -315,7 +315,7 @@
 .ui-jqgrid .ui-jqgrid-toppager .ui-pg-div span.ui-icon {float: left; margin: 2px; width: 18px;}
 .ui-jqgrid td input,
 .ui-jqgrid td select,
-.ui-jqgrid td textarea {margin: 0; padding: 0 10px 3px; -webkit-padding-before: 3px; height: 30px; vertical-align: top; border: 1px solid #dce1e4;}
+.ui-jqgrid td textarea {margin: 0; padding: 0 5px 3px 5px; -webkit-padding-before: 3px; height: 60%; vertical-align: top; border: 1px solid #dce1e4;}
 .ui-jqgrid td select {width: 70%; padding: 3px 13px 3px 10px;}
 .ui-jqgrid td textarea {width: auto; height: auto;}
 .ui-jqgrid .ui-jqgrid-toppager {
