@@ -573,6 +573,19 @@ public class OrderCtrl {
     public ModelAndView salesOrderExcelDown(@RequestParam Map<String, Object> params, HttpServletRequest req, HttpServletResponse res, LoginDto loginDto, Model model) throws Exception {
         Map<String, Object> resMap = new HashMap<>();
         
+
+        /*
+         * askme : 2025-08-21 [크나우프][SR]납품확인서 및 전체주문현황 수정 요청 건
+         *         전체주문현황 특정 조건으로 조회시 엑셀이 생성되지 않음
+         *           => 선택된 납품처에 값을 code로 가져오는데 실제값은 납품처명임. code를 nm으로 값을 옮김.
+         *           => jsp에서 작업할 경우 화면에 조회조건이 바뀌기 대문에 컨트롤에서 처리 
+         * date : 2025-09-04
+         * author : hsg
+         */
+        String rl_shiptonm = Converter.toStr(params.get("r_shiptocd"));
+        params.put("r_shiptocd", "");
+        params.put("rl_shiptonm", rl_shiptonm);
+
         // 내부사용자 웹주문현황  > 별도 권한 설정.
         orderSvc.setParamsForAdminOrderList(params, req, loginDto, model);
         
