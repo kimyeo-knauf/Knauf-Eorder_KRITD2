@@ -460,7 +460,7 @@ var globalColumnOrder = globalColumnOrderStr.split(',');
 var defaultColModel = [
  {name:"CUST_CD", key:true, label:'거래처코드', width:120, align:'center', sortable:true},
  {name:"CUST_NM", label:'거래처명', width:220, align:'left', sortable:true},
- {name:"CUST_MAIN_EMAIL", label:'담당자 이메일', width:220, align:'center', sortable:true, editable:true},
+ {name:"CUST_MAIN_EMAIL", label:'거래처 이메일', width:220, align:'center', sortable:true, editable:true},
  {name:"CUST_SENDMAIL_YN", label:'발송 여부', width:100, align:'center', sortable:true, formatter:checkboxFormatter},
  {name:"SALESREP_NM", label:'영업 담당', width:100, align:'center', sortable:true},
  {name:"SALESREP_EMAIL", label:'영업 담당 이메일', width:300, align:'center', sortable:true, editable:true},
@@ -674,11 +674,15 @@ function getSearchData(){
  var rl_custcd = $('input[name="searchCustCd"]').val();
  var rl_custnm = $('input[name="searchCustNm"]').val();
  var rl_salesrepnm = $('input[name="searchSalesrepNm"]').val();
+ var rl_cust_sendmail = document.getElementById('mainEmailCheckbox').checked;
+ var rl_sales_sendmail = document.getElementById('salesEmailCheckbox').checked;
 
  var searchData = {
  		rl_custcd : rl_custcd
  		, rl_custnm : rl_custnm 
  		, rl_salesrepnm : rl_salesrepnm 
+ 		, rl_cust_sendmail : (rl_cust_sendmail==true ? 'Y' : '')
+ 		, rl_sales_sendmail : (rl_sales_sendmail==true ? 'Y' : '') 
  	};
 
 	return searchData;
@@ -767,6 +771,18 @@ function excelDown(obj){
                                                     <input type="text" class="search-input" name="searchSalesrepNm" value="${param.rl_salesrepnm}" onkeypress="if(event.keyCode == 13){dataSearch();}" />
                                                 </div>
                                             </li>
+                                            <li>
+                                            	<div style='margin-top:10px;'>
+	                                            	<label for="salesCheckbox">담당자 E-mail 발송</label>
+												    <input type="checkbox" id="mainEmailCheckbox" name="mainEmailCheckbox" value="Y" />
+											    </div>
+											</li>
+                                            <li>
+                                            	<div style='margin-top:10px;'>
+		                                            <label for="salesCheckbox">영업 담당자 E-mail 발송</label>
+												    <input type="checkbox" id="salesEmailCheckbox" name="salesEmailCheckbox" value="Y" />
+												</div>
+											</li>
                                         </ul>
                                     </div>
                                 </div>

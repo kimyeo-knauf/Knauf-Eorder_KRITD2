@@ -318,76 +318,108 @@
 
 	<!-- ★★ 2025-06-05 hsg 주문 메일 알람 ★★ 2025-07-30 XML : 주문 메일 알람 목록 전체 개수 => orderEmailAlarmCnt -->
 	<select id="orderEmailAlarmCnt" parameterType="hashmap" resultType="int">
-        WITH CUST AS (
-                        SELECT
-                               CU.CUST_CD                             <!-- 거래처 코드 (PK) -->
-                             , CU.CUST_NM
-                             , U2.USER_EMAIL AS CUST_MAIN_EMAIL       <!-- 담당자 이메일 -->
-                             , SUS.USER_EMAIL AS SALESREP_EMAIL       <!-- 영업 담당자 이메일 -->
-                          FROM O_CUSTOMER CU
-                               LEFT JOIN O_USER SUS                   <!-- CU.SALESREP_CD ↔ SUS.USERID (영업사원 정보) -->
-                                      ON CU.SALESREP_CD = SUS.USERID
-                               LEFT JOIN O_USER U2                    <!-- CU.CUST_CD ↔ U2.USERID (대표 담당자 정보) -->
-                                      ON CU.CUST_CD = U2.USERID
-                        <where>
-                            <if test="r_custcd != null and r_custcd != ''">AND CU.CUST_CD = #{r_custcd}</if>
-                            <if test="r_custnm != null and r_custnm != ''">AND CU.CUST_NM LIKE '%' + #{r_custnm} + '%'</if>
-                        </where>
-                     )
-        SELECT COUNT(*)
-          FROM CUST CU
-               LEFT OUTER JOIN O_CUSTOMER_MAILINFO CM
-                            ON CU.CUST_CD = CM.CUST_CD
+		WITH CUST AS (
+			SELECT
+				CU.CUST_CD                             <!-- 거래처 코드 (PK) -->
+				, CU.CUST_NM
+				, U2.USER_EMAIL AS CUST_MAIN_EMAIL       <!-- 담당자 이메일 -->
+				, SUS.USER_NM AS SALESREP_NM             <!-- 영업 담당자 -->
+				, SUS.USER_EMAIL AS SALESREP_EMAIL       <!-- 영업 담당자 이메일 -->
+			FROM O_CUSTOMER CU
+			LEFT JOIN O_USER SUS                   <!-- CU.SALESREP_CD ↔ SUS.USERID (영업사원 정보) -->
+				ON CU.SALESREP_CD = SUS.USERID
+			LEFT JOIN O_USER U2                    <!-- CU.CUST_CD ↔ U2.USERID (대표 담당자 정보) -->
+				ON CU.CUST_CD = U2.USERID
+			<where>
+				<if test="rl_custcd != null and rl_custcd != ''">AND CU.CUST_CD = #{rl_custcd}</if>
+				<if test="rl_custnm != null and rl_custnm != ''">AND CU.CUST_NM LIKE '%' + #{rl_custnm} + '%'</if>
+			</where>
+		)
+		SELECT COUNT(*)
+		FROM CUST CU
+		LEFT OUTER JOIN O_CUSTOMER_MAILINFO CM
+			ON CU.CUST_CD = CM.CUST_CD
+		<where>
+			<if test="rl_salesrepnm != null and rl_salesrepnm != ''">
+				AND SALESREP_NM LIKE '%' + #{rl_salesrepnm} + '%'
+			</if>
+			<if test="(rl_cust_sendmail != null and rl_cust_sendmail != '') or (rl_sales_sendmail != null and rl_sales_sendmail != '')">
+				AND (
+					<if test="rl_cust_sendmail != null and rl_cust_sendmail != ''">
+						CM.CUST_SENDMAIL_YN = #{rl_cust_sendmail}
+					</if>
+					<if test="rl_cust_sendmail != null and rl_cust_sendmail != ''  and rl_sales_sendmail != null and rl_sales_sendmail != ''">
+						OR
+					</if>
+					<if test="rl_sales_sendmail != null and rl_sales_sendmail != ''">
+						CM.SALESREP_SENDMAIL_YN = #{rl_sales_sendmail}
+					</if>
+				)
+			</if> 
+		</where>
 	</select>
-
-
 
 	<!-- ★★ 2025-06-05 hsg 주문 메일 알람 ★★ 2025-07-30 XML : 주문 메일 알람 목록 => orderEmailAlarmList -->
 	<select id="orderEmailAlarmList" parameterType="hashmap" resultType="hashmap">
         WITH CUST AS (
-                        SELECT
-                               CU.CUST_CD                             <!-- 거래처 코드 (PK) -->
-                             , CU.CUST_NM
-                             , U2.USER_EMAIL AS CUST_MAIN_EMAIL       <!-- 담당자 이메일 -->
-                             , SUS.USER_NM AS SALESREP_NM             <!-- 영업 담당자 -->
-                             , SUS.USER_EMAIL AS SALESREP_EMAIL       <!-- 영업 담당자 이메일 -->
-                          FROM O_CUSTOMER CU
-                               LEFT JOIN O_USER SUS                   <!-- CU.SALESREP_CD ↔ SUS.USERID (영업사원 정보) -->
-                                      ON CU.SALESREP_CD = SUS.USERID
-                               LEFT JOIN O_USER U2                    <!-- CU.CUST_CD ↔ U2.USERID (대표 담당자 정보) -->
-                                      ON CU.CUST_CD = U2.USERID
-                        <where>
-                            <if test="rl_custcd != null and rl_custcd != ''">AND CU.CUST_CD = #{rl_custcd}</if>
-                            <if test="rl_custnm != null and rl_custnm != ''">AND CU.CUST_NM LIKE '%' + #{rl_custnm} + '%'</if>
-                        </where>
-                      )
+          SELECT
+                 CU.CUST_CD                             <!-- 거래처 코드 (PK) -->
+               , CU.CUST_NM
+               , U2.USER_EMAIL AS CUST_MAIN_EMAIL       <!-- 담당자 이메일 -->
+               , SUS.USER_NM AS SALESREP_NM             <!-- 영업 담당자 -->
+               , SUS.USER_EMAIL AS SALESREP_EMAIL       <!-- 영업 담당자 이메일 -->
+            FROM O_CUSTOMER CU
+                 LEFT JOIN O_USER SUS                   <!-- CU.SALESREP_CD ↔ SUS.USERID (영업사원 정보) -->
+                        ON CU.SALESREP_CD = SUS.USERID
+                 LEFT JOIN O_USER U2                    <!-- CU.CUST_CD ↔ U2.USERID (대표 담당자 정보) -->
+                        ON CU.CUST_CD = U2.USERID
+          <where>
+              <if test="rl_custcd != null and rl_custcd != ''">AND CU.CUST_CD = #{rl_custcd}</if>
+              <if test="rl_custnm != null and rl_custnm != ''">AND CU.CUST_NM LIKE '%' + #{rl_custnm} + '%'</if>
+          </where>
+        )
         SELECT *
           FROM (
-                  SELECT
-                         ROW_NUMBER() OVER(
-                                <choose>
-                                    <when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
-                                    <otherwise>ORDER BY (SELECT 1)</otherwise>
-                                </choose>
-                                            ) AS ROWNUM
-                       , XX.*
-                    FROM (
-                            SELECT CU.CUST_CD
-                                 , CU.CUST_NM
-                                 , ISNULL(CM.CUST_MAIN_EMAIL, CU.CUST_MAIN_EMAIL) AS CUST_MAIN_EMAIL
-                                 , ISNULL(CM.CUST_SENDMAIL_YN, 'N') AS CUST_SENDMAIL_YN
-                                 , CU.SALESREP_NM AS SALESREP_NM
-                                 , ISNULL(CM.SALESREP_EMAIL, CU.SALESREP_EMAIL) AS SALESREP_EMAIL
-                                 , ISNULL(CM.SALESREP_SENDMAIL_YN, 'N') AS SALESREP_SENDMAIL_YN
-                                 , CM.COMMENTS
-                              FROM CUST CU
-                                   LEFT OUTER JOIN O_CUSTOMER_MAILINFO CM
-                                                ON CU.CUST_CD = CM.CUST_CD
-                        <where>
-                            <if test="rl_salesrepnm != null and rl_salesrepnm != '' ">AND SALESREP_NM LIKE '%' + #{rl_salesrepnm} + '%'</if>
-                        </where>
-                          ) XX
-                ) S
+                SELECT
+                       ROW_NUMBER() OVER(
+                              <choose>
+                                  <when test = " r_orderby != null and r_orderby != '' ">ORDER BY ${r_orderby}</when>
+                                  <otherwise>ORDER BY (SELECT 1)</otherwise>
+                              </choose>
+                                          ) AS ROWNUM
+                     , XX.*
+                  FROM (
+                          SELECT CU.CUST_CD
+                               , CU.CUST_NM
+                               , ISNULL(CM.CUST_MAIN_EMAIL, CU.CUST_MAIN_EMAIL) AS CUST_MAIN_EMAIL
+                               , ISNULL(CM.CUST_SENDMAIL_YN, 'N') AS CUST_SENDMAIL_YN
+                               , CU.SALESREP_NM AS SALESREP_NM
+                               , ISNULL(CM.SALESREP_EMAIL, CU.SALESREP_EMAIL) AS SALESREP_EMAIL
+                               , ISNULL(CM.SALESREP_SENDMAIL_YN, 'N') AS SALESREP_SENDMAIL_YN
+                               , CM.COMMENTS
+                            FROM CUST CU
+                                 LEFT OUTER JOIN O_CUSTOMER_MAILINFO CM
+                                              ON CU.CUST_CD = CM.CUST_CD
+                      <where>
+                          <if test="rl_salesrepnm != null and rl_salesrepnm != ''">
+				        AND SALESREP_NM LIKE '%' + #{rl_salesrepnm} + '%'
+				    </if>
+			        <if test="(rl_cust_sendmail != null and rl_cust_sendmail != '') or (rl_sales_sendmail != null and rl_sales_sendmail != '')">
+			            AND (
+			                <if test="rl_cust_sendmail != null and rl_cust_sendmail != ''">
+			                    CM.CUST_SENDMAIL_YN = #{rl_cust_sendmail}
+			                </if>
+			                <if test="rl_cust_sendmail != null and rl_cust_sendmail != ''  and rl_sales_sendmail != null and rl_sales_sendmail != ''">
+			                    OR
+			                </if>
+			                <if test="rl_sales_sendmail != null and rl_sales_sendmail != ''">
+			                    CM.SALESREP_SENDMAIL_YN = #{rl_sales_sendmail}
+			                </if>
+			            )
+			        </if> 
+                      </where>
+                  ) XX
+     	) S
         <where>
             <if test="r_endrow != null and r_endrow != '' and r_startrow != null and r_startrow != ''" >
                 ROWNUM BETWEEN #{r_startrow} AND #{r_endrow}
