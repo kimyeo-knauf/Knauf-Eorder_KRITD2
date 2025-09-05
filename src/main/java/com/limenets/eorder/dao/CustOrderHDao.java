@@ -47,5 +47,15 @@ public class CustOrderHDao {
 		return sqlSession.selectOne("eorder.o_cust_order_h.createCustOrderReqNo", svcMap);
 	}
 	
-	
+	/**
+	 * askme : No. : REQ0072629 / SubTask : SCTASK0090907
+	 * title : [크나우프][SR]이오더 납품처 수정 요청 건
+	 * summary : 만료일 지난 납품처 : 'Y', 만료일 이전 납품처 : 'N'
+	 * date : 2025-09-04
+	 * author : hsg
+	 */
+	public Map<String, Object> checkShiptoBnddtYn(Map<String, Object> svcMap) {
+		return sqlSession.selectOne("eorder.o_cust_order_h.checkShiptoBnddtYn", svcMap);
+	}
+
 }

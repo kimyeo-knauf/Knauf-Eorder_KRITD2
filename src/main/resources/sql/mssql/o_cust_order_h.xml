@@ -324,5 +324,30 @@
 <!-- 		AND REQ_NO LIKE '${r_custcd}' + CONVERT(VARCHAR(10), GETDATE(), 112) + '%' -->
 		AND REQ_NO LIKE '${r_custcd}' + SUBSTRING(CONVERT(VARCHAR, GETDATE(), 112), 3, 6) + '%'
 	</select>
+
+
+
+
+
 	
+	<select id="checkShiptoBnddtYn" parameterType="hashmap" resultType="hashmap">			
+		SELECT
+		       CASE
+			       WHEN ost.BNDDT IS NOT NULL AND ost.BNDDT <![CDATA[<=]]> CONVERT(VARCHAR(8), GETDATE(), 112) THEN 'Y'
+			       ELSE 'N'
+		       END BNDDT_YN
+		  FROM O_CUST_ORDER_H coh
+		       LEFT OUTER JOIN O_SHIPTO ost ON coh.SHIPTO_CD = ost.SHIPTO_CD
+		 WHERE 1 = 1
+		   AND coh.REQ_NO = #{r_reqno}
+	</select>
+
+
+
+
+
+
+
+
+
 </mapper>

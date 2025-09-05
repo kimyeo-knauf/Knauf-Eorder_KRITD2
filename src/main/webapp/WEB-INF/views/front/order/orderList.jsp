@@ -153,7 +153,49 @@ function dataCopy(obj){
 		$(obj).prop('disabled', false);
 		return;
 	}
-	
+
+	/*
+	 * askme : No. : REQ0072629 / SubTask : SCTASK0090907
+	 * title : [크나우프][SR]이오더 납품처 수정 요청 건
+	 * summary : 주문번호로 찾기. 만료일 지난 납품처 : 'Y', 만료일 이전 납품처 : 'N'
+	 * date : 2025-09-04
+	 * author : hsg
+	 * ↓↓↓↓↓↓↓↓↓↓ 2025-09-04 hsg No. : REQ0072629 ↓↓↓↓↓↓↓↓↓↓
+	 */
+	var bnddtLimitYn = false;
+	$.ajax({
+		async : false,
+		url : '${url}/front/order/getShiptoBnddtYnAjax.lime',
+		cache : false,
+		type : 'POST',
+		data : { 
+			r_reqno : reqNoObj.val()
+		},
+		success : function(data){
+			if('Y' == data.BNDDT_YN){
+
+				bnddtLimitYn = true;
+			}
+			
+		},
+		error : function(request,status,error){
+			alert('Error');
+			$(obj).prop('disabled', false);
+		}
+	});
+
+
+	if(bnddtLimitYn){
+		alert("기간이 만료된 납품처입니다.");
+		return;
+	}
+	/*
+	 * askme : No. : REQ0072629 / SubTask : SCTASK0090907
+	 * ↑↑↑↑↑↑↑↑↑↑ 2025-09-04 hsg No. : REQ0072629 ↑↑↑↑↑↑↑↑↑↑
+	 */
+
+
+
 	if(confirm('선택하신 주문건을 복사 하시겠습니까?')){
 		formGetSubmit('${url}/front/order/orderAdd.lime', 'copy_reqno='+$(reqNoObj).val());
 	}
