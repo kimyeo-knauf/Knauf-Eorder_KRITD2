@@ -106,7 +106,7 @@
 	</select>
 	
 	<select id="getDailyEmailList" parameterType="hashmap" resultType="hashmap">
-        SELECT 
+        <!-- SELECT 
 			OH.CUST_CD, 
 			OH.REQ_NO, 
 			PT.PT_NAME, 
@@ -126,6 +126,24 @@
 		LEFT JOIN O_ITEM OI ON OD.ITEM_CD = OI.ITEM_CD
 		<where>
 			OH.CUST_CD = #{cust_code} AND OH.REQUEST_DT = #{request_dt}	
+		</where>-->
+		
+		
+		SELECT 
+			OS.CUST_CD, 
+			OS.ORDERNO AS REQ_NO,
+			OS.PLANT_DESC AS PT_NAME, 
+			OS.REQUEST_DT, 
+			OS.REQUEST_TIME, 
+			OS.CUST_NM, 
+			OS.SHIPTO_NM,
+			OS.ITEM_DESC AS DESC1,
+			OS.ORDER_QTY AS QUANTITY,
+			OS.ADD1, 
+			'' AS TEL1
+		FROM O_SALESORDER OS
+		<where>
+			OS.CUST_CD = #{cust_code} AND OS.REQUEST_DT = #{request_dt}	
 		</where>
 	</select>	
 	
