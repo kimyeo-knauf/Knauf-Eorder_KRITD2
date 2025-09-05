@@ -67,7 +67,7 @@ public class DynamicDailyEmailScheduler {
 	      .append("안녕하세요 크나우프석고보드 입니다<br><br>")
 	      .append(String.format("%s년 %s월 %s일 기준 귀사의 익일착 오더 안내 드립니다<br><br>", tm.substring(0, 4), tm.substring(4, 6), tm.substring(6, 8)))
 	      .append("<table border='1' cellspacing='0' cellpadding='5' ")
-	      .append("style='border-collapse:collapse; width:100%; text-align:center;'>")
+	      .append("style='border-collapse:collapse; width:100%; text-align:center; font-size:10px;'>")
 	      .append("<thead style='background-color:#00AEEF; color:white;'>")
 	      .append("<tr>")
 	      .append("<th>오더 번호</th>")
